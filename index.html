@@ -224,6 +224,7 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
 /* ---------- 상수 / 마스터 데이터 기본값 ---------- */
 const DEFAULT_MASTER = {
@@ -944,7 +945,8 @@ function renderStatusTab(){
         <select id="s-status"><option value="">전체 상태</option><option value="등록">등록</option><option value="점검완료">점검완료</option></select>
         <select id="s-customer"><option value="">전체 고객사</option>${CUSTOMERS.map(c=>`<option>${esc(c)}</option>`).join("")}</select>
         <select id="s-inspector"><option value="">전체 점검담당자</option>${inspectorNames.map(n=>`<option>${esc(n)}</option>`).join("")}</select>
-        <button class="btn" id="s-downall">전체 다운로드</button>
+        <button class="btn" id="s-downall">전체 다운로드(ZIP)</button>
+        <button class="btn btn-primary" id="s-downxlsx">엑셀 다운로드</button>
       </div>
     </div>
     <div class="toolbar" style="margin-top:-4px;">
@@ -1040,6 +1042,7 @@ function bindStatusTab(){
   ["s-search"].forEach(id => document.getElementById(id).oninput = applyStatusFilter);
   ["s-status","s-customer","s-inspector","s-from","s-to"].forEach(id => document.getElementById(id).onchange = applyStatusFilter);
   document.getElementById("s-downall").onclick = downloadAll;
+  document.getElementById("s-downxlsx").onclick = downloadExcel;
   document.getElementById("s-reset").onclick = () => {
     ["s-search","s-status","s-customer","s-inspector","s-from","s-to"].forEach(id => document.getElementById(id).value = "");
     statusSort = { key: "regDate", dir: "desc" };
@@ -1094,13 +1097,20 @@ function openDetailModal(id){
         <div class="section-title">점검 결과</div>
         <dl class="detail-grid">
           <dt>점검일자</dt><dd>${esc(fmtDate(it.inspDate))}</dd>
-          <dt>조치결과</dt><dd>${esc(it.inspResult === "기타" ? it.inspResultEtc : it.inspResult)}</dd>
+          <dt>조치결과</dt><dd style="${it.inspResult==='NG'?'color:var(--danger);font-weight:700;':''}">${esc(it.inspResult === "기타" ? it.inspResultEtc : it.inspResult)}</dd>
           <dt>점검부서</dt><dd>${esc(it.inspDept)} / ${esc(it.inspName)}</dd>
         </dl>
         ${imgBlock("점검확인 첨부", it.inspImages)}
+        ${it.inspResult === "NG" ? `
+        <div class="section-title" style="color:var(--danger);">NG 재발방지 대책</div>
+        <dl class="detail-grid">
+          <dt>재발방지 대책</dt><dd>${esc(it.ngAction || "미입력")}</dd>
+          ${it.ngAction ? `<dt>완료일자</dt><dd>${esc(fmtDate(it.ngActionDate))}</dd><dt>입력자</dt><dd>${esc(it.ngActionBy)}</dd>` : ""}
+        </dl>` : ""}
         ` : ""}
         <div class="modal-actions">
           ${isAdmin() ? `<button class="btn btn-danger" id="dt-delete">삭제</button><button class="btn" id="dt-edit">수정</button>` : ""}
+          ${it.status === "점검완료" && it.inspResult === "NG" ? `<button class="btn btn-accent" id="dt-ng">재발방지 대책</button>` : ""}
           <button class="btn" id="dt-dl">다운로드</button>
           <button class="btn btn-primary" id="dt-close">닫기</button>
         </div>
@@ -1111,6 +1121,9 @@ function openDetailModal(id){
   document.getElementById("dt-overlay").onclick = (e) => { if(e.target.id==="dt-overlay") close(); };
   bindLightbox(root);
   document.getElementById("dt-dl").onclick = () => downloadOne(it.id);
+  if(it.status === "점검완료" && it.inspResult === "NG"){
+    document.getElementById("dt-ng").onclick = () => { close(); openNgModal(it.id); };
+  }
   if(isAdmin()){
     document.getElementById("dt-delete").onclick = () => {
       confirmPopup("삭제 확인", "이 변동점을 삭제하시겠습니까? 삭제 후에는 복구할 수 없습니다.", async () => {
@@ -1276,13 +1289,205 @@ function triggerDownload(blob, filename){
   URL.revokeObjectURL(url);
 }
 
-/* ---------- 렌더 / 라우팅 ---------- */
+/* ---------- A3: 현황 엑셀 다운로드 ---------- */
+function downloadExcel(){
+  const q = document.getElementById("s-search") ? document.getElementById("s-search").value.trim().toLowerCase() : "";
+  const st = document.getElementById("s-status") ? document.getElementById("s-status").value : "";
+  const cu = document.getElementById("s-customer") ? document.getElementById("s-customer").value : "";
+  const insp = document.getElementById("s-inspector") ? document.getElementById("s-inspector").value : "";
+  const from = document.getElementById("s-from") ? document.getElementById("s-from").value : "";
+  const to = document.getElementById("s-to") ? document.getElementById("s-to").value : "";
+  let list = items.filter(it => {
+    if(st && it.status !== st) return false;
+    if(cu && it.customer !== cu) return false;
+    if(insp && it.followName !== insp) return false;
+    const d = String(it.regDate||"").slice(0,10);
+    if(from && d < from) return false;
+    if(to && d > to) return false;
+    if(q){ const hay = ((it.id||"")+(it.regName||"")+(it.line||"")+(it.content||"")+(it.followName||"")).toLowerCase(); if(!hay.includes(q)) return false; }
+    return true;
+  });
+  const headers = ["문서번호","상태","변경일자","등록부서","등록자","차종/설비/라인","고객사","4M구분","변동점내용","변경전","변경후","후행부서","후행담당자","점검일자","조치결과","점검부서","점검담당자","재발방지대책","재발방지완료일"];
+  const rows = list.map(it => [
+    it.id, it.status, it.regDate, it.regDept, it.regName, it.line, it.customer, it.m4,
+    it.content, it.beforeContent, it.afterContent, it.followDept, it.followName,
+    it.inspDate, it.inspResult === "기타" ? it.inspResultEtc : it.inspResult,
+    it.inspDept, it.inspName,
+    it.ngAction || "", it.ngActionDate || ""
+  ]);
+  const wb = XLSX.utils.book_new();
+  const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+  ws['!cols'] = headers.map((h, i) => ({ wch: [22,8,10,12,8,16,8,8,30,20,20,12,8,10,12,12,8,30,10][i] || 12 }));
+  XLSX.utils.book_append_sheet(wb, ws, "변동점현황");
+  const wbout = XLSX.write(wb, { bookType:'xlsx', type:'array' });
+  triggerDownload(new Blob([wbout], { type:'application/octet-stream' }), "변동점현황_" + todayStr() + ".xlsx");
+  showToast("엑셀 다운로드 완료 (" + list.length + "건)");
+}
+
+/* ---------- B2: 대시보드 ---------- */
+function renderDashboardTab(){
+  const content = document.getElementById("content");
+  const total = items.length;
+  const pending = items.filter(it => it.status === "등록").length;
+  const done = items.filter(it => it.status === "점검완료").length;
+  const ng = items.filter(it => it.inspResult === "NG").length;
+  const ngNoAction = items.filter(it => it.inspResult === "NG" && !it.ngAction).length;
+  const myPending = items.filter(it => it.status === "등록" && it.followName === currentUser.name).length;
+
+  // 월별 집계
+  const byMonth = {};
+  items.forEach(it => {
+    const m = String(it.regDate||"").slice(0,7);
+    if(!m) return;
+    if(!byMonth[m]) byMonth[m] = { total:0, done:0, ng:0 };
+    byMonth[m].total++;
+    if(it.status==="점검완료") byMonth[m].done++;
+    if(it.inspResult==="NG") byMonth[m].ng++;
+  });
+  const months = Object.keys(byMonth).sort().slice(-6);
+
+  // 4M 집계
+  const byM4 = {};
+  items.forEach(it => { const k = it.m4||"미분류"; byM4[k] = (byM4[k]||0)+1; });
+
+  // 고객사 집계
+  const byCust = {};
+  items.forEach(it => { const k = it.customer||"미분류"; byCust[k] = (byCust[k]||0)+1; });
+
+  // 처리 소요일 평균 계산
+  const dones = items.filter(it => it.status==="점검완료" && it.regDate && it.inspDate);
+  const avgDays = dones.length > 0 ? Math.round(dones.reduce((s, it) => {
+    const diff = (new Date(it.inspDate) - new Date(it.regDate)) / 86400000;
+    return s + (isNaN(diff) ? 0 : Math.abs(diff));
+  }, 0) / dones.length) : 0;
+
+  const maxMonthTotal = Math.max(...months.map(m => byMonth[m].total), 1);
+
+  content.innerHTML = `
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:18px;">
+    ${[
+      ["전체 등록 건수", total, "var(--primary)"],
+      ["점검 대기", pending, "var(--warn)"],
+      ["점검 완료", done, "var(--success)"],
+      ["NG 발생", ng, "var(--danger)"],
+      ["NG 미조치", ngNoAction, ngNoAction>0?"var(--danger)":"var(--text-muted)"],
+      ["내 미처리", myPending, myPending>0?"var(--accent)":"var(--text-muted)"],
+    ].map(([label, val, color]) => `
+      <div class="card" style="text-align:center;padding:16px 10px;margin-bottom:0;">
+        <div style="font-size:28px;font-weight:800;color:${color};">${val}</div>
+        <div style="font-size:12px;color:var(--text-secondary);margin-top:4px;">${label}</div>
+      </div>`).join("")}
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">
+    <div class="card" style="margin-bottom:0;">
+      <h2 style="margin-bottom:12px;"><span class="num">📅</span>월별 변동점 현황 (최근 6개월)</h2>
+      ${months.length === 0 ? `<div class="empty">데이터가 없습니다.</div>` : `
+      <div style="display:flex;align-items:flex-end;gap:6px;height:120px;padding:0 4px;">
+        ${months.map(m => {
+          const d = byMonth[m];
+          const h = Math.round((d.total / maxMonthTotal) * 100);
+          return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;">
+            <div style="font-size:10px;color:var(--text-muted);">${d.total}</div>
+            <div style="width:100%;height:${h}px;background:var(--primary);border-radius:3px 3px 0 0;position:relative;" title="${m}: ${d.total}건 (완료:${d.done}, NG:${d.ng})">
+              ${d.ng > 0 ? `<div style="position:absolute;bottom:0;width:100%;height:${Math.round(d.ng/d.total*100)}%;background:var(--danger);border-radius:3px 3px 0 0;"></div>` : ""}
+            </div>
+            <div style="font-size:9.5px;color:var(--text-muted);text-align:center;">${m.slice(5)}월</div>
+          </div>`;
+        }).join("")}
+      </div>
+      <div style="display:flex;gap:12px;margin-top:10px;font-size:11px;">
+        <span><span style="display:inline-block;width:10px;height:10px;background:var(--primary);border-radius:2px;margin-right:3px;"></span>전체</span>
+        <span><span style="display:inline-block;width:10px;height:10px;background:var(--danger);border-radius:2px;margin-right:3px;"></span>NG</span>
+      </div>`}
+    </div>
+    <div class="card" style="margin-bottom:0;">
+      <h2 style="margin-bottom:12px;"><span class="num">⚡</span>4M 구분별 / 고객사별</h2>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+        <div>
+          <div style="font-size:11px;font-weight:700;color:var(--text-secondary);margin-bottom:6px;">4M 구분</div>
+          ${Object.entries(byM4).sort((a,b)=>b[1]-a[1]).map(([k,v]) => `
+            <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;margin-bottom:5px;">
+              <span>${esc(k)}</span>
+              <span style="font-weight:700;color:var(--primary);">${v}건</span>
+            </div>`).join("")}
+        </div>
+        <div>
+          <div style="font-size:11px;font-weight:700;color:var(--text-secondary);margin-bottom:6px;">고객사</div>
+          ${Object.entries(byCust).sort((a,b)=>b[1]-a[1]).map(([k,v]) => `
+            <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;margin-bottom:5px;">
+              <span>${esc(k)}</span>
+              <span style="font-weight:700;color:var(--accent);">${v}건</span>
+            </div>`).join("")}
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <h2><span class="num">⏱</span>처리 현황 요약</h2>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;font-size:13px;">
+      <div><span style="color:var(--text-secondary);">평균 점검 소요일:</span> <strong>${avgDays}일</strong></div>
+      <div><span style="color:var(--text-secondary);">점검 완료율:</span> <strong>${total > 0 ? Math.round(done/total*100) : 0}%</strong></div>
+      <div><span style="color:var(--text-secondary);">NG 미조치 건수:</span> <strong style="color:${ngNoAction>0?'var(--danger)':'inherit'}">${ngNoAction}건</strong></div>
+    </div>
+    ${ngNoAction > 0 ? `
+    <div style="margin-top:12px;padding:10px 14px;background:var(--danger-light);border-radius:8px;font-size:12.5px;color:var(--danger);">
+      ⚠ NG 처리 후 재발방지 대책이 입력되지 않은 건이 <strong>${ngNoAction}건</strong> 있습니다. 현황 탭에서 NG 필터 후 조치해주세요.
+    </div>` : ""}
+  </div>`;
+}
+
+/* ---------- B3: NG 후속관리 모달 ---------- */
+function openNgModal(id){
+  const it = items.find(x => x.id === id);
+  if(!it) return;
+  const root = document.getElementById("modal-root");
+  root.innerHTML = `
+    <div class="modal-overlay" id="ng-overlay">
+      <div class="modal" style="max-width:480px;">
+        <h3>NG 재발방지 대책 입력</h3>
+        <span class="docnum-badge">${esc(it.id)}</span>
+        <dl class="detail-grid" style="margin-top:12px;">
+          <dt>조치결과</dt><dd style="color:var(--danger);font-weight:700;">NG${it.inspResultEtc ? " (" + esc(it.inspResultEtc) + ")" : ""}</dd>
+          <dt>변동점 내용</dt><dd>${esc(it.content)}</dd>
+        </dl>
+        <div class="field" style="margin-top:14px;">
+          <label class="required">재발방지 대책</label>
+          <textarea id="ng-action" placeholder="원인 분석 및 재발방지 대책을 입력하세요" style="min-height:100px;">${esc(it.ngAction||"")}</textarea>
+        </div>
+        <div class="field">
+          <label>완료일자</label>
+          <input type="date" id="ng-date" value="${esc(it.ngActionDate||todayStr())}" style="max-width:200px;">
+        </div>
+        ${it.ngActionBy ? `<p class="hint">마지막 입력: ${esc(it.ngActionBy)} / ${esc(it.ngActionDate)}</p>` : ""}
+        <div class="modal-actions">
+          <button class="btn" id="ng-cancel">취소</button>
+          <button class="btn btn-primary" id="ng-save">저장</button>
+        </div>
+      </div>
+    </div>`;
+  const close = () => { root.innerHTML = ""; };
+  document.getElementById("ng-cancel").onclick = close;
+  document.getElementById("ng-overlay").onclick = e => { if(e.target.id==="ng-overlay") close(); };
+  document.getElementById("ng-save").onclick = async () => {
+    const action = document.getElementById("ng-action").value.trim();
+    if(!action){ showToast("재발방지 대책을 입력해주세요."); return; }
+    const json = await apiPost({ action: "updateNgAction", item: { id: it.id, ngAction: action, ngActionDate: document.getElementById("ng-date").value } });
+    if(!json){ showToast(lastApiError || "저장에 실패했습니다."); return; }
+    await loadItems();
+    close();
+    showToast("재발방지 대책이 저장되었습니다.");
+    render();
+  };
+}
+
+
 function render(){
   const content = document.getElementById("content");
   document.querySelectorAll(".tab-btn").forEach(b => b.classList.toggle("active", b.dataset.tab === currentTab));
   if(currentTab === "register"){ content.innerHTML = renderRegisterTab(); bindRegisterTab(); }
   else if(currentTab === "inspect"){ content.innerHTML = renderInspectTab(); bindInspectTab(); }
   else if(currentTab === "status"){ content.innerHTML = renderStatusTab(); bindStatusTab(); }
+  else if(currentTab === "dashboard"){ renderDashboardTab(); }
   else if(currentTab === "employees"){ renderEmployeesTab(); }
 }
 function bindTabs(){
@@ -1306,10 +1511,13 @@ function renderUserChip(){
 }
 function renderMainTabs(){
   const wrap = document.getElementById("main-tabs");
+  const myPending = items.filter(it => it.status === "등록" && it.followName === currentUser.name).length;
+  const badge = myPending > 0 ? `<span style="display:inline-block;background:var(--danger);color:#fff;border-radius:10px;font-size:10px;font-weight:700;padding:1px 6px;margin-left:5px;">${myPending}</span>` : "";
   let html = `
     <button class="tab-btn active" data-tab="register">등록</button>
-    <button class="tab-btn" data-tab="inspect">점검 / 확인</button>
+    <button class="tab-btn" data-tab="inspect">점검 / 확인${badge}</button>
     <button class="tab-btn" data-tab="status">현황</button>
+    <button class="tab-btn" data-tab="dashboard">대시보드</button>
   `;
   if(isAdmin()) html += `<button class="tab-btn" data-tab="employees">직원 관리</button>`;
   wrap.innerHTML = html;
