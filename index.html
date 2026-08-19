@@ -488,16 +488,30 @@ function renderFileThumb(item, index){
 
 function renderFileDisplay(item){
   const src = item.data || "";
+  // 이미지 파일 (data:image 또는 Drive 썸네일 URL)
   if(item.isImage !== false && (src.startsWith("data:image") || src.includes("drive.google.com/thumbnail"))){
     return `<div class="thumb"><img src="${imgSrc(src)}"></div>`;
   }
-  const name = item.name || "파일";
+  // 문서 파일 (Drive 다운로드 URL — #파일명 포함)
+  const hashIdx = src.indexOf("#");
+  const fileName = hashIdx !== -1 ? decodeURIComponent(src.substring(hashIdx + 1)) : (item.name || "파일");
   if(src.includes("drive.google.com")){
     const m = src.match(/[?&]id=([^&]+)/);
-    const viewUrl = m ? "https://drive.google.com/file/d/" + m[1] + "/view" : src;
-    return `<a href="${viewUrl}" target="_blank" style="display:inline-flex;align-items:center;gap:6px;padding:6px 12px;background:var(--bg);border:1px solid var(--border);border-radius:6px;font-size:12.5px;text-decoration:none;color:var(--primary);margin:3px;">${getFileIcon(name)} ${esc(name)}</a>`;
+    const fileId = m ? m[1] : "";
+    const viewUrl = fileId ? "https://drive.google.com/file/d/" + fileId + "/view" : src;
+    const dlUrl = fileId ? "https://drive.google.com/uc?id=" + fileId + "&export=download" : src;
+    return `<div style="display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:var(--bg);border:1px solid var(--border);border-radius:8px;margin:4px;">
+      <span style="font-size:24px;">${getFileIcon(fileName)}</span>
+      <div style="display:flex;flex-direction:column;gap:2px;">
+        <span style="font-size:12.5px;font-weight:600;color:var(--text);">${esc(fileName)}</span>
+        <span style="display:flex;gap:8px;">
+          <a href="${viewUrl}" target="_blank" style="font-size:11px;color:var(--primary);text-decoration:none;">미리보기</a>
+          <a href="${dlUrl}" target="_blank" style="font-size:11px;color:var(--accent);text-decoration:none;">다운로드</a>
+        </span>
+      </div>
+    </div>`;
   }
-  return `<span style="display:inline-flex;align-items:center;gap:4px;font-size:12px;color:var(--text-secondary);">${getFileIcon(name)} ${esc(name)}</span>`;
+  return `<span style="display:inline-flex;align-items:center;gap:4px;font-size:12px;color:var(--text-secondary);">${getFileIcon(fileName)} ${esc(fileName)}</span>`;
 }
 function dataUrlToBlob(dataUrl){
   const parts = dataUrl.split(",");
@@ -1340,9 +1354,9 @@ async function downloadOne(id){
   const zip = new JSZip();
   const summary = buildSummaryText(it);
   zip.file("summary.txt", summary);
-  await addImagesToZip(zip, "before", it.beforeImages);
-  await addImagesToZip(zip, "after", it.afterImages);
-  await addImagesToZip(zip, "inspection", it.inspImages);
+  await addFilesToZip(zip, "before", it.beforeImages);
+  await addFilesToZip(zip, "after", it.afterImages);
+  await addFilesToZip(zip, "inspection", it.inspImages);
   const blob = await zip.generateAsync({ type: "blob" });
   triggerDownload(blob, it.id.replace(/\s+/g,"_") + ".zip");
 }
@@ -1357,32 +1371,45 @@ async function downloadAll(){
     csv += row + "\n";
     const folder = zip.folder(it.id.replace(/\s+/g,"_"));
     folder.file("summary.txt", buildSummaryText(it));
-    await addImagesToZip(folder, "before", it.beforeImages);
-    await addImagesToZip(folder, "after", it.afterImages);
-    await addImagesToZip(folder, "inspection", it.inspImages);
+    await addFilesToZip(folder, "before", it.beforeImages);
+    await addFilesToZip(folder, "after", it.afterImages);
+    await addFilesToZip(folder, "inspection", it.inspImages);
   }
   zip.file("변동점_전체목록.csv", "\uFEFF" + csv);
   const blob = await zip.generateAsync({ type: "blob" });
   triggerDownload(blob, "변동점_전체_" + todayStr() + ".zip");
 }
-async function addImagesToZip(zipOrFolder, prefix, arr){
+async function addFilesToZip(zipOrFolder, prefix, arr){
   if(!arr || arr.length === 0) return;
   for(let i = 0; i < arr.length; i++){
-    const img = arr[i];
-    if(!img || !img.data) continue;
-    const baseName = (img.name || "image.jpg").replace(/[\\/:*?"<>|]/g, "_");
+    const f = arr[i];
+    if(!f || !f.data) continue;
+    const src = String(f.data);
+    // URL에서 파일명 추출 (#파일명 또는 name 필드)
+    const hashIdx = src.indexOf("#");
+    const fileName = hashIdx !== -1 ? decodeURIComponent(src.substring(hashIdx + 1)) : (f.name || "file");
+    const safeName = fileName.replace(/[\\/:*?"<>|]/g, "_");
     try{
-      let dataUrl = img.data;
-      if(!dataUrl.startsWith("data:")){
-        const m = dataUrl.match(/[?&]id=([^&]+)/);
+      if(src.startsWith("data:")){
+        // base64 데이터 → 바로 저장
+        zipOrFolder.file(`${prefix}_${i+1}_${safeName}`, dataUrlToBlob(src));
+      } else if(src.includes("drive.google.com")){
+        // Google Drive URL → 프록시로 원본 데이터 가져오기
+        const m = src.match(/[?&]id=([^&]+)/);
         if(!m) throw new Error("파일 ID를 찾을 수 없음");
         const json = await apiGet("?type=image&fileId=" + encodeURIComponent(m[1]));
-        dataUrl = json.data;
+        if(json.data && json.data.startsWith("data:")){
+          const ext = safeName.includes(".") ? "" : (src.includes("/thumbnail") ? ".jpg" : "");
+          zipOrFolder.file(`${prefix}_${i+1}_${safeName}${ext}`, dataUrlToBlob(json.data));
+        } else {
+          throw new Error("데이터 없음");
+        }
+      } else {
+        zipOrFolder.file(`${prefix}_${i+1}_링크.txt`, src);
       }
-      const ext = baseName.includes(".") ? "" : ".jpg";
-      zipOrFolder.file(`${prefix}_${i+1}_${baseName}${ext}`, dataUrlToBlob(dataUrl));
     }catch(e){
-      zipOrFolder.file(`${prefix}_${i+1}_링크.txt`, img.data);
+      // 다운로드 실패 시 링크만 저장
+      zipOrFolder.file(`${prefix}_${i+1}_${safeName}_링크.txt`, src.split("#")[0]);
     }
   }
 }
