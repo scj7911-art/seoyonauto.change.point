@@ -121,6 +121,12 @@
   .lock-note{font-size:11.5px;color:var(--text-muted);display:flex;align-items:center;gap:4px;margin-top:2px;}
   ::placeholder{color:var(--text-muted);}
 
+  /* ---------- 로딩 오버레이 ---------- */
+  .loading-overlay{position:fixed;inset:0;background:rgba(20,25,35,.55);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:2000;gap:14px;}
+  .loading-spinner{width:44px;height:44px;border:4px solid rgba(255,255,255,.25);border-top:4px solid #fff;border-radius:50%;animation:spin .8s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .loading-text{color:#fff;font-size:15px;font-weight:600;text-align:center;}
+
   /* ---------- 로그인 화면 ---------- */
   .login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--bg);padding:20px;}
   .login-card{background:#fff;border:1px solid var(--border);border-radius:14px;padding:32px 28px;max-width:360px;width:100%;box-shadow:0 4px 24px rgba(29,53,87,.08);}
@@ -385,8 +391,23 @@ function showToast(msg, duration){
   t.classList.add("show");
   setTimeout(()=>t.classList.remove("show"), duration || 2200);
 }
+function showLoading(msg){
+  const root = document.getElementById("modal-root");
+  root.innerHTML = `<div class="loading-overlay" id="loading-overlay"><div class="loading-spinner"></div><div class="loading-text">${esc(msg || "저장 중입니다... 잠시만 기다려주세요.")}</div></div>`;
+}
+function hideLoading(){
+  const el = document.getElementById("loading-overlay");
+  if(el) el.remove();
+}
 function esc(s){
   return String(s==null?"":s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+function imgSrc(dataOrUrl){
+  if(!dataOrUrl) return "";
+  const s = String(dataOrUrl);
+  if(s.startsWith("data:")) return s;
+  // Google Drive thumbnail URL은 <img> 태그에서 직접 로드 가능 (CORS 제한 없음)
+  return s;
 }
 function fileToCompressedDataUrl(file, maxW){
   return new Promise((resolve, reject) => {
@@ -733,9 +754,11 @@ function bindRegisterTab(){
         afterImages: regImages.after.slice()
       };
       const btn = document.getElementById("btn-submit-register");
-      btn.disabled = true; btn.textContent = "저장 중...";
+      btn.disabled = true;
+      showLoading("변동점을 등록하고 있습니다...\n사진 업로드 중에는 시간이 걸릴 수 있습니다.");
       const json = await registerNewItem(item);
-      btn.disabled = false; btn.textContent = "등록";
+      hideLoading();
+      btn.disabled = false;
       if(!json){
         showToast(lastApiError || "저장에 실패했습니다. 네트워크 상태를 확인 후 다시 시도해주세요.");
         return;
@@ -756,6 +779,12 @@ function bindRegisterTab(){
 function canProcessInspection(it){
   return isAdmin() || it.followName === currentUser.name;
 }
+function inspResultDisplay(it){
+  const r = it.inspResult;
+  if(r === "NG") return `<span style="color:var(--danger);font-weight:700;">NG</span>`;
+  if(r === "기타") return esc(it.inspResultEtc || "기타");
+  return esc(r);
+}
 function renderInspectTab(){
   const pending = items.filter(it => it.status === "등록");
   const done = items.filter(it => it.status === "점검완료");
@@ -764,18 +793,19 @@ function renderInspectTab(){
     <h2><span class="num">1</span>점검 대기 (${pending.length}건)</h2>
     ${pending.length === 0 ? `<div class="empty">점검 대기 중인 변동점이 없습니다.</div>` : `
     <div style="overflow-x:auto;">
-    <table>
-      <thead><tr><th>문서번호</th><th>변경일</th><th>차종/라인</th><th>4M</th><th>등록자</th><th>후행부서/담당자</th><th></th></tr></thead>
+    <table style="min-width:700px;">
+      <thead><tr><th style="width:200px;">문서번호</th><th>변경일</th><th>차종/라인</th><th>4M</th><th>변경내용</th><th>등록자</th><th>점검담당자</th><th></th></tr></thead>
       <tbody>
         ${pending.map(it => `
           <tr class="row-click" data-id="${esc(it.id)}">
-            <td style="font-family:var(--mono);">${esc(it.id)}</td>
-            <td>${esc(fmtDate(it.regDate))}</td>
-            <td>${esc(it.line)}</td>
+            <td style="font-family:var(--mono);font-size:11.5px;white-space:nowrap;">${esc(it.id)}</td>
+            <td style="white-space:nowrap;">${esc(fmtDate(it.regDate))}</td>
+            <td style="white-space:nowrap;">${esc(it.line)}</td>
             <td>${esc(it.m4)}</td>
-            <td>${esc(it.regName)}</td>
-            <td>${esc(it.followDept)} / ${esc(it.followName)}</td>
-            <td>${canProcessInspection(it) ? `<button class="btn btn-sm btn-accent" data-open="${esc(it.id)}">점검 입력</button>` : `<span class="hint" style="margin:0;">담당자만 처리 가능</span>`}</td>
+            <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${esc(it.content)}">${esc(it.content)}</td>
+            <td style="white-space:nowrap;">${esc(it.regName)}</td>
+            <td style="white-space:nowrap;">${esc(it.followName)}</td>
+            <td style="white-space:nowrap;">${canProcessInspection(it) ? `<button class="btn btn-sm btn-accent" data-open="${esc(it.id)}">점검 입력</button>` : `<span class="hint" style="margin:0;">담당자만 처리 가능</span>`}</td>
           </tr>`).join("")}
       </tbody>
     </table>
@@ -785,16 +815,20 @@ function renderInspectTab(){
     <h2><span class="num">2</span>점검 완료 (${done.length}건)</h2>
     ${done.length === 0 ? `<div class="empty">점검 완료된 변동점이 없습니다.</div>` : `
     <div style="overflow-x:auto;">
-    <table>
-      <thead><tr><th>문서번호</th><th>변경일</th><th>차종/라인</th><th>조치결과</th><th>점검부서</th></tr></thead>
+    <table style="min-width:800px;">
+      <thead><tr><th style="width:200px;">문서번호</th><th>변경일</th><th>차종/라인</th><th>고객사</th><th>변경내용</th><th>조치결과</th><th>점검일</th><th>점검자</th><th>NG대책</th></tr></thead>
       <tbody>
         ${done.map(it => `
           <tr class="row-click" data-id="${esc(it.id)}">
-            <td style="font-family:var(--mono);">${esc(it.id)}</td>
-            <td>${esc(fmtDate(it.regDate))}</td>
-            <td>${esc(it.line)}</td>
-            <td>${esc(it.inspResult === "기타" ? it.inspResultEtc : it.inspResult)}</td>
-            <td>${esc(it.inspDept)}</td>
+            <td style="font-family:var(--mono);font-size:11.5px;white-space:nowrap;">${esc(it.id)}</td>
+            <td style="white-space:nowrap;">${esc(fmtDate(it.regDate))}</td>
+            <td style="white-space:nowrap;">${esc(it.line)}</td>
+            <td style="white-space:nowrap;">${esc(it.customer)}</td>
+            <td style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${esc(it.content)}">${esc(it.content)}</td>
+            <td style="white-space:nowrap;">${inspResultDisplay(it)}</td>
+            <td style="white-space:nowrap;">${esc(fmtDate(it.inspDate))}</td>
+            <td style="white-space:nowrap;">${esc(it.inspName)}</td>
+            <td style="white-space:nowrap;">${it.inspResult==="NG" ? (it.ngAction ? `<span style="color:var(--success);">완료</span>` : `<span style="color:var(--danger);">미입력</span>`) : "-"}</td>
           </tr>`).join("")}
       </tbody>
     </table>
@@ -839,7 +873,7 @@ function openInspectModal(id){
           <dt>변경 후</dt><dd>${esc(it.afterContent)}</dd>
         </dl>
         <div class="thumbs">
-          ${it.beforeImages.concat(it.afterImages).map(img=>`<div class="thumb"><img src="${img.data}"></div>`).join("")}
+          ${it.beforeImages.concat(it.afterImages).map(img=>`<div class="thumb"><img src="${imgSrc(img.data)}"></div>`).join("")}
         </div>
 
         <div class="section-title">점검 입력</div>
@@ -857,6 +891,10 @@ function openInspectModal(id){
         <div class="field" id="i-etc-wrap" style="display:none;margin-bottom:14px;">
           <label>조치결과 (기타 직접입력)</label>
           <input type="text" id="i-etc" placeholder="조치결과를 입력하세요">
+        </div>
+        <div class="field" id="i-ng-wrap" style="display:none;margin-bottom:14px;">
+          <label class="required">NG 재발방지 대책 / 코멘트</label>
+          <textarea id="i-ng-action" placeholder="NG 원인 분석 및 재발방지 대책을 입력하세요" style="min-height:80px;"></textarea>
         </div>
         <div class="row">
           <div class="field"><label>점검부서</label><input type="text" id="i-dept" value="${esc(currentUser.dept)}" disabled></div>
@@ -883,9 +921,11 @@ function openInspectModal(id){
     document.getElementById("insp-edit").onclick = () => { close(); openEditModal(it.id); };
     document.getElementById("insp-delete").onclick = () => {
       confirmPopup("삭제 확인", "이 변동점을 삭제하시겠습니까? 삭제 후에는 복구할 수 없습니다.", async () => {
+        showLoading("삭제 처리 중입니다...");
         const json = await deleteItemStore(it.id);
-        if(!json){ showToast(lastApiError || "삭제에 실패했습니다."); return; }
+        if(!json){ hideLoading(); showToast(lastApiError || "삭제에 실패했습니다."); return; }
         await loadItems();
+        hideLoading();
         close();
         showToast("삭제되었습니다.");
         render();
@@ -894,6 +934,7 @@ function openInspectModal(id){
   }
   document.getElementById("i-result").onchange = (e) => {
     document.getElementById("i-etc-wrap").style.display = e.target.value === "기타" ? "block" : "none";
+    document.getElementById("i-ng-wrap").style.display = e.target.value === "NG" ? "block" : "none";
   };
   const renderInspThumbs = () => {
     const el = document.getElementById("i-thumbs");
@@ -911,20 +952,28 @@ function openInspectModal(id){
   };
   document.getElementById("insp-save").onclick = () => {
     const val = id => document.getElementById(id).value.trim();
-    const date = val("i-date"), dept = val("i-dept"), name = val("i-name"), result = document.getElementById("i-result").value;
+    const date = val("i-date"), result = document.getElementById("i-result").value;
     const etc = val("i-etc");
-    if(!date || !dept || !name || !result || (result==="기타" && !etc)){ showToast("필수 항목(*)을 입력해주세요."); return; }
+    const ngAction = val("i-ng-action");
+    if(!date || !result || (result==="기타" && !etc)){ showToast("필수 항목(*)을 입력해주세요."); return; }
+    if(result==="NG" && !ngAction){ showToast("NG 선택 시 재발방지 대책/코멘트를 입력해주세요."); return; }
     confirmPopup("점검 저장 확인", "점검 결과를 저장하시겠습니까?", async () => {
+      showLoading("점검 결과를 저장하고 있습니다...");
       const payload = {
         id: it.id, inspDate: date, inspResult: result, inspResultEtc: etc,
-        inspDept: dept, inspName: name, inspImages: inspImages.slice()
+        inspImages: inspImages.slice()
       };
       const json = await submitInspection(payload);
       if(!json){
+        hideLoading();
         showToast(lastApiError || "저장에 실패했습니다. 다시 시도해주세요.");
         return;
       }
+      if(result === "NG" && ngAction){
+        await apiPost({ action: "updateNgAction", item: { id: it.id, ngAction: ngAction } });
+      }
       await loadItems();
+      hideLoading();
       close();
       showToast("점검 결과가 저장되었습니다.");
       render();
@@ -1072,7 +1121,7 @@ function openDetailModal(id){
   const it = items.find(x => x.id === id);
   if(!it) return;
   const root = document.getElementById("modal-root");
-  const imgBlock = (label, arr) => arr.length ? `<div class="field"><label>${label}</label><div class="thumbs">${arr.map(im=>`<div class="thumb"><img src="${im.data}"></div>`).join("")}</div></div>` : "";
+  const imgBlock = (label, arr) => arr.length ? `<div class="field"><label>${label}</label><div class="thumbs">${arr.map(im=>`<div class="thumb"><img src="${imgSrc(im.data)}"></div>`).join("")}</div></div>` : "";
   root.innerHTML = `
     <div class="modal-overlay" id="dt-overlay">
       <div class="modal" style="max-width:600px;">
@@ -1127,9 +1176,11 @@ function openDetailModal(id){
   if(isAdmin()){
     document.getElementById("dt-delete").onclick = () => {
       confirmPopup("삭제 확인", "이 변동점을 삭제하시겠습니까? 삭제 후에는 복구할 수 없습니다.", async () => {
+        showLoading("삭제 처리 중입니다...");
         const json = await deleteItemStore(it.id);
-        if(!json){ showToast(lastApiError || "삭제에 실패했습니다."); return; }
+        if(!json){ hideLoading(); showToast(lastApiError || "삭제에 실패했습니다."); return; }
         await loadItems();
+        hideLoading();
         close();
         showToast("삭제되었습니다.");
         render();
@@ -1181,6 +1232,7 @@ function openEditModal(id){
   document.getElementById("ed-overlay").onclick = (e) => { if(e.target.id==="ed-overlay") close(); };
   document.getElementById("ed-save").onclick = () => {
     confirmPopup("수정 저장", "변경 내용을 저장하시겠습니까?", async () => {
+      showLoading("수정 사항을 저장하고 있습니다...");
       const payload = {
         id: it.id,
         regDate: document.getElementById("e-date").value,
@@ -1194,10 +1246,12 @@ function openEditModal(id){
       };
       const json = await submitEdit(payload);
       if(!json){
+        hideLoading();
         showToast(lastApiError || "저장에 실패했습니다. 다시 시도해주세요.");
         return;
       }
       await loadItems();
+      hideLoading();
       close();
       let msg = "수정되었습니다.";
       if(json.emailStatus === "발송성공") msg += " (새 담당자에게 이메일 발송 완료)";
@@ -1471,9 +1525,11 @@ function openNgModal(id){
   document.getElementById("ng-save").onclick = async () => {
     const action = document.getElementById("ng-action").value.trim();
     if(!action){ showToast("재발방지 대책을 입력해주세요."); return; }
+    showLoading("재발방지 대책을 저장하고 있습니다...");
     const json = await apiPost({ action: "updateNgAction", item: { id: it.id, ngAction: action, ngActionDate: document.getElementById("ng-date").value } });
-    if(!json){ showToast(lastApiError || "저장에 실패했습니다."); return; }
+    if(!json){ hideLoading(); showToast(lastApiError || "저장에 실패했습니다."); return; }
     await loadItems();
+    hideLoading();
     close();
     showToast("재발방지 대책이 저장되었습니다.");
     render();
