@@ -78,6 +78,9 @@
   .thumb img{width:100%;height:100%;object-fit:cover;display:block;cursor:zoom-in;transition:transform .15s;}
   .thumb img:hover{transform:scale(1.06);}
   .thumb .rm{position:absolute;top:2px;right:2px;width:16px;height:16px;border-radius:50%;background:rgba(0,0,0,.55);color:#fff;font-size:10px;line-height:16px;text-align:center;cursor:pointer;}
+  .thumb.file-thumb{display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--bg);gap:2px;}
+  .thumb .file-icon{font-size:22px;line-height:1;}
+  .thumb .file-name{font-size:9px;color:var(--text-secondary);text-align:center;line-height:1.2;word-break:break-all;max-width:58px;overflow:hidden;}
 
   .status-pill{display:inline-block;padding:3px 9px;border-radius:20px;font-size:11.5px;font-weight:700;}
   .st-등록{background:var(--warn-light);color:var(--warn);}
@@ -406,11 +409,42 @@ function imgSrc(dataOrUrl){
   if(!dataOrUrl) return "";
   const s = String(dataOrUrl);
   if(s.startsWith("data:")) return s;
-  // Google Drive thumbnail URL은 <img> 태그에서 직접 로드 가능 (CORS 제한 없음)
   return s;
 }
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+const ACCEPTED_TYPES = "image/*,.pdf,.ppt,.pptx,.xls,.xlsx,.doc,.docx";
+const FILE_ICONS = { pdf:"📄", ppt:"📊", pptx:"📊", xls:"📗", xlsx:"📗", doc:"📝", docx:"📝" };
+
+function isImageFile(file){
+  return file.type && file.type.startsWith("image/");
+}
+function getFileExt(name){
+  const m = String(name).match(/\.(\w+)$/);
+  return m ? m[1].toLowerCase() : "";
+}
+function getFileIcon(name){
+  return FILE_ICONS[getFileExt(name)] || "📎";
+}
+
+function fileToDataUrl(file){
+  return new Promise((resolve, reject) => {
+    if(file.size > MAX_FILE_SIZE){
+      reject(new Error("파일 크기가 10MB를 초과합니다: " + file.name));
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = e => resolve(e.target.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
 function fileToCompressedDataUrl(file, maxW){
   return new Promise((resolve, reject) => {
+    if(file.size > MAX_FILE_SIZE){
+      reject(new Error("파일 크기가 10MB를 초과합니다: " + file.name));
+      return;
+    }
     const reader = new FileReader();
     reader.onload = e => {
       const img = new Image();
@@ -429,6 +463,41 @@ function fileToCompressedDataUrl(file, maxW){
     reader.onerror = reject;
     reader.readAsDataURL(file);
   });
+}
+async function processFile(file){
+  if(file.size > MAX_FILE_SIZE) throw new Error("파일 크기가 10MB를 초과합니다: " + file.name);
+  if(isImageFile(file)){
+    const data = await fileToCompressedDataUrl(file, 1000);
+    return { name: file.name, data: data, isImage: true };
+  }else{
+    const data = await fileToDataUrl(file);
+    return { name: file.name, data: data, isImage: false };
+  }
+}
+
+function renderFileThumb(item, index){
+  if(item.isImage || (item.data && String(item.data).startsWith("data:image")) || (item.data && String(item.data).includes("drive.google.com"))){
+    return `<div class="thumb"><img src="${imgSrc(item.data)}"><div class="rm" data-i="${index}">×</div></div>`;
+  }
+  return `<div class="thumb file-thumb" title="${esc(item.name)}">
+    <span class="file-icon">${getFileIcon(item.name)}</span>
+    <span class="file-name">${esc(item.name.length > 8 ? item.name.slice(0,6) + ".." : item.name)}</span>
+    <div class="rm" data-i="${index}">×</div>
+  </div>`;
+}
+
+function renderFileDisplay(item){
+  const src = item.data || "";
+  if(item.isImage !== false && (src.startsWith("data:image") || src.includes("drive.google.com/thumbnail"))){
+    return `<div class="thumb"><img src="${imgSrc(src)}"></div>`;
+  }
+  const name = item.name || "파일";
+  if(src.includes("drive.google.com")){
+    const m = src.match(/[?&]id=([^&]+)/);
+    const viewUrl = m ? "https://drive.google.com/file/d/" + m[1] + "/view" : src;
+    return `<a href="${viewUrl}" target="_blank" style="display:inline-flex;align-items:center;gap:6px;padding:6px 12px;background:var(--bg);border:1px solid var(--border);border-radius:6px;font-size:12.5px;text-decoration:none;color:var(--primary);margin:3px;">${getFileIcon(name)} ${esc(name)}</a>`;
+  }
+  return `<span style="display:inline-flex;align-items:center;gap:4px;font-size:12px;color:var(--text-secondary);">${getFileIcon(name)} ${esc(name)}</span>`;
 }
 function dataUrlToBlob(dataUrl){
   const parts = dataUrl.split(",");
@@ -663,19 +732,19 @@ function renderRegisterTab(){
     </div>
     <div class="row" style="margin-top:4px;">
       <div class="field">
-        <label>변경 전 사진</label>
-        <div class="filebox" id="box-before">클릭하여 사진 선택 (여러장 가능)</div>
-        <input type="file" id="file-before" accept="image/*" multiple style="display:none;">
+        <label>변경 전 첨부</label>
+        <div class="filebox" id="box-before">클릭하여 파일 선택 (사진·PDF·PPT·엑셀, 10MB 이하)</div>
+        <input type="file" id="file-before" accept="image/*,.pdf,.ppt,.pptx,.xls,.xlsx,.doc,.docx" multiple style="display:none;">
         <div class="thumbs" id="thumbs-before"></div>
       </div>
       <div class="field">
-        <label>변경 후 사진</label>
-        <div class="filebox" id="box-after">클릭하여 사진 선택 (여러장 가능)</div>
-        <input type="file" id="file-after" accept="image/*" multiple style="display:none;">
+        <label>변경 후 첨부</label>
+        <div class="filebox" id="box-after">클릭하여 파일 선택 (사진·PDF·PPT·엑셀, 10MB 이하)</div>
+        <input type="file" id="file-after" accept="image/*,.pdf,.ppt,.pptx,.xls,.xlsx,.doc,.docx" multiple style="display:none;">
         <div class="thumbs" id="thumbs-after"></div>
       </div>
     </div>
-    <p class="hint">사진은 저장 공간 확보를 위해 자동으로 용량이 축소됩니다. PPT 등 대용량 파일은 별도 공유 경로 사용을 권장드립니다.</p>
+    <p class="hint">사진은 자동 압축됩니다. PPT·엑셀·PDF 등 문서 파일도 첨부 가능합니다 (파일당 최대 10MB).</p>
   </div>
 
   <div class="card">
@@ -709,9 +778,9 @@ function bindRegisterTab(){
       const files = Array.from(e.target.files);
       for(const f of files){
         try{
-          const data = await fileToCompressedDataUrl(f, 1000);
-          bucket.push({ name: f.name, data });
-        }catch(err){ showToast("이미지 처리에 실패했습니다: " + f.name); }
+          const item = await processFile(f);
+          bucket.push(item);
+        }catch(err){ showToast(err.message || "파일 처리 실패: " + f.name); }
       }
       e.target.value = "";
       renderThumbs(thumbsId, bucket);
@@ -719,7 +788,7 @@ function bindRegisterTab(){
   };
   const renderThumbs = (thumbsId, bucket) => {
     const el = document.getElementById(thumbsId);
-    el.innerHTML = bucket.map((img,i)=>`<div class="thumb"><img src="${img.data}"><div class="rm" data-i="${i}">×</div></div>`).join("");
+    el.innerHTML = bucket.map((item,i) => renderFileThumb(item, i)).join("");
     el.querySelectorAll(".rm").forEach(btn => {
       btn.onclick = (e) => { e.stopPropagation(); bucket.splice(Number(btn.dataset.i),1); renderThumbs(thumbsId, bucket); };
     });
@@ -902,8 +971,8 @@ function openInspectModal(id){
         </div>
         <div class="field">
           <label>점검확인 첨부 (선택)</label>
-          <div class="filebox" id="i-box">클릭하여 사진 선택</div>
-          <input type="file" id="i-file" accept="image/*" multiple style="display:none;">
+          <div class="filebox" id="i-box">클릭하여 파일 선택 (사진·PDF·PPT·엑셀, 10MB 이하)</div>
+          <input type="file" id="i-file" accept="image/*,.pdf,.ppt,.pptx,.xls,.xlsx,.doc,.docx" multiple style="display:none;">
           <div class="thumbs" id="i-thumbs"></div>
         </div>
         <div class="modal-actions">
@@ -938,14 +1007,14 @@ function openInspectModal(id){
   };
   const renderInspThumbs = () => {
     const el = document.getElementById("i-thumbs");
-    el.innerHTML = inspImages.map((img,i)=>`<div class="thumb"><img src="${img.data}"><div class="rm" data-i="${i}">×</div></div>`).join("");
+    el.innerHTML = inspImages.map((item,i) => renderFileThumb(item, i)).join("");
     el.querySelectorAll(".rm").forEach(b => { b.onclick = (e) => { e.stopPropagation(); inspImages.splice(Number(b.dataset.i),1); renderInspThumbs(); }; });
     bindLightbox(el);
   };
   document.getElementById("i-box").onclick = () => document.getElementById("i-file").click();
   document.getElementById("i-file").onchange = async (e) => {
     for(const f of Array.from(e.target.files)){
-      try{ inspImages.push({ name: f.name, data: await fileToCompressedDataUrl(f, 1000) }); }catch(err){}
+      try{ inspImages.push(await processFile(f)); }catch(err){ showToast(err.message || "파일 처리 실패"); }
     }
     e.target.value = "";
     renderInspThumbs();
@@ -1121,7 +1190,7 @@ function openDetailModal(id){
   const it = items.find(x => x.id === id);
   if(!it) return;
   const root = document.getElementById("modal-root");
-  const imgBlock = (label, arr) => arr.length ? `<div class="field"><label>${label}</label><div class="thumbs">${arr.map(im=>`<div class="thumb"><img src="${imgSrc(im.data)}"></div>`).join("")}</div></div>` : "";
+  const fileBlock = (label, arr) => arr.length ? `<div class="field"><label>${label}</label><div class="thumbs" style="flex-wrap:wrap;">${arr.map(im => renderFileDisplay(im)).join("")}</div></div>` : "";
   root.innerHTML = `
     <div class="modal-overlay" id="dt-overlay">
       <div class="modal" style="max-width:600px;">
@@ -1140,8 +1209,8 @@ function openDetailModal(id){
           <dt>변경 후</dt><dd>${esc(it.afterContent)}</dd>
           <dt>후행부서</dt><dd>${esc(it.followDept)} / ${esc(it.followName)}</dd>
         </dl>
-        ${imgBlock("변경 전 사진", it.beforeImages)}
-        ${imgBlock("변경 후 사진", it.afterImages)}
+        ${fileBlock("변경 전 첨부", it.beforeImages)}
+        ${fileBlock("변경 후 첨부", it.afterImages)}
         ${it.status === "점검완료" ? `
         <div class="section-title">점검 결과</div>
         <dl class="detail-grid">
@@ -1149,7 +1218,7 @@ function openDetailModal(id){
           <dt>조치결과</dt><dd style="${it.inspResult==='NG'?'color:var(--danger);font-weight:700;':''}">${esc(it.inspResult === "기타" ? it.inspResultEtc : it.inspResult)}</dd>
           <dt>점검부서</dt><dd>${esc(it.inspDept)} / ${esc(it.inspName)}</dd>
         </dl>
-        ${imgBlock("점검확인 첨부", it.inspImages)}
+        ${fileBlock("점검 확인 첨부", it.inspImages)}
         ${it.inspResult === "NG" ? `
         <div class="section-title" style="color:var(--danger);">NG 재발방지 대책</div>
         <dl class="detail-grid">
