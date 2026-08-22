@@ -71,7 +71,8 @@
 
   .docnum-badge{display:inline-block;font-family:var(--mono);font-size:13px;letter-spacing:.3px;background:var(--primary-light);color:var(--primary);border:1px dashed var(--primary);border-radius:6px;padding:6px 12px;}
 
-  .filebox{border:1.5px dashed var(--border-strong);border-radius:8px;padding:12px;text-align:center;background:var(--bg);cursor:pointer;font-size:12.5px;color:var(--text-secondary);}
+  .filebox{border:1.5px dashed var(--border-strong);border-radius:8px;padding:12px;text-align:center;background:var(--bg);cursor:pointer;font-size:12.5px;color:var(--text-secondary);transition:border-color .2s, background .2s;}
+  .filebox:hover{border-color:var(--primary);background:#f0f4f8;}
   .filebox:hover{border-color:var(--primary);}
   .thumbs{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;}
   .thumb{position:relative;width:64px;height:64px;border-radius:6px;overflow:hidden;border:1px solid var(--border);background:#fff;}
@@ -711,15 +712,15 @@ function renderRegisterTab(){
   </div>
 
   <div class="card">
-    <h2><span class="num">3</span>차종 / 설비 / 라인 · 고객사 · 4M 구분${isAdmin() ? `<button class="btn btn-sm" id="btn-edit-master" type="button" style="margin-left:auto;">항목 편집</button>` : ""}</h2>
+    <h2><span class="num">3</span>고객사 · 차종 / 설비 / 라인 · 4M 구분${isAdmin() ? `<button class="btn btn-sm" id="btn-edit-master" type="button" style="margin-left:auto;">항목 편집</button>` : ""}</h2>
     <div class="row3">
-      <div class="field">
-        <label class="required">차종/설비/라인</label>
-        <select id="f-line"><option value="">선택하세요</option>${master.lines.map(v=>`<option>${esc(v)}</option>`).join("")}</select>
-      </div>
       <div class="field">
         <label class="required">고객사</label>
         <select id="f-customer"><option value="">선택하세요</option>${CUSTOMERS.map(v=>`<option>${esc(v)}</option>`).join("")}</select>
+      </div>
+      <div class="field">
+        <label class="required">차종/설비/라인</label>
+        <select id="f-line"><option value="">선택하세요</option>${master.lines.map(v=>`<option>${esc(v)}</option>`).join("")}</select>
       </div>
       <div class="field">
         <label class="required">4M 구분</label>
@@ -747,13 +748,13 @@ function renderRegisterTab(){
     <div class="row" style="margin-top:4px;">
       <div class="field">
         <label>변경 전 첨부</label>
-        <div class="filebox" id="box-before">클릭하여 파일 선택 (사진·PDF·PPT·엑셀, 10MB 이하)</div>
+        <div class="filebox" id="box-before" data-drop="before">클릭 또는 파일을 여기에 끌어놓기 (사진·PDF·PPT·엑셀, 10MB 이하)</div>
         <input type="file" id="file-before" accept="image/*,.pdf,.ppt,.pptx,.xls,.xlsx,.doc,.docx" multiple style="display:none;">
         <div class="thumbs" id="thumbs-before"></div>
       </div>
       <div class="field">
         <label>변경 후 첨부</label>
-        <div class="filebox" id="box-after">클릭하여 파일 선택 (사진·PDF·PPT·엑셀, 10MB 이하)</div>
+        <div class="filebox" id="box-after" data-drop="after">클릭 또는 파일을 여기에 끌어놓기 (사진·PDF·PPT·엑셀, 10MB 이하)</div>
         <input type="file" id="file-after" accept="image/*,.pdf,.ppt,.pptx,.xls,.xlsx,.doc,.docx" multiple style="display:none;">
         <div class="thumbs" id="thumbs-after"></div>
       </div>
@@ -763,14 +764,23 @@ function renderRegisterTab(){
 
   <div class="card">
     <h2><span class="num">5</span>점검 후행 담당자</h2>
-    <div class="field" style="max-width:320px;">
-      <label class="required">담당자 선택</label>
-      <select id="f-followname">
-        <option value="">선택하세요</option>
-        ${directory.map(d => `<option value="${esc(d.name)}">${esc(d.name)} (${esc(d.dept)})</option>`).join("")}
-      </select>
-      <p class="hint">선택한 담당자에게 등록과 동시에 이메일로 점검 요청이 자동 발송됩니다.</p>
+    <div class="row" style="align-items:flex-end;">
+      <div class="field">
+        <label>부서 필터</label>
+        <select id="f-follow-dept-filter">
+          <option value="">전체 부서</option>
+          ${Array.from(new Set(directory.map(d=>d.dept))).sort().map(dept=>`<option>${esc(dept)}</option>`).join("")}
+        </select>
+      </div>
+      <div class="field">
+        <label class="required">담당자 선택 (복수 가능)</label>
+        <select id="f-followname" multiple size="4" style="min-height:90px;">
+          ${directory.map(d => `<option value="${esc(d.name)}" data-dept="${esc(d.dept)}">${esc(d.name)} (${esc(d.dept)})</option>`).join("")}
+        </select>
+      </div>
     </div>
+    <div id="f-follow-selected" style="margin-top:6px;"></div>
+    <p class="hint">Ctrl(또는 Cmd) 키를 누른 채 클릭하면 여러 명을 선택할 수 있습니다. 선택된 담당자 모두에게 이메일이 발송됩니다.</p>
   </div>
 
   <div class="card">
@@ -787,18 +797,24 @@ function bindRegisterTab(){
   if(isAdmin()) document.getElementById("btn-edit-master").onclick = () => openMasterEditor("lines");
 
   const wireFileBox = (boxId, inputId, thumbsId, bucket) => {
-    document.getElementById(boxId).onclick = () => document.getElementById(inputId).click();
-    document.getElementById(inputId).onchange = async (e) => {
-      const files = Array.from(e.target.files);
-      for(const f of files){
-        try{
-          const item = await processFile(f);
-          bucket.push(item);
-        }catch(err){ showToast(err.message || "파일 처리 실패: " + f.name); }
+    const box = document.getElementById(boxId);
+    const input = document.getElementById(inputId);
+    box.onclick = () => input.click();
+    const handleFiles = async (fileList) => {
+      for(const f of Array.from(fileList)){
+        try{ bucket.push(await processFile(f)); }
+        catch(err){ showToast(err.message || "파일 처리 실패: " + f.name); }
       }
-      e.target.value = "";
       renderThumbs(thumbsId, bucket);
     };
+    input.onchange = async (e) => { await handleFiles(e.target.files); e.target.value = ""; };
+    // 드래그앤드롭
+    box.addEventListener("dragover", (e) => { e.preventDefault(); box.style.borderColor = "var(--accent)"; box.style.background = "var(--accent-light, #fdf4e8)"; });
+    box.addEventListener("dragleave", () => { box.style.borderColor = ""; box.style.background = ""; });
+    box.addEventListener("drop", async (e) => {
+      e.preventDefault(); box.style.borderColor = ""; box.style.background = "";
+      if(e.dataTransfer.files.length > 0) await handleFiles(e.dataTransfer.files);
+    });
   };
   const renderThumbs = (thumbsId, bucket) => {
     const el = document.getElementById(thumbsId);
@@ -813,18 +829,36 @@ function bindRegisterTab(){
   renderThumbs("thumbs-before", regImages.before);
   renderThumbs("thumbs-after", regImages.after);
 
+  // 후행담당자: 부서 필터 + 복수선택
+  const deptFilter = document.getElementById("f-follow-dept-filter");
+  const followSelect = document.getElementById("f-followname");
+  const followSelected = document.getElementById("f-follow-selected");
+  deptFilter.onchange = () => {
+    const dept = deptFilter.value;
+    Array.from(followSelect.options).forEach(opt => {
+      opt.style.display = (!dept || opt.dataset.dept === dept) ? "" : "none";
+    });
+  };
+  const renderFollowChips = () => {
+    const names = Array.from(followSelect.selectedOptions).map(o => o.value).filter(Boolean);
+    followSelected.innerHTML = names.length > 0
+      ? names.map(n => `<span style="display:inline-block;background:var(--primary);color:#fff;padding:3px 10px;border-radius:12px;font-size:12px;margin:2px 4px 2px 0;">${esc(n)}</span>`).join("")
+      : "";
+  };
+  followSelect.onchange = renderFollowChips;
+
   document.getElementById("btn-submit-register").onclick = () => {
     const val = id => document.getElementById(id).value.trim();
     const date = val("f-date");
     const content = val("f-content");
     const before = val("f-before"), after = val("f-after");
-    const followname = val("f-followname");
+    const followNames = Array.from(followSelect.selectedOptions).map(o => o.value).filter(Boolean);
     const line = val("f-line"), customer = val("f-customer"), m4 = val("f-m4");
-    if(!date || !line || !customer || !m4 || !content || !before || !after || !followname){
-      showToast("필수 항목(*)을 모두 입력해주세요.");
+    if(!date || !line || !customer || !m4 || !content || !before || !after || followNames.length === 0){
+      showToast("필수 항목(*)을 모두 입력해주세요. (후행담당자 1명 이상 선택)");
       return;
     }
-    confirmPopup("등록 확인", "입력하신 내용으로 변동점을 등록하시겠습니까?", async () => {
+    confirmPopup("등록 확인", "입력하신 내용으로 변동점을 등록하시겠습니까?\n후행담당자: " + followNames.join(", "), async () => {
       const item = {
         regDate: date,
         line: line,
@@ -832,7 +866,7 @@ function bindRegisterTab(){
         m4: m4,
         content: content,
         beforeContent: before, afterContent: after,
-        followName: followname,
+        followName: followNames.join(","),
         beforeImages: regImages.before.slice(),
         afterImages: regImages.after.slice()
       };
@@ -860,7 +894,9 @@ function bindRegisterTab(){
 
 /* ---------- 탭: 점검/확인 ---------- */
 function canProcessInspection(it){
-  return isAdmin() || it.followName === currentUser.name;
+  if(isAdmin()) return true;
+  const names = String(it.followName || "").split(",").map(n => n.trim());
+  return names.indexOf(currentUser.name) !== -1;
 }
 function inspResultDisplay(it){
   const r = it.inspResult;
@@ -1066,29 +1102,35 @@ function openInspectModal(id){
 
 /* ---------- 탭: 현황 ---------- */
 let statusSort = { key: "regDate", dir: "desc" };
+let lastFilteredStatusList = [];
 
 function renderStatusTab(){
-  const inspectorNames = Array.from(new Set(items.map(it => it.followName).filter(Boolean))).sort();
+  const inspectorNames = Array.from(new Set(
+    items.flatMap(it => String(it.followName||"").split(",").map(n=>n.trim())).filter(Boolean)
+  )).sort();
   return `
   <div class="card">
-    <div class="toolbar">
-      <input type="text" class="search" id="s-search" placeholder="문서번호, 등록자, 차종/라인, 변경내용 검색">
-      <div class="filters">
+    <div class="toolbar" style="flex-wrap:wrap;gap:8px;">
+      <input type="text" class="search" id="s-search" placeholder="문서번호, 등록자, 차종/라인, 변경내용 검색" style="flex:1;min-width:200px;">
+      <div class="filters" style="flex-wrap:wrap;gap:6px;">
         <select id="s-status"><option value="">전체 상태</option><option value="등록">등록</option><option value="점검완료">점검완료</option></select>
         <select id="s-customer"><option value="">전체 고객사</option>${CUSTOMERS.map(c=>`<option>${esc(c)}</option>`).join("")}</select>
         <select id="s-inspector"><option value="">전체 점검담당자</option>${inspectorNames.map(n=>`<option>${esc(n)}</option>`).join("")}</select>
-        <button class="btn" id="s-downall">전체 다운로드(ZIP)</button>
-        <button class="btn btn-primary" id="s-downxlsx">엑셀 다운로드</button>
       </div>
     </div>
-    <div class="toolbar" style="margin-top:-4px;">
-      <div class="filters" style="align-items:center;">
-        <span class="hint" style="margin:0;">변경일 기간</span>
+    <div class="toolbar" style="margin-top:-4px;flex-wrap:wrap;gap:8px;">
+      <div class="filters" style="align-items:center;flex-wrap:wrap;gap:6px;">
+        <span class="hint" style="margin:0;">변경일</span>
         <input type="date" id="s-from" style="width:auto;">
         <span class="hint" style="margin:0;">~</span>
         <input type="date" id="s-to" style="width:auto;">
-        <button class="btn btn-sm" id="s-reset">필터 초기화</button>
-        <span class="hint" id="s-count" style="margin:0;"></span>
+        <button class="btn btn-sm" id="s-reset">초기화</button>
+        <span class="hint" id="s-count" style="margin:0;font-weight:700;"></span>
+      </div>
+      <div style="display:flex;gap:6px;margin-left:auto;">
+        <button class="btn" id="s-downall">ZIP 다운로드</button>
+        <button class="btn" id="s-downreport">통합보고서(사진+텍스트)</button>
+        <button class="btn btn-primary" id="s-downxlsx">엑셀 다운로드</button>
       </div>
     </div>
     <div id="s-table-wrap" style="overflow-x:auto;"></div>
@@ -1116,7 +1158,7 @@ function statusTableHtml(list){
         ${th("regName", "등록자", "76px")}
         ${th("followName", "점검담당자", "96px")}
         ${th("status", "상태", "84px")}
-        <th style="width:86px;"></th>
+        <th style="width:150px;"></th>
       </tr></thead>
       <tbody>
         ${list.map(it => `
@@ -1130,7 +1172,7 @@ function statusTableHtml(list){
             <td style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(it.regName)}</td>
             <td style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${esc(it.followDept)} / ${esc(it.followName)}">${esc(it.followName)}</td>
             <td style="white-space:nowrap;"><span class="status-pill st-${esc(it.status)}">${esc(it.status)}</span></td>
-            <td style="white-space:nowrap;"><button class="btn btn-sm" data-dl="${esc(it.id)}" title="다운로드">다운로드</button></td>
+            <td style="white-space:nowrap;"><button class="btn btn-sm" data-dl="${esc(it.id)}" title="ZIP 다운로드">ZIP</button> <button class="btn btn-sm" data-rp="${esc(it.id)}" title="통합보고서(사진+텍스트)">보고서</button></td>
           </tr>`).join("")}
       </tbody>
     </table>`;
@@ -1167,6 +1209,7 @@ function applyStatusFilter(){
 
   document.getElementById("s-count").textContent = `총 ${list.length}건`;
   document.getElementById("s-table-wrap").innerHTML = statusTableHtml(list);
+  lastFilteredStatusList = list;
   bindStatusRows();
 }
 
@@ -1174,6 +1217,7 @@ function bindStatusTab(){
   ["s-search"].forEach(id => document.getElementById(id).oninput = applyStatusFilter);
   ["s-status","s-customer","s-inspector","s-from","s-to"].forEach(id => document.getElementById(id).onchange = applyStatusFilter);
   document.getElementById("s-downall").onclick = downloadAll;
+  document.getElementById("s-downreport").onclick = () => downloadReportAll(lastFilteredStatusList);
   document.getElementById("s-downxlsx").onclick = downloadExcel;
   document.getElementById("s-reset").onclick = () => {
     ["s-search","s-status","s-customer","s-inspector","s-from","s-to"].forEach(id => document.getElementById(id).value = "");
@@ -1193,6 +1237,9 @@ function bindStatusRows(){
   });
   document.querySelectorAll("#s-table-wrap [data-dl]").forEach(btn => {
     btn.onclick = (e) => { e.stopPropagation(); downloadOne(btn.dataset.dl); };
+  });
+  document.querySelectorAll("#s-table-wrap [data-rp]").forEach(btn => {
+    btn.onclick = (e) => { e.stopPropagation(); downloadReport(btn.dataset.rp); };
   });
   document.querySelectorAll("#s-table-wrap tr[data-id]").forEach(row => {
     row.onclick = () => openDetailModal(row.dataset.id);
@@ -1243,7 +1290,8 @@ function openDetailModal(id){
         <div class="modal-actions">
           ${isAdmin() ? `<button class="btn btn-danger" id="dt-delete">삭제</button><button class="btn" id="dt-edit">수정</button>` : ""}
           ${it.status === "점검완료" && it.inspResult === "NG" ? `<button class="btn btn-accent" id="dt-ng">재발방지 대책</button>` : ""}
-          <button class="btn" id="dt-dl">다운로드</button>
+          <button class="btn" id="dt-dl">ZIP 다운로드</button>
+          <button class="btn" id="dt-rp">통합보고서</button>
           <button class="btn btn-primary" id="dt-close">닫기</button>
         </div>
       </div>
@@ -1253,6 +1301,7 @@ function openDetailModal(id){
   document.getElementById("dt-overlay").onclick = (e) => { if(e.target.id==="dt-overlay") close(); };
   bindLightbox(root);
   document.getElementById("dt-dl").onclick = () => downloadOne(it.id);
+  document.getElementById("dt-rp").onclick = () => downloadReport(it.id);
   if(it.status === "점검완료" && it.inspResult === "NG"){
     document.getElementById("dt-ng").onclick = () => { close(); openNgModal(it.id); };
   }
@@ -1431,6 +1480,145 @@ function buildSummaryText(it){
     it.status === "점검완료" ? `점검부서/담당자: ${it.inspDept} / ${it.inspName}` : ""
   ].filter(Boolean).join("\n");
 }
+/* ---------- 통합보고서 (사진+텍스트 결합 HTML, 인쇄 시 PDF 저장 가능) ---------- */
+async function resolveReportImages(arr){
+  const out = [];
+  if(!arr || arr.length === 0) return out;
+  for(let i = 0; i < arr.length; i++){
+    const f = arr[i];
+    if(!f || !f.data) continue;
+    const src = String(f.data);
+    const hashIdx = src.indexOf("#");
+    const fileName = hashIdx !== -1 ? decodeURIComponent(src.substring(hashIdx + 1)) : (f.name || "file");
+    let dataUrl = null;
+    try{
+      if(src.startsWith("data:")){
+        dataUrl = src;
+      } else if(src.includes("drive.google.com")){
+        const m = src.match(/[?&]id=([^&]+)/);
+        if(m){
+          const json = await apiGet("?type=image&fileId=" + encodeURIComponent(m[1]));
+          if(json.data && json.data.startsWith("data:")) dataUrl = json.data;
+        }
+      }
+    }catch(e){ /* 실패 시 링크만 표기 */ }
+    out.push({ name: fileName, dataUrl, isImage: !!(dataUrl && dataUrl.startsWith("data:image")), link: src.split("#")[0] });
+  }
+  return out;
+}
+function reportFileBlockHtml(files){
+  if(!files || files.length === 0) return `<p class="rp-empty">첨부 없음</p>`;
+  return `<div class="rp-files">${files.map(f => {
+    if(f.isImage && f.dataUrl){
+      return `<figure class="rp-fig"><img src="${f.dataUrl}"><figcaption>${esc(f.name)}</figcaption></figure>`;
+    }
+    return `<div class="rp-doc">${getFileIcon(f.name)} ${esc(f.name)}${f.dataUrl ? "" : (f.link ? ` <a href="${esc(f.link)}" target="_blank">(원본 링크)</a>` : "")}</div>`;
+  }).join("")}</div>`;
+}
+async function buildReportSectionHtml(it){
+  const [beforeFiles, afterFiles, inspFiles] = await Promise.all([
+    resolveReportImages(it.beforeImages),
+    resolveReportImages(it.afterImages),
+    resolveReportImages(it.inspImages)
+  ]);
+  const row = (label, value, danger) => `<tr><th>${esc(label)}</th><td${danger?' style="color:#c0392b;font-weight:700;"':''}>${esc(value||"")}</td></tr>`;
+  return `
+  <section class="rp-item">
+    <div class="rp-head">
+      <div class="rp-title">변동점 관리 보고서</div>
+      <div class="rp-badges"><span class="rp-pill rp-${esc(it.status)}">${esc(it.status)}</span><span class="rp-docnum">${esc(it.id)}</span></div>
+    </div>
+    <table class="rp-table">
+      ${row("변경일자", fmtDate(it.regDate))}
+      ${row("등록부서/등록자", `${it.regDept||""} / ${it.regName||""}`)}
+      ${row("차종/설비/라인", it.line)}
+      ${row("고객사", it.customer)}
+      ${row("4M 구분", it.m4)}
+      ${row("변동점 내용", it.content)}
+      ${row("변경 전 내용", it.beforeContent)}
+      ${row("변경 후 내용", it.afterContent)}
+      ${row("후행부서/담당자", `${it.followDept||""} / ${it.followName||""}`)}
+      ${it.status === "점검완료" ? row("점검일자", fmtDate(it.inspDate)) : ""}
+      ${it.status === "점검완료" ? row("조치결과", it.inspResult === "기타" ? it.inspResultEtc : it.inspResult, it.inspResult === "NG") : ""}
+      ${it.status === "점검완료" ? row("점검부서/담당자", `${it.inspDept||""} / ${it.inspName||""}`) : ""}
+      ${it.inspResult === "NG" && it.ngAction ? row("재발방지대책", it.ngAction) : ""}
+    </table>
+    <div class="rp-section-title">변경 전 사진/첨부</div>
+    ${reportFileBlockHtml(beforeFiles)}
+    <div class="rp-section-title">변경 후 사진/첨부</div>
+    ${reportFileBlockHtml(afterFiles)}
+    ${it.status === "점검완료" ? `<div class="rp-section-title">점검 확인 사진/첨부</div>${reportFileBlockHtml(inspFiles)}` : ""}
+  </section>`;
+}
+function reportShellHtml(bodyHtml, title){
+  return `<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>${esc(title)}</title>
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: "Malgun Gothic", "Apple SD Gothic Neo", sans-serif; margin: 0; padding: 24px; background:#eef1f5; color:#1c2230; }
+  .rp-toolbar { max-width: 860px; margin: 0 auto 16px; display:flex; justify-content:flex-end; gap:8px; }
+  .rp-toolbar button { padding:8px 16px; border-radius:8px; border:1px solid #c7cedb; background:#fff; cursor:pointer; font-size:13px; font-weight:600; }
+  .rp-toolbar button.primary { background:#2f5fe0; border-color:#2f5fe0; color:#fff; }
+  .rp-item { max-width: 860px; margin: 0 auto 24px; background:#fff; border-radius:10px; padding:28px 32px; box-shadow:0 2px 10px rgba(20,25,40,.08); page-break-after: always; }
+  .rp-item:last-child { page-break-after: auto; }
+  .rp-head { display:flex; justify-content:space-between; align-items:center; border-bottom:3px solid #1c2230; padding-bottom:12px; margin-bottom:16px; }
+  .rp-title { font-size:19px; font-weight:800; }
+  .rp-badges { display:flex; align-items:center; gap:8px; }
+  .rp-pill { font-size:12px; font-weight:700; padding:3px 10px; border-radius:999px; background:#e2e8f5; color:#2f5fe0; }
+  .rp-pill.rp-점검완료 { background:#e1f5ea; color:#1a9c5e; }
+  .rp-docnum { font-family:"Consolas",monospace; font-size:12px; color:#5a6478; }
+  .rp-table { width:100%; border-collapse:collapse; margin-bottom:18px; font-size:13px; }
+  .rp-table th { width:150px; background:#f4f6fa; text-align:left; padding:8px 10px; border:1px solid #dfe4ee; font-weight:700; color:#3a4257; vertical-align:top; }
+  .rp-table td { padding:8px 10px; border:1px solid #dfe4ee; white-space:pre-wrap; word-break:break-word; }
+  .rp-section-title { font-size:13.5px; font-weight:800; color:#2f5fe0; margin:16px 0 8px; padding-left:8px; border-left:4px solid #2f5fe0; }
+  .rp-files { display:flex; flex-wrap:wrap; gap:12px; }
+  .rp-fig { margin:0; width:200px; border:1px solid #dfe4ee; border-radius:8px; overflow:hidden; background:#fafbfd; }
+  .rp-fig img { width:100%; height:150px; object-fit:cover; display:block; }
+  .rp-fig figcaption { font-size:11px; color:#5a6478; padding:5px 8px; word-break:break-all; }
+  .rp-doc { font-size:12.5px; padding:8px 12px; background:#f4f6fa; border-radius:6px; border:1px solid #dfe4ee; }
+  .rp-empty { font-size:12.5px; color:#8891a3; margin:4px 0 0; }
+  @media print {
+    body { background:#fff; padding:0; }
+    .rp-toolbar { display:none; }
+    .rp-item { box-shadow:none; border-radius:0; margin:0; padding:14mm; max-width:none; }
+    .rp-fig img { height:120px; }
+  }
+</style>
+</head>
+<body>
+  <div class="rp-toolbar">
+    <button class="primary" onclick="window.print()">인쇄 / PDF로 저장</button>
+  </div>
+  ${bodyHtml}
+</body>
+</html>`;
+}
+async function downloadReport(id){
+  const it = items.find(x => x.id === id);
+  if(!it) return;
+  showToast("통합보고서 생성 중...");
+  const body = await buildReportSectionHtml(it);
+  const html = reportShellHtml(body, it.id + " 변동점 보고서");
+  const blob = new Blob([html], { type: "text/html;charset=utf-8" });
+  triggerDownload(blob, it.id.replace(/\s+/g,"_") + "_보고서.html");
+  showToast("통합보고서 다운로드 완료");
+}
+async function downloadReportAll(list){
+  if(!list || list.length === 0){ showToast("다운로드할 데이터가 없습니다."); return; }
+  showToast("통합보고서 생성 중... (" + list.length + "건)");
+  const sections = [];
+  for(const it of list){
+    sections.push(await buildReportSectionHtml(it));
+  }
+  const html = reportShellHtml(sections.join(""), "변동점 통합보고서_" + todayStr());
+  const blob = new Blob([html], { type: "text/html;charset=utf-8" });
+  triggerDownload(blob, "변동점_통합보고서_" + todayStr() + ".html");
+  showToast("통합보고서 다운로드 완료 (" + list.length + "건)");
+}
+
 function triggerDownload(blob, filename){
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
