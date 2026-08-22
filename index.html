@@ -1,0 +1,2223 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>서연오토비전 변동점 관리 시스템</title>
+<style>
+  :root{
+    --primary:#1D3557; --primary-dark:#122540; --primary-light:#EDF2F9;
+    --accent:#C97A2B; --accent-light:#FBF0E2;
+    --bg:#F3F4F6; --card:#FFFFFF; --border:#DDE1E6; --border-strong:#C4CAD2;
+    --text:#1F2430; --text-secondary:#5B6472; --text-muted:#8A93A1;
+    --danger:#B23A3A; --danger-light:#FBEAEA;
+    --success:#2E6E52; --success-light:#E7F3EC;
+    --warn:#B2791E; --warn-light:#FBF1DE;
+    --radius:10px;
+    --font: -apple-system, BlinkMacSystemFont, "Malgun Gothic", "Apple SD Gothic Neo", "Segoe UI", sans-serif;
+    --mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font);}
+  #app{max-width:1080px;margin:0 auto;padding:0 0 60px;}
+
+  .header{background:var(--primary);color:#fff;padding:22px 28px;}
+  .header-row{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;}
+  .header-text-block{flex:1 1 240px;min-width:0;}
+  .header-titles{margin:0;}
+  .header-title-line{display:block;font-size:23px;font-weight:700;letter-spacing:.2px;line-height:1.35;white-space:normal;overflow-wrap:normal;word-break:keep-all;}
+  .brand-name{color:#7FB2E8;}
+  .sys-name{color:#fff;}
+  .header-actions{display:flex;align-items:center;gap:10px;flex-shrink:0;}
+  .header-logo{height:63px;flex-shrink:0;}
+  .qr-header-btn{flex-shrink:0;background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.3);color:#fff;}
+  .qr-header-btn:hover{background:rgba(255,255,255,.18);}
+  .header p{margin:4px 0 0;font-size:13px;color:#BFD0E6;}
+
+  .tabs{display:flex;background:var(--primary-dark);}
+  .tab-btn{flex:1;padding:13px 10px;text-align:center;background:transparent;border:none;color:#9FB2CC;font-size:14px;font-weight:600;cursor:pointer;border-bottom:3px solid transparent;}
+  .tab-btn.active{color:#fff;border-bottom:3px solid var(--accent);background:rgba(255,255,255,0.04);}
+  .tab-btn:hover{color:#fff;}
+
+  .content{padding:24px;}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px 22px;margin-bottom:18px;}
+  .card h2{margin:0 0 16px;font-size:15px;font-weight:700;color:var(--primary);display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+  .card h2 button{margin-left:auto;font-weight:600;}
+  .card h2 .num{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;background:var(--primary-light);color:var(--primary);border-radius:5px;font-size:11px;font-family:var(--mono);}
+
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
+  .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:14px;}
+  .field label{display:block;font-size:12.5px;font-weight:600;color:var(--text-secondary);margin-bottom:6px;}
+  .field .hint{font-size:11.5px;color:var(--text-muted);margin-top:4px;line-height:1.4;}
+  input[type=text], input[type=date], input[type=password], select, textarea{
+    width:100%;padding:9px 10px;border:1px solid var(--border-strong);border-radius:7px;font-size:13.5px;font-family:var(--font);background:#fff;color:var(--text);
+  }
+  textarea{resize:vertical;min-height:64px;}
+  input:focus, select:focus, textarea:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-light);}
+  .dropdown-row{display:flex;gap:6px;}
+  .dropdown-row select{flex:1;}
+
+  .btn{padding:8px 14px;border-radius:7px;border:1px solid var(--border-strong);background:#fff;color:var(--text);font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;}
+  .btn:hover{background:var(--bg);}
+  .btn-sm{padding:5px 9px;font-size:12px;}
+  .btn-primary{background:var(--primary);border-color:var(--primary);color:#fff;}
+  .btn-primary:hover{background:var(--primary-dark);}
+  .btn-accent{background:var(--accent);border-color:var(--accent);color:#fff;}
+  .btn-accent:hover{opacity:.9;}
+  .btn-danger{background:#fff;border-color:var(--danger);color:var(--danger);}
+  .btn-danger:hover{background:var(--danger-light);}
+  .btn-block{width:100%;}
+  .btn[disabled]{opacity:.5;cursor:not-allowed;}
+
+  .docnum-badge{display:inline-block;font-family:var(--mono);font-size:13px;letter-spacing:.3px;background:var(--primary-light);color:var(--primary);border:1px dashed var(--primary);border-radius:6px;padding:6px 12px;}
+
+  .filebox{border:1.5px dashed var(--border-strong);border-radius:8px;padding:12px;text-align:center;background:var(--bg);cursor:pointer;font-size:12.5px;color:var(--text-secondary);transition:border-color .2s, background .2s;}
+  .filebox:hover{border-color:var(--primary);background:#f0f4f8;}
+  .filebox:hover{border-color:var(--primary);}
+  .thumbs{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;}
+  .thumb{position:relative;width:64px;height:64px;border-radius:6px;overflow:hidden;border:1px solid var(--border);background:#fff;}
+  .thumb img{width:100%;height:100%;object-fit:cover;display:block;cursor:zoom-in;transition:transform .15s;}
+  .thumb img:hover{transform:scale(1.06);}
+  .thumb .rm{position:absolute;top:2px;right:2px;width:16px;height:16px;border-radius:50%;background:rgba(0,0,0,.55);color:#fff;font-size:10px;line-height:16px;text-align:center;cursor:pointer;}
+  .thumb.file-thumb{display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--bg);gap:2px;}
+  .thumb .file-icon{font-size:22px;line-height:1;}
+  .thumb .file-name{font-size:9px;color:var(--text-secondary);text-align:center;line-height:1.2;word-break:break-all;max-width:58px;overflow:hidden;}
+
+  .status-pill{display:inline-block;padding:3px 9px;border-radius:20px;font-size:11.5px;font-weight:700;}
+  .st-등록{background:var(--warn-light);color:var(--warn);}
+  .st-점검완료{background:var(--success-light);color:var(--success);}
+
+  table{width:100%;border-collapse:collapse;font-size:12.8px;}
+  th{background:var(--bg);color:var(--text-secondary);font-weight:700;text-align:left;padding:9px 8px;border-bottom:1px solid var(--border);white-space:nowrap;}
+  td{padding:9px 8px;border-bottom:1px solid var(--border);vertical-align:middle;}
+  tr.row-click{cursor:pointer;}
+  tr.row-click:hover{background:var(--primary-light);}
+  .empty{padding:40px 20px;text-align:center;color:var(--text-muted);font-size:13.5px;}
+  .empty i{display:block;font-size:26px;margin-bottom:8px;}
+
+  .toolbar{display:flex;gap:10px;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;}
+  .search{flex:1;min-width:180px;}
+  .filters{display:flex;gap:8px;flex-wrap:wrap;}
+  .filters select{width:auto;min-width:110px;}
+
+  .modal-overlay{position:fixed;inset:0;background:rgba(20,25,35,.5);display:flex;align-items:center;justify-content:center;z-index:1000;padding:16px;}
+  .modal{background:#fff;border-radius:12px;max-width:520px;width:100%;max-height:88vh;overflow:auto;padding:22px;}
+  .modal h3{margin:0 0 14px;font-size:16px;color:var(--primary);}
+  .modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:18px;}
+  .master-list{list-style:none;margin:0 0 12px;padding:0;max-height:220px;overflow:auto;border:1px solid var(--border);border-radius:8px;}
+  .master-list li{display:flex;align-items:center;gap:8px;padding:7px 10px;border-bottom:1px solid var(--border);font-size:13px;}
+  .master-list li:last-child{border-bottom:none;}
+  .master-list .ml-num{color:var(--text-muted);font-size:11.5px;font-family:var(--mono);width:18px;flex-shrink:0;}
+  .master-list .ml-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .master-list .ml-actions{display:flex;gap:4px;flex-shrink:0;}
+  .master-list .ml-actions button{padding:3px 7px;font-size:11px;}
+  .master-add{display:flex;gap:8px;}
+
+  .detail-grid{display:grid;grid-template-columns:110px 1fr;gap:8px 12px;font-size:13px;margin-bottom:6px;}
+  .detail-grid dt{color:var(--text-secondary);font-weight:600;}
+  .detail-grid dd{margin:0;}
+  .section-title{font-size:12.5px;font-weight:700;color:var(--primary);margin:16px 0 8px;text-transform:uppercase;letter-spacing:.4px;border-bottom:1px solid var(--border);padding-bottom:6px;}
+
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--primary-dark);color:#fff;padding:10px 18px;border-radius:8px;font-size:13px;z-index:1200;opacity:0;transition:opacity .25s;}
+  .toast.show{opacity:1;}
+
+  .required:after{content:" *";color:var(--danger);}
+  .lock-note{font-size:11.5px;color:var(--text-muted);display:flex;align-items:center;gap:4px;margin-top:2px;}
+  ::placeholder{color:var(--text-muted);}
+
+  /* ---------- 로딩 오버레이 ---------- */
+  .loading-overlay{position:fixed;inset:0;background:rgba(20,25,35,.55);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:2000;gap:14px;}
+  .loading-spinner{width:44px;height:44px;border:4px solid rgba(255,255,255,.25);border-top:4px solid #fff;border-radius:50%;animation:spin .8s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .loading-text{color:#fff;font-size:15px;font-weight:600;text-align:center;}
+
+  /* ---------- 로그인 화면 ---------- */
+  .login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--bg);padding:20px;}
+  .login-card{background:#fff;border:1px solid var(--border);border-radius:14px;padding:32px 28px;max-width:360px;width:100%;box-shadow:0 4px 24px rgba(29,53,87,.08);}
+  .login-card .field{margin-bottom:14px;}
+
+  /* ---------- 사용자 정보 칩 ---------- */
+  .user-chip{display:flex;align-items:center;gap:8px;flex-shrink:0;}
+  .user-chip .uc-name{font-size:12.5px;color:#fff;font-weight:600;white-space:nowrap;}
+  .user-chip .uc-role{font-size:10.5px;background:var(--accent);color:#fff;padding:1px 7px;border-radius:10px;font-weight:700;}
+  .user-chip button{padding:5px 9px;font-size:11.5px;background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.3);color:#fff;}
+  .user-chip button:hover{background:rgba(255,255,255,.18);}
+
+  /* ---------- 모바일 반응형 ---------- */
+  @media (max-width: 720px){
+    .header{padding:16px 16px;}
+    .header-row{flex-direction:column;align-items:flex-start;gap:12px;}
+    .header-text-block{flex-basis:auto;width:100%;}
+    .header-title-line{font-size:19px;word-break:keep-all;}
+    .header p{font-size:11.5px;}
+    .header-actions{width:100%;justify-content:space-between;flex-wrap:wrap;}
+    .user-chip .uc-name{display:none;}
+    .header-logo{height:36px;}
+    .qr-header-btn{padding:6px 8px;font-size:11.5px;}
+
+    .tab-btn{padding:11px 4px;font-size:12.5px;}
+
+    .content{padding:12px;}
+    .card{padding:14px 14px;margin-bottom:12px;}
+    .card h2{font-size:14px;}
+
+    .row, .row3{grid-template-columns:1fr;gap:10px;margin-bottom:10px;}
+
+    input[type=text], input[type=date], input[type=password], select, textarea{font-size:16px;}
+
+    .toolbar{flex-direction:column;align-items:stretch;gap:8px;}
+    .filters{width:100%;}
+    .filters select{flex:1;min-width:0;}
+    .filters button{width:100%;}
+
+    table{font-size:11.5px;}
+    th, td{padding:7px 6px;}
+
+    .modal{padding:16px;max-width:94vw;width:94vw;}
+    .modal h3{font-size:15px;}
+    .detail-grid{grid-template-columns:88px 1fr;font-size:12.5px;}
+    .modal-actions{flex-wrap:wrap;}
+    .modal-actions button{flex:1;min-width:80px;}
+
+    .thumb{width:56px;height:56px;}
+  }
+  @media (max-width: 480px){
+    .header-title-line{font-size:17px;}
+    .header-logo{height:32px;}
+  }
+</style>
+</head>
+<body>
+<div id="login-screen" class="login-wrap">
+  <div class="login-card">
+    <p class="header-titles" style="margin-bottom:18px;">
+      <span class="header-title-line brand-name" style="color:var(--accent);">서연오토비전</span>
+      <span class="header-title-line sys-name" style="color:var(--primary);">변동점 관리 시스템</span>
+    </p>
+    <div class="field">
+      <label class="required">아이디 (이름)</label>
+      <input type="text" id="login-username" placeholder="예: 홍길동" autocomplete="username">
+    </div>
+    <div class="field">
+      <label class="required">비밀번호</label>
+      <input type="password" id="login-password" placeholder="비밀번호" autocomplete="current-password">
+    </div>
+    <p id="login-err" style="color:var(--danger);font-size:12.5px;display:none;margin:2px 0 10px;">아이디 또는 비밀번호가 올바르지 않습니다.</p>
+    <button class="btn btn-primary btn-block" id="login-submit" style="padding:11px;">로그인</button>
+    <p class="hint" style="margin-top:14px;">아이디는 이름입니다. 최초 로그인 시 비밀번호를 변경해야 합니다. 비밀번호를 잊으신 경우 관리자에게 초기화를 요청하세요.</p>
+  </div>
+</div>
+
+<div id="pwchange-screen" class="login-wrap" style="display:none;">
+  <div class="login-card">
+    <p class="header-titles" style="margin-bottom:8px;">
+      <span class="header-title-line sys-name" style="color:var(--primary);">비밀번호 변경</span>
+    </p>
+    <p class="hint" id="pw-reason" style="margin:0 0 16px;">보안을 위해 최초 로그인 시 비밀번호를 변경해야 합니다.</p>
+    <div class="field">
+      <label class="required">현재 비밀번호</label>
+      <input type="password" id="pw-current" autocomplete="current-password">
+    </div>
+    <div class="field">
+      <label class="required">새 비밀번호</label>
+      <input type="password" id="pw-new" autocomplete="new-password" placeholder="8자 이상">
+    </div>
+    <div class="field">
+      <label class="required">새 비밀번호 확인</label>
+      <input type="password" id="pw-new2" autocomplete="new-password">
+    </div>
+    <div id="pw-rules" style="font-size:11.5px;line-height:1.9;margin:2px 0 12px;color:var(--text-secondary);">
+      <div data-rule="len">· 8자 이상</div>
+      <div data-rule="kind">· 영문 / 숫자 / 특수문자 중 2종류 이상 조합</div>
+      <div data-rule="notnum">· 숫자로만 구성 불가</div>
+      <div data-rule="notid">· 사번 · 이름 사용 불가</div>
+    </div>
+    <p id="pw-err" style="color:var(--danger);font-size:12.5px;display:none;margin:2px 0 10px;"></p>
+    <button class="btn btn-primary btn-block" id="pw-submit" style="padding:11px;">비밀번호 변경</button>
+    <button class="btn btn-block" id="pw-logout" style="padding:9px;margin-top:8px;">로그아웃</button>
+  </div>
+</div>
+
+<div id="app" style="display:none;">
+  <div class="header">
+    <div class="header-row">
+      <div class="header-text-block">
+        <p class="header-titles"><span class="header-title-line brand-name">서연오토비전</span><span class="header-title-line sys-name">변동점 관리 시스템</span></p>
+        <p>4M 변동점 등록 · 점검/확인 · 이력 현황</p>
+      </div>
+      <div class="header-actions">
+      <img class="header-logo" src="data:image/png;base64,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" alt="서연오토비전 로고">
+      <button class="btn btn-sm qr-header-btn" id="btn-show-qr" type="button" title="접속 QR 코드 보기"><span>QR 코드</span></button>
+      <div class="user-chip" id="user-chip"></div>
+      </div>
+    </div>
+  </div>
+  <div class="tabs" id="main-tabs">
+    <button class="tab-btn active" data-tab="register">등록</button>
+    <button class="tab-btn" data-tab="inspect">점검 / 확인</button>
+    <button class="tab-btn" data-tab="status">현황</button>
+  </div>
+  <div class="content" id="content"></div>
+</div>
+<div id="modal-root"></div>
+<div class="toast" id="toast"></div>
+
+<!--
+  [보안] 외부 CDN 라이브러리
+  ------------------------------------------------------------------
+  현재 Cloudflare CDN에서 3개 라이브러리를 불러옵니다. CDN이 변조되면
+  임의의 스크립트가 실행될 수 있으므로 아래 중 하나를 적용해야 합니다.
+
+  ▶ 권장 : 라이브러리 3개를 내려받아 /lib 폴더에 저장 후 아래처럼 변경
+        <script src="lib/jszip.min.js"></script>
+        <script src="lib/qrcode.min.js"></script>
+        <script src="lib/xlsx.full.min.js"></script>
+     (외부 서비스 의존이 사라져 보안 점검 항목 ⑨⑩ 해소)
+
+  ▶ 차선 : SRI(무결성 해시) 적용
+     cdnjs.com 에서 각 라이브러리 검색 → 파일 옆 [Copy SRI] 클릭 →
+     아래 각 태그에 integrity="sha512-..." 속성을 추가하세요.
+     예) <script src="..." integrity="sha512-xxxx"
+                 crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+     ※ 해시가 틀리면 스크립트가 아예 로드되지 않으니 반드시 검증 후 배포
+  ------------------------------------------------------------------
+-->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script>
+/* ---------- 상수 / 마스터 데이터 기본값 ---------- */
+const DEFAULT_MASTER = {
+  lines: ["CV1 칵핏 조립", "CE1 글라스 조립"],
+  m4: ["사람", "설비", "재료", "방법"]
+};
+const CUSTOMERS = ["서연이화", "모비스", "기타"];
+
+let master = null;
+let items = [];
+let directory = [];
+let currentTab = "register";
+let regImages = { before: [], after: [] };
+let inspTargetId = null;
+let inspImages = [];
+let authToken = localStorage.getItem("sy_token") || "";
+/* currentUser는 화면 표시(UI)용 캐시일 뿐입니다.
+   실제 권한 판정은 서버(Apps Script)가 토큰으로 역할을 재조회하여 수행합니다.
+   localStorage를 조작해도 서버가 관리자 전용 action을 거부하므로 권한 상승은 불가합니다. */
+let currentUser = null;
+try{ currentUser = JSON.parse(localStorage.getItem("sy_user") || "null"); }catch(e){ currentUser = null; }
+
+/* ---------- 저장소 헬퍼 (Google Apps Script 연동) ---------- */
+const API_URL = "https://script.google.com/macros/s/AKfycby5eO9cFavm9VcU5zInM5kkYsifDdA4f463Q2XvReetObIJa0iPuXnYgJ8Wu68RIpVs/exec";
+
+/* 세션 만료(code:"AUTH") 응답을 받으면 즉시 로그아웃 처리 */
+let sessionExpiredHandled = false;
+function handleAuthFailure(){
+  if(sessionExpiredHandled) return;
+  sessionExpiredHandled = true;
+  authToken = ""; currentUser = null;
+  localStorage.removeItem("sy_token");
+  localStorage.removeItem("sy_user");
+  alert("세션이 만료되었습니다. 다시 로그인해주세요.");
+  location.reload();
+}
+
+async function apiGet(query){
+  const sep = (query && query.includes("?")) ? "&" : "?";
+  const url = API_URL + (query || "") + sep + "token=" + encodeURIComponent(authToken);
+  const res = await fetch(url);
+  const json = await res.json();
+  if(!json.ok){
+    if(json.code === "AUTH") handleAuthFailure();
+    throw new Error(json.error || "조회 실패");
+  }
+  return json;
+}
+/* apiPost: 성공 시 응답 JSON(ok:true 포함) 반환, 실패 시 null 반환.
+   서버가 명확히 거부한 사유가 있으면 lastApiError에 담아둠. */
+let lastApiError = "";
+async function apiPost(payload){
+  lastApiError = "";
+  const withToken = payload.action === "login" ? payload : Object.assign({ token: authToken }, payload);
+  for(let attempt = 0; attempt < 2; attempt++){
+    try{
+      const res = await fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify(withToken)
+      });
+      const json = await res.json();
+      if(json.ok) return json;
+      if(json.error){
+        lastApiError = json.error;
+        // 세션 만료 → 재로그인 / 권한 없음 → 메시지만 표시 (재시도 안 함)
+        if(json.code === "AUTH") handleAuthFailure();
+        return null;
+      }
+    }catch(e){ console.error(e); }
+    if(attempt === 0) await new Promise(r=>setTimeout(r,600));
+  }
+  return null;
+}
+
+/* ---------- 로그인 / 세션 ---------- */
+async function doLogin(username, password){
+  return await apiPost({ action: "login", username: username, password: password });
+}
+async function changePasswordApi(currentPassword, newPassword){
+  return await apiPost({ action: "changePassword", currentPassword: currentPassword, newPassword: newPassword });
+}
+async function doLogout(){
+  await apiPost({ action: "logout" });
+  authToken = ""; currentUser = null;
+  localStorage.removeItem("sy_token"); localStorage.removeItem("sy_user");
+  location.reload();
+}
+function isAdmin(){ return !!(currentUser && currentUser.role === "관리자"); }
+
+async function loadMaster(){
+  try{
+    const json = await apiGet("?type=master");
+    master = json.master;
+  }catch(e){
+    console.error(e);
+    master = DEFAULT_MASTER;
+    showToast("마스터 데이터를 불러오지 못했습니다. 네트워크를 확인해주세요.");
+  }
+}
+async function loadDirectory(){
+  try{
+    const json = await apiGet("?type=directory");
+    directory = json.directory || [];
+  }catch(e){
+    console.error(e);
+    directory = [];
+  }
+}
+async function saveMaster(){
+  const json = await apiPost({ type: "master", master: master });
+  if(!json) showToast(lastApiError || "항목 저장에 실패했습니다. 다시 시도해주세요.");
+  return !!json;
+}
+async function loadItems(){
+  try{
+    const json = await apiGet("");
+    const loaded = json.items || [];
+    loaded.sort((a,b) => (b.createdAt||0) - (a.createdAt||0));
+    items = loaded;
+  }catch(e){
+    console.error(e);
+    showToast("목록을 불러오지 못했습니다. 네트워크를 확인해주세요.");
+  }
+}
+/* 신규 등록: 서버가 문서번호를 원자적으로 채번하여 반환, 후행담당자 이메일로 자동 발송 */
+async function registerNewItem(item){
+  item.appUrl = window.location.href.startsWith("http") ? window.location.href : "";
+  return await apiPost({ action: "register", item: item });
+}
+/* 점검 완료 처리 */
+async function submitInspection(item){
+  return await apiPost({ action: "inspect", item: item });
+}
+/* 등록 내용 수정 (관리자 전용 - 서버측 역할 검증) */
+async function submitEdit(item){
+  item.appUrl = window.location.href.startsWith("http") ? window.location.href : "";
+  return await apiPost({ action: "edit", item: item });
+}
+/* 삭제 (관리자 전용 - 서버측 역할 검증) */
+async function deleteItemStore(id){
+  return await apiPost({ action: "delete", id: id });
+}
+/* ---------- 직원 관리 (관리자 전용) ---------- */
+async function loadEmployees(){
+  const json = await apiGet("?type=employees");
+  return json.employees || [];
+}
+async function addEmployeeApi(employee){
+  return await apiPost({ action: "addEmployee", employee: employee });
+}
+async function updateEmployeeApi(employee){
+  return await apiPost({ action: "updateEmployee", employee: employee });
+}
+async function deleteEmployeeApi(username){
+  return await apiPost({ action: "deleteEmployee", username: username });
+}
+
+/* ---------- 유틸 ---------- */
+function todayStr(){
+  const d = new Date();
+  return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+}
+function fmtDate(v){
+  if(!v) return "";
+  const s = String(v);
+  const m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if(m) return `${m[1]}.${m[2]}.${m[3]}`;
+  const d = new Date(s);
+  if(!isNaN(d)) return d.getFullYear()+"."+String(d.getMonth()+1).padStart(2,"0")+"."+String(d.getDate()).padStart(2,"0");
+  return s;
+}
+function previewDocNumber(){
+  // 등록 화면에 보여주는 예시용 미리보기. 실제 문서번호는 서버가 등록 시점에 최종 채번합니다.
+  const d = new Date();
+  const ymd = String(d.getFullYear()).slice(2) + String(d.getMonth()+1).padStart(2,"0") + String(d.getDate()).padStart(2,"0");
+  const prefix = "SYAT-Change Point-" + ymd + "-";
+  const seqToday = items.filter(it => it.id && it.id.startsWith(prefix)).length;
+  return prefix + (seqToday + 1);
+}
+function showToast(msg, duration){
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  setTimeout(()=>t.classList.remove("show"), duration || 2200);
+}
+function showLoading(msg){
+  const root = document.getElementById("modal-root");
+  root.innerHTML = `<div class="loading-overlay" id="loading-overlay"><div class="loading-spinner"></div><div class="loading-text">${esc(msg || "저장 중입니다... 잠시만 기다려주세요.")}</div></div>`;
+}
+function hideLoading(){
+  const el = document.getElementById("loading-overlay");
+  if(el) el.remove();
+}
+function esc(s){
+  return String(s==null?"":s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+function imgSrc(dataOrUrl){
+  if(!dataOrUrl) return "";
+  const s = String(dataOrUrl);
+  if(s.startsWith("data:")) return s;
+  return s;
+}
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+const ACCEPTED_TYPES = "image/*,.pdf,.ppt,.pptx,.xls,.xlsx,.doc,.docx";
+const FILE_ICONS = { pdf:"📄", ppt:"📊", pptx:"📊", xls:"📗", xlsx:"📗", doc:"📝", docx:"📝" };
+
+function isImageFile(file){
+  return file.type && file.type.startsWith("image/");
+}
+function getFileExt(name){
+  const m = String(name).match(/\.(\w+)$/);
+  return m ? m[1].toLowerCase() : "";
+}
+function getFileIcon(name){
+  return FILE_ICONS[getFileExt(name)] || "📎";
+}
+
+function fileToDataUrl(file){
+  return new Promise((resolve, reject) => {
+    if(file.size > MAX_FILE_SIZE){
+      reject(new Error("파일 크기가 10MB를 초과합니다: " + file.name));
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = e => resolve(e.target.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+function fileToCompressedDataUrl(file, maxW){
+  return new Promise((resolve, reject) => {
+    if(file.size > MAX_FILE_SIZE){
+      reject(new Error("파일 크기가 10MB를 초과합니다: " + file.name));
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = e => {
+      const img = new Image();
+      img.onload = () => {
+        const scale = Math.min(1, maxW / img.width);
+        const w = Math.round(img.width * scale);
+        const h = Math.round(img.height * scale);
+        const canvas = document.createElement("canvas");
+        canvas.width = w; canvas.height = h;
+        canvas.getContext("2d").drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL("image/jpeg", 0.72));
+      };
+      img.onerror = reject;
+      img.src = e.target.result;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+async function processFile(file){
+  if(file.size > MAX_FILE_SIZE) throw new Error("파일 크기가 10MB를 초과합니다: " + file.name);
+  if(isImageFile(file)){
+    const data = await fileToCompressedDataUrl(file, 1000);
+    return { name: file.name, data: data, isImage: true };
+  }else{
+    const data = await fileToDataUrl(file);
+    return { name: file.name, data: data, isImage: false };
+  }
+}
+
+function renderFileThumb(item, index){
+  if(item.isImage || (item.data && String(item.data).startsWith("data:image")) || (item.data && String(item.data).includes("drive.google.com"))){
+    return `<div class="thumb"><img src="${imgSrc(item.data)}"><div class="rm" data-i="${index}">×</div></div>`;
+  }
+  return `<div class="thumb file-thumb" title="${esc(item.name)}">
+    <span class="file-icon">${getFileIcon(item.name)}</span>
+    <span class="file-name">${esc(item.name.length > 8 ? item.name.slice(0,6) + ".." : item.name)}</span>
+    <div class="rm" data-i="${index}">×</div>
+  </div>`;
+}
+
+function renderFileDisplay(item){
+  const src = item.data || "";
+  // 이미지 파일 (data:image 또는 Drive 썸네일 URL)
+  if(item.isImage !== false && (src.startsWith("data:image") || src.includes("drive.google.com/thumbnail"))){
+    return `<div class="thumb"><img src="${imgSrc(src)}"></div>`;
+  }
+  // 문서 파일 (Drive 다운로드 URL — #파일명 포함)
+  const hashIdx = src.indexOf("#");
+  const fileName = hashIdx !== -1 ? decodeURIComponent(src.substring(hashIdx + 1)) : (item.name || "파일");
+  if(src.includes("drive.google.com")){
+    const m = src.match(/[?&]id=([^&]+)/);
+    const fileId = m ? m[1] : "";
+    const viewUrl = fileId ? "https://drive.google.com/file/d/" + fileId + "/view" : src;
+    const dlUrl = fileId ? "https://drive.google.com/uc?id=" + fileId + "&export=download" : src;
+    return `<div style="display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:var(--bg);border:1px solid var(--border);border-radius:8px;margin:4px;">
+      <span style="font-size:24px;">${getFileIcon(fileName)}</span>
+      <div style="display:flex;flex-direction:column;gap:2px;">
+        <span style="font-size:12.5px;font-weight:600;color:var(--text);">${esc(fileName)}</span>
+        <span style="display:flex;gap:8px;">
+          <a href="${viewUrl}" target="_blank" style="font-size:11px;color:var(--primary);text-decoration:none;">미리보기</a>
+          <a href="${dlUrl}" target="_blank" style="font-size:11px;color:var(--accent);text-decoration:none;">다운로드</a>
+        </span>
+      </div>
+    </div>`;
+  }
+  return `<span style="display:inline-flex;align-items:center;gap:4px;font-size:12px;color:var(--text-secondary);">${getFileIcon(fileName)} ${esc(fileName)}</span>`;
+}
+function dataUrlToBlob(dataUrl){
+  const parts = dataUrl.split(",");
+  const mime = parts[0].match(/:(.*?);/)[1];
+  const bin = atob(parts[1]);
+  const arr = new Uint8Array(bin.length);
+  for(let i=0;i<bin.length;i++) arr[i] = bin.charCodeAt(i);
+  return new Blob([arr], {type:mime});
+}
+
+/* ---------- 접속 QR 코드 ---------- */
+function openQrModal(){
+  const root = document.getElementById("modal-root");
+  const guess = window.location.href.startsWith("http") ? window.location.href : "";
+  root.innerHTML = `
+    <div class="modal-overlay" id="qr-overlay">
+      <div class="modal" style="max-width:380px;text-align:center;">
+        <h3>현장 등록용 QR 코드</h3>
+        <p style="font-size:12.5px;color:var(--text-secondary);margin-top:-8px;">게시(Publish)된 이 시스템의 실제 접속 주소를 아래에 붙여넣고 생성하세요.</p>
+        <div class="field" style="text-align:left;margin-bottom:10px;">
+          <label>접속 주소 (URL)</label>
+          <input type="text" id="qr-url-input" placeholder="https://claude.ai/public/artifacts/..." value="${esc(guess)}">
+        </div>
+        <button class="btn btn-primary btn-block" id="qr-generate" style="margin-bottom:14px;">QR 코드 생성</button>
+        <div id="qr-canvas-wrap" style="display:flex;justify-content:center;margin:8px 0;min-height:200px;align-items:center;color:var(--text-muted);font-size:12.5px;">주소를 입력하고 생성 버튼을 눌러주세요</div>
+        <div class="modal-actions" style="justify-content:center;">
+          <button class="btn" id="qr-close">닫기</button>
+          <button class="btn" id="qr-download" disabled>QR 이미지 다운로드</button>
+        </div>
+      </div>
+    </div>`;
+  const close = () => { root.innerHTML = ""; };
+  document.getElementById("qr-close").onclick = close;
+  document.getElementById("qr-overlay").onclick = (e) => { if(e.target.id==="qr-overlay") close(); };
+  const generate = () => {
+    const url = document.getElementById("qr-url-input").value.trim();
+    const wrap = document.getElementById("qr-canvas-wrap");
+    const dlBtn = document.getElementById("qr-download");
+    if(!url || !url.startsWith("http")){
+      showToast("올바른 주소(http로 시작)를 입력해주세요.");
+      return;
+    }
+    wrap.innerHTML = "";
+    new QRCode(wrap, { text: url, width: 200, height: 200, correctLevel: QRCode.CorrectLevel.M });
+    dlBtn.disabled = false;
+    dlBtn.onclick = () => {
+      const canvas = wrap.querySelector("canvas");
+      if(!canvas){ showToast("QR 이미지를 생성하지 못했습니다."); return; }
+      const a = document.createElement("a");
+      a.href = canvas.toDataURL("image/png");
+      a.download = "변동점관리시스템_접속QR.png";
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    };
+  };
+  document.getElementById("qr-generate").onclick = generate;
+  if(guess) generate();
+}
+
+/* ---------- 이미지 확대 보기 (라이트박스) ---------- */
+function openLightbox(src){
+  const root = document.getElementById("modal-root");
+  root.innerHTML = `
+    <div class="modal-overlay" id="lb-overlay" style="background:rgba(10,12,18,.86);cursor:zoom-out;">
+      <img src="${src}" style="max-width:92vw;max-height:88vh;border-radius:8px;box-shadow:0 8px 30px rgba(0,0,0,.5);">
+    </div>`;
+  document.getElementById("lb-overlay").onclick = () => { root.innerHTML = ""; render(); };
+}
+function bindLightbox(container){
+  container.querySelectorAll(".thumb img").forEach(img => {
+    img.onclick = (e) => { e.stopPropagation(); openLightbox(img.getAttribute("src")); };
+  });
+}
+
+/* ---------- 확인 팝업 ---------- */
+function confirmPopup(title, message, onConfirm){
+  const root = document.getElementById("modal-root");
+  root.innerHTML = `
+    <div class="modal-overlay" id="cf-overlay">
+      <div class="modal" style="max-width:360px;">
+        <h3>${esc(title)}</h3>
+        <p style="font-size:13.5px;color:var(--text-secondary);">${esc(message)}</p>
+        <div class="modal-actions">
+          <button class="btn" id="cf-cancel">취소</button>
+          <button class="btn btn-primary" id="cf-ok">확인</button>
+        </div>
+      </div>
+    </div>`;
+  const close = () => { root.innerHTML = ""; };
+  document.getElementById("cf-cancel").onclick = close;
+  document.getElementById("cf-overlay").onclick = (e) => { if(e.target.id==="cf-overlay") close(); };
+  document.getElementById("cf-ok").onclick = () => { close(); onConfirm(); };
+}
+
+/* ---------- 마스터 데이터 편집 모달 (차종/설비/라인, 4M구분 통합) ---------- */
+const MASTER_CATEGORIES = { lines: "차종/설비/라인", m4: "4M 구분" };
+function openMasterEditor(initialKey){
+  let key = initialKey || "lines";
+  const root = document.getElementById("modal-root");
+  const renderModal = () => {
+    root.innerHTML = `
+      <div class="modal-overlay" id="me-overlay">
+        <div class="modal">
+          <h3>항목 편집</h3>
+          <div class="field" style="margin-bottom:14px;">
+            <label>편집할 항목</label>
+            <select id="me-category">
+              ${Object.entries(MASTER_CATEGORIES).map(([k,v]) => `<option value="${k}" ${k===key?"selected":""}>${esc(v)}</option>`).join("")}
+            </select>
+          </div>
+          <ul class="master-list" id="ml-list">
+            ${master[key].map((v,i)=>`<li>
+              <span class="ml-num">${i+1}</span>
+              <span class="ml-name">${esc(v)}</span>
+              <span class="ml-actions">
+                <button class="btn btn-sm" data-up="${i}" ${i===0?"disabled":""} title="위로">▲</button>
+                <button class="btn btn-sm" data-down="${i}" ${i===master[key].length-1?"disabled":""} title="아래로">▼</button>
+                <button class="btn btn-sm btn-danger" data-i="${i}">삭제</button>
+              </span>
+            </li>`).join("") || '<li style="color:var(--text-muted);">등록된 항목이 없습니다.</li>'}
+          </ul>
+          <div class="master-add">
+            <input type="text" id="ml-new" placeholder="새 항목 입력">
+            <button class="btn btn-primary" id="ml-add">추가</button>
+          </div>
+          <div class="modal-actions"><button class="btn btn-primary" id="me-close">닫기</button></div>
+        </div>
+      </div>`;
+    const close = () => { root.innerHTML = ""; render(); };
+    document.getElementById("me-close").onclick = close;
+    document.getElementById("me-overlay").onclick = (e) => { if(e.target.id==="me-overlay") close(); };
+    document.getElementById("me-category").onchange = (e) => { key = e.target.value; renderModal(); };
+    document.getElementById("ml-add").onclick = async () => {
+      const v = document.getElementById("ml-new").value.trim();
+      if(!v) return;
+      master[key].push(v);
+      const ok = await saveMaster();
+      if(!ok) master[key].pop();
+      renderModal();
+    };
+    document.getElementById("ml-list").addEventListener("click", async (e) => {
+      const delBtn = e.target.closest("button[data-i]");
+      const upBtn = e.target.closest("button[data-up]");
+      const downBtn = e.target.closest("button[data-down]");
+      if(delBtn){
+        const removedIdx = Number(delBtn.dataset.i);
+        const removed = master[key].splice(removedIdx, 1)[0];
+        const ok = await saveMaster();
+        if(!ok) master[key].splice(removedIdx, 0, removed);
+        renderModal();
+      }else if(upBtn){
+        const i = Number(upBtn.dataset.up);
+        if(i <= 0) return;
+        const arr = master[key];
+        [arr[i-1], arr[i]] = [arr[i], arr[i-1]];
+        const ok = await saveMaster();
+        if(!ok) [arr[i-1], arr[i]] = [arr[i], arr[i-1]];
+        renderModal();
+      }else if(downBtn){
+        const i = Number(downBtn.dataset.down);
+        const arr = master[key];
+        if(i >= arr.length-1) return;
+        [arr[i], arr[i+1]] = [arr[i+1], arr[i]];
+        const ok = await saveMaster();
+        if(!ok) [arr[i], arr[i+1]] = [arr[i+1], arr[i]];
+        renderModal();
+      }
+    });
+  };
+  renderModal();
+}
+
+/* ---------- 탭: 등록 ---------- */
+function renderRegisterTab(){
+  const docnum = previewDocNumber();
+  return `
+  <div class="card">
+    <h2><span class="num">1</span>변경일시</h2>
+    <div class="field" style="max-width:220px;">
+      <label class="required">변경일자</label>
+      <input type="date" id="f-date" value="">
+    </div>
+  </div>
+
+  <div class="card">
+    <h2><span class="num">2</span>등록자 정보</h2>
+    <div class="row">
+      <div class="field">
+        <label>부서</label>
+        <input type="text" id="f-regdept" value="${esc(currentUser.dept)}" disabled>
+      </div>
+      <div class="field">
+        <label>담당자 성명</label>
+        <input type="text" id="f-regname" value="${esc(currentUser.name)}" disabled>
+      </div>
+    </div>
+    <p class="hint">로그인 계정 정보로 자동 입력됩니다.</p>
+  </div>
+
+  <div class="card">
+    <h2><span class="num">3</span>고객사 · 차종 / 설비 / 라인 · 4M 구분${isAdmin() ? `<button class="btn btn-sm" id="btn-edit-master" type="button" style="margin-left:auto;">항목 편집</button>` : ""}</h2>
+    <div class="row3">
+      <div class="field">
+        <label class="required">고객사</label>
+        <select id="f-customer"><option value="">선택하세요</option>${CUSTOMERS.map(v=>`<option>${esc(v)}</option>`).join("")}</select>
+      </div>
+      <div class="field">
+        <label class="required">차종/설비/라인</label>
+        <select id="f-line"><option value="">선택하세요</option>${master.lines.map(v=>`<option>${esc(v)}</option>`).join("")}</select>
+      </div>
+      <div class="field">
+        <label class="required">4M 구분</label>
+        <select id="f-m4"><option value="">선택하세요</option>${master.m4.map(v=>`<option>${esc(v)}</option>`).join("")}</select>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2><span class="num">4</span>변동점 내용</h2>
+    <div class="field">
+      <label class="required">변동점 내용</label>
+      <textarea id="f-content" placeholder="현장에서 발생한 변동점 조치 내용을 입력하세요"></textarea>
+    </div>
+    <div class="row">
+      <div class="field">
+        <label class="required">변경 전</label>
+        <textarea id="f-before" placeholder="변경 전 내용을 입력하세요"></textarea>
+      </div>
+      <div class="field">
+        <label class="required">변경 후</label>
+        <textarea id="f-after" placeholder="변경 후 내용을 입력하세요"></textarea>
+      </div>
+    </div>
+    <div class="row" style="margin-top:4px;">
+      <div class="field">
+        <label>변경 전 첨부</label>
+        <div class="filebox" id="box-before" data-drop="before">클릭 또는 파일을 여기에 끌어놓기 (사진·PDF·PPT·엑셀, 10MB 이하)</div>
+        <input type="file" id="file-before" accept="image/*,.pdf,.ppt,.pptx,.xls,.xlsx,.doc,.docx" multiple style="display:none;">
+        <div class="thumbs" id="thumbs-before"></div>
+      </div>
+      <div class="field">
+        <label>변경 후 첨부</label>
+        <div class="filebox" id="box-after" data-drop="after">클릭 또는 파일을 여기에 끌어놓기 (사진·PDF·PPT·엑셀, 10MB 이하)</div>
+        <input type="file" id="file-after" accept="image/*,.pdf,.ppt,.pptx,.xls,.xlsx,.doc,.docx" multiple style="display:none;">
+        <div class="thumbs" id="thumbs-after"></div>
+      </div>
+    </div>
+    <p class="hint">사진은 자동 압축됩니다. PPT·엑셀·PDF 등 문서 파일도 첨부 가능합니다 (파일당 최대 10MB).</p>
+  </div>
+
+  <div class="card">
+    <h2><span class="num">5</span>점검 후행 담당자</h2>
+    <div class="row" style="align-items:flex-end;">
+      <div class="field">
+        <label>부서 필터</label>
+        <select id="f-follow-dept-filter">
+          <option value="">전체 부서</option>
+          ${Array.from(new Set(directory.map(d=>d.dept))).sort().map(dept=>`<option>${esc(dept)}</option>`).join("")}
+        </select>
+      </div>
+      <div class="field">
+        <label class="required">담당자 선택 (복수 가능)</label>
+        <select id="f-followname" multiple size="4" style="min-height:90px;">
+          ${directory.map(d => `<option value="${esc(d.name)}" data-dept="${esc(d.dept)}">${esc(d.name)} (${esc(d.dept)})</option>`).join("")}
+        </select>
+      </div>
+    </div>
+    <div id="f-follow-selected" style="margin-top:6px;"></div>
+    <p class="hint">Ctrl(또는 Cmd) 키를 누른 채 클릭하면 여러 명을 선택할 수 있습니다. 선택된 담당자 모두에게 이메일이 발송됩니다.</p>
+  </div>
+
+  <div class="card">
+    <h2><span class="num">6</span>문서번호</h2>
+    <span class="docnum-badge" id="docnum-preview">${docnum} (예시)</span>
+    <p class="hint">SYAT(서연오토) - Change Point - 등록일(YYMMDD) - 당일 순번. 실제 번호는 등록 시 서버에서 자동으로 최종 채번됩니다.</p>
+  </div>
+
+  <button class="btn btn-primary btn-block" id="btn-submit-register" style="padding:12px;font-size:14.5px;">등록</button>
+  `;
+}
+
+function bindRegisterTab(){
+  if(isAdmin()) document.getElementById("btn-edit-master").onclick = () => openMasterEditor("lines");
+
+  const wireFileBox = (boxId, inputId, thumbsId, bucket) => {
+    const box = document.getElementById(boxId);
+    const input = document.getElementById(inputId);
+    box.onclick = () => input.click();
+    const handleFiles = async (fileList) => {
+      for(const f of Array.from(fileList)){
+        try{ bucket.push(await processFile(f)); }
+        catch(err){ showToast(err.message || "파일 처리 실패: " + f.name); }
+      }
+      renderThumbs(thumbsId, bucket);
+    };
+    input.onchange = async (e) => { await handleFiles(e.target.files); e.target.value = ""; };
+    // 드래그앤드롭
+    box.addEventListener("dragover", (e) => { e.preventDefault(); box.style.borderColor = "var(--accent)"; box.style.background = "var(--accent-light, #fdf4e8)"; });
+    box.addEventListener("dragleave", () => { box.style.borderColor = ""; box.style.background = ""; });
+    box.addEventListener("drop", async (e) => {
+      e.preventDefault(); box.style.borderColor = ""; box.style.background = "";
+      if(e.dataTransfer.files.length > 0) await handleFiles(e.dataTransfer.files);
+    });
+  };
+  const renderThumbs = (thumbsId, bucket) => {
+    const el = document.getElementById(thumbsId);
+    el.innerHTML = bucket.map((item,i) => renderFileThumb(item, i)).join("");
+    el.querySelectorAll(".rm").forEach(btn => {
+      btn.onclick = (e) => { e.stopPropagation(); bucket.splice(Number(btn.dataset.i),1); renderThumbs(thumbsId, bucket); };
+    });
+    bindLightbox(el);
+  };
+  wireFileBox("box-before","file-before","thumbs-before", regImages.before);
+  wireFileBox("box-after","file-after","thumbs-after", regImages.after);
+  renderThumbs("thumbs-before", regImages.before);
+  renderThumbs("thumbs-after", regImages.after);
+
+  // 후행담당자: 부서 필터 + 복수선택
+  const deptFilter = document.getElementById("f-follow-dept-filter");
+  const followSelect = document.getElementById("f-followname");
+  const followSelected = document.getElementById("f-follow-selected");
+  deptFilter.onchange = () => {
+    const dept = deptFilter.value;
+    Array.from(followSelect.options).forEach(opt => {
+      opt.style.display = (!dept || opt.dataset.dept === dept) ? "" : "none";
+    });
+  };
+  const renderFollowChips = () => {
+    const names = Array.from(followSelect.selectedOptions).map(o => o.value).filter(Boolean);
+    followSelected.innerHTML = names.length > 0
+      ? names.map(n => `<span style="display:inline-block;background:var(--primary);color:#fff;padding:3px 10px;border-radius:12px;font-size:12px;margin:2px 4px 2px 0;">${esc(n)}</span>`).join("")
+      : "";
+  };
+  followSelect.onchange = renderFollowChips;
+
+  document.getElementById("btn-submit-register").onclick = () => {
+    const val = id => document.getElementById(id).value.trim();
+    const date = val("f-date");
+    const content = val("f-content");
+    const before = val("f-before"), after = val("f-after");
+    const followNames = Array.from(followSelect.selectedOptions).map(o => o.value).filter(Boolean);
+    const line = val("f-line"), customer = val("f-customer"), m4 = val("f-m4");
+    if(!date || !line || !customer || !m4 || !content || !before || !after || followNames.length === 0){
+      showToast("필수 항목(*)을 모두 입력해주세요. (후행담당자 1명 이상 선택)");
+      return;
+    }
+    confirmPopup("등록 확인", "입력하신 내용으로 변동점을 등록하시겠습니까?\n후행담당자: " + followNames.join(", "), async () => {
+      const item = {
+        regDate: date,
+        line: line,
+        customer: customer,
+        m4: m4,
+        content: content,
+        beforeContent: before, afterContent: after,
+        followName: followNames.join(","),
+        beforeImages: regImages.before.slice(),
+        afterImages: regImages.after.slice()
+      };
+      const btn = document.getElementById("btn-submit-register");
+      btn.disabled = true;
+      showLoading("변동점을 등록하고 있습니다...\n사진 업로드 중에는 시간이 걸릴 수 있습니다.");
+      const json = await registerNewItem(item);
+      hideLoading();
+      btn.disabled = false;
+      if(!json){
+        showToast(lastApiError || "저장에 실패했습니다. 네트워크 상태를 확인 후 다시 시도해주세요.");
+        return;
+      }
+      await loadItems();
+      regImages = { before: [], after: [] };
+      let emailNote = "";
+      if(json.emailStatus === "발송성공") emailNote = " (후행담당자에게 이메일 발송 완료)";
+      else if(json.emailStatus === "발송실패") emailNote = " (⚠ 이메일 발송에 실패했습니다. 관리자에게 문의해주세요)";
+      else if(json.emailStatus === "미대상") emailNote = " (⚠ 후행담당자의 이메일 주소가 등록되어 있지 않아 메일을 보내지 못했습니다)";
+      showToast("등록되었습니다. 문서번호: " + json.id + emailNote, 4000);
+      render();
+    });
+  };
+}
+
+/* ---------- 탭: 점검/확인 ---------- */
+function canProcessInspection(it){
+  if(isAdmin()) return true;
+  const names = String(it.followName || "").split(",").map(n => n.trim());
+  return names.indexOf(currentUser.name) !== -1;
+}
+function inspResultDisplay(it){
+  const r = it.inspResult;
+  if(r === "NG") return `<span style="color:var(--danger);font-weight:700;">NG</span>`;
+  if(r === "기타") return esc(it.inspResultEtc || "기타");
+  return esc(r);
+}
+function renderInspectTab(){
+  const pending = items.filter(it => it.status === "등록");
+  const done = items.filter(it => it.status === "점검완료");
+  return `
+  <div class="card">
+    <h2><span class="num">1</span>점검 대기 (${pending.length}건)</h2>
+    ${pending.length === 0 ? `<div class="empty">점검 대기 중인 변동점이 없습니다.</div>` : `
+    <div style="overflow-x:auto;">
+    <table style="min-width:700px;">
+      <thead><tr><th style="width:200px;">문서번호</th><th>변경일</th><th>차종/라인</th><th>4M</th><th>변경내용</th><th>등록자</th><th>점검담당자</th><th></th></tr></thead>
+      <tbody>
+        ${pending.map(it => `
+          <tr class="row-click" data-id="${esc(it.id)}">
+            <td style="font-family:var(--mono);font-size:11.5px;white-space:nowrap;">${esc(it.id)}</td>
+            <td style="white-space:nowrap;">${esc(fmtDate(it.regDate))}</td>
+            <td style="white-space:nowrap;">${esc(it.line)}</td>
+            <td>${esc(it.m4)}</td>
+            <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${esc(it.content)}">${esc(it.content)}</td>
+            <td style="white-space:nowrap;">${esc(it.regName)}</td>
+            <td style="white-space:nowrap;">${esc(it.followName)}</td>
+            <td style="white-space:nowrap;">${canProcessInspection(it) ? `<button class="btn btn-sm btn-accent" data-open="${esc(it.id)}">점검 입력</button>` : `<span class="hint" style="margin:0;">담당자만 처리 가능</span>`}</td>
+          </tr>`).join("")}
+      </tbody>
+    </table>
+    </div>`}
+  </div>
+  <div class="card">
+    <h2><span class="num">2</span>점검 완료 (${done.length}건)</h2>
+    ${done.length === 0 ? `<div class="empty">점검 완료된 변동점이 없습니다.</div>` : `
+    <div style="overflow-x:auto;">
+    <table style="min-width:800px;">
+      <thead><tr><th style="width:200px;">문서번호</th><th>변경일</th><th>차종/라인</th><th>고객사</th><th>변경내용</th><th>조치결과</th><th>점검일</th><th>점검자</th><th>NG대책</th></tr></thead>
+      <tbody>
+        ${done.map(it => `
+          <tr class="row-click" data-id="${esc(it.id)}">
+            <td style="font-family:var(--mono);font-size:11.5px;white-space:nowrap;">${esc(it.id)}</td>
+            <td style="white-space:nowrap;">${esc(fmtDate(it.regDate))}</td>
+            <td style="white-space:nowrap;">${esc(it.line)}</td>
+            <td style="white-space:nowrap;">${esc(it.customer)}</td>
+            <td style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${esc(it.content)}">${esc(it.content)}</td>
+            <td style="white-space:nowrap;">${inspResultDisplay(it)}</td>
+            <td style="white-space:nowrap;">${esc(fmtDate(it.inspDate))}</td>
+            <td style="white-space:nowrap;">${esc(it.inspName)}</td>
+            <td style="white-space:nowrap;">${it.inspResult==="NG" ? (it.ngAction ? `<span style="color:var(--success);">완료</span>` : `<span style="color:var(--danger);">미입력</span>`) : "-"}</td>
+          </tr>`).join("")}
+      </tbody>
+    </table>
+    </div>`}
+  </div>
+  `;
+}
+
+function bindInspectTab(){
+  document.querySelectorAll("[data-open]").forEach(btn => {
+    btn.onclick = (e) => { e.stopPropagation(); openInspectModal(btn.dataset.open); };
+  });
+  document.querySelectorAll("#content tr[data-id]").forEach(row => {
+    row.onclick = () => {
+      const it = items.find(x => x.id === row.dataset.id);
+      if(it.status === "등록" && canProcessInspection(it)) openInspectModal(it.id);
+      else openDetailModal(it.id);
+    };
+  });
+}
+
+function openInspectModal(id){
+  const it = items.find(x => x.id === id);
+  if(!it) return;
+  if(!canProcessInspection(it)){ openDetailModal(id); return; }
+  inspTargetId = id;
+  inspImages = [];
+  const root = document.getElementById("modal-root");
+  root.innerHTML = `
+    <div class="modal-overlay" id="insp-overlay">
+      <div class="modal" style="max-width:560px;">
+        <h3>점검 / 확인 입력</h3>
+        <span class="docnum-badge">${esc(it.id)}</span>
+        <div class="section-title">등록 내용</div>
+        <dl class="detail-grid">
+          <dt>등록자</dt><dd>${esc(it.regDept)} / ${esc(it.regName)}</dd>
+          <dt>차종/라인</dt><dd>${esc(it.line)}</dd>
+          <dt>고객사</dt><dd>${esc(it.customer)}</dd>
+          <dt>4M 구분</dt><dd>${esc(it.m4)}</dd>
+          <dt>변동점 내용</dt><dd>${esc(it.content)}</dd>
+          <dt>변경 전</dt><dd>${esc(it.beforeContent)}</dd>
+          <dt>변경 후</dt><dd>${esc(it.afterContent)}</dd>
+        </dl>
+        <div class="thumbs">
+          ${it.beforeImages.concat(it.afterImages).map(img=>`<div class="thumb"><img src="${imgSrc(img.data)}"></div>`).join("")}
+        </div>
+
+        <div class="section-title">점검 입력</div>
+        <div class="row">
+          <div class="field"><label class="required">점검일자</label><input type="date" id="i-date" value=""></div>
+          <div class="field"><label class="required">조치결과</label>
+            <select id="i-result">
+              <option value="">선택하세요</option>
+              <option value="양호">양호</option>
+              <option value="NG">NG</option>
+              <option value="기타">기타</option>
+            </select>
+          </div>
+        </div>
+        <div class="field" id="i-etc-wrap" style="display:none;margin-bottom:14px;">
+          <label>조치결과 (기타 직접입력)</label>
+          <input type="text" id="i-etc" placeholder="조치결과를 입력하세요">
+        </div>
+        <div class="field" id="i-ng-wrap" style="display:none;margin-bottom:14px;">
+          <label class="required">NG 재발방지 대책 / 코멘트</label>
+          <textarea id="i-ng-action" placeholder="NG 원인 분석 및 재발방지 대책을 입력하세요" style="min-height:80px;"></textarea>
+        </div>
+        <div class="row">
+          <div class="field"><label>점검부서</label><input type="text" id="i-dept" value="${esc(currentUser.dept)}" disabled></div>
+          <div class="field"><label>점검담당자</label><input type="text" id="i-name" value="${esc(currentUser.name)}" disabled></div>
+        </div>
+        <div class="field">
+          <label>점검확인 첨부 (선택)</label>
+          <div class="filebox" id="i-box">클릭하여 파일 선택 (사진·PDF·PPT·엑셀, 10MB 이하)</div>
+          <input type="file" id="i-file" accept="image/*,.pdf,.ppt,.pptx,.xls,.xlsx,.doc,.docx" multiple style="display:none;">
+          <div class="thumbs" id="i-thumbs"></div>
+        </div>
+        <div class="modal-actions">
+          ${isAdmin() ? `<button class="btn btn-danger" id="insp-delete">삭제</button><button class="btn" id="insp-edit">등록내용 수정</button>` : ""}
+          <button class="btn" id="insp-cancel">취소</button>
+          <button class="btn btn-primary" id="insp-save">저장</button>
+        </div>
+      </div>
+    </div>`;
+  const close = () => { root.innerHTML = ""; };
+  document.getElementById("insp-cancel").onclick = close;
+  document.getElementById("insp-overlay").onclick = (e) => { if(e.target.id==="insp-overlay") close(); };
+  bindLightbox(root);
+  if(isAdmin()){
+    document.getElementById("insp-edit").onclick = () => { close(); openEditModal(it.id); };
+    document.getElementById("insp-delete").onclick = () => {
+      confirmPopup("삭제 확인", "이 변동점을 삭제하시겠습니까? 삭제 후에는 복구할 수 없습니다.", async () => {
+        showLoading("삭제 처리 중입니다...");
+        const json = await deleteItemStore(it.id);
+        if(!json){ hideLoading(); showToast(lastApiError || "삭제에 실패했습니다."); return; }
+        await loadItems();
+        hideLoading();
+        close();
+        showToast("삭제되었습니다.");
+        render();
+      });
+    };
+  }
+  document.getElementById("i-result").onchange = (e) => {
+    document.getElementById("i-etc-wrap").style.display = e.target.value === "기타" ? "block" : "none";
+    document.getElementById("i-ng-wrap").style.display = e.target.value === "NG" ? "block" : "none";
+  };
+  const renderInspThumbs = () => {
+    const el = document.getElementById("i-thumbs");
+    el.innerHTML = inspImages.map((item,i) => renderFileThumb(item, i)).join("");
+    el.querySelectorAll(".rm").forEach(b => { b.onclick = (e) => { e.stopPropagation(); inspImages.splice(Number(b.dataset.i),1); renderInspThumbs(); }; });
+    bindLightbox(el);
+  };
+  document.getElementById("i-box").onclick = () => document.getElementById("i-file").click();
+  document.getElementById("i-file").onchange = async (e) => {
+    for(const f of Array.from(e.target.files)){
+      try{ inspImages.push(await processFile(f)); }catch(err){ showToast(err.message || "파일 처리 실패"); }
+    }
+    e.target.value = "";
+    renderInspThumbs();
+  };
+  document.getElementById("insp-save").onclick = () => {
+    const val = id => document.getElementById(id).value.trim();
+    const date = val("i-date"), result = document.getElementById("i-result").value;
+    const etc = val("i-etc");
+    const ngAction = val("i-ng-action");
+    if(!date || !result || (result==="기타" && !etc)){ showToast("필수 항목(*)을 입력해주세요."); return; }
+    if(result==="NG" && !ngAction){ showToast("NG 선택 시 재발방지 대책/코멘트를 입력해주세요."); return; }
+    confirmPopup("점검 저장 확인", "점검 결과를 저장하시겠습니까?", async () => {
+      showLoading("점검 결과를 저장하고 있습니다...");
+      const payload = {
+        id: it.id, inspDate: date, inspResult: result, inspResultEtc: etc,
+        inspImages: inspImages.slice()
+      };
+      const json = await submitInspection(payload);
+      if(!json){
+        hideLoading();
+        showToast(lastApiError || "저장에 실패했습니다. 다시 시도해주세요.");
+        return;
+      }
+      if(result === "NG" && ngAction){
+        await apiPost({ action: "updateNgAction", item: { id: it.id, ngAction: ngAction } });
+      }
+      await loadItems();
+      hideLoading();
+      close();
+      showToast("점검 결과가 저장되었습니다.");
+      render();
+    });
+  };
+}
+
+/* ---------- 탭: 현황 ---------- */
+let statusSort = { key: "regDate", dir: "desc" };
+let lastFilteredStatusList = [];
+
+function renderStatusTab(){
+  const inspectorNames = Array.from(new Set(
+    items.flatMap(it => String(it.followName||"").split(",").map(n=>n.trim())).filter(Boolean)
+  )).sort();
+  return `
+  <div class="card">
+    <div class="toolbar" style="flex-wrap:wrap;gap:8px;">
+      <input type="text" class="search" id="s-search" placeholder="문서번호, 등록자, 차종/라인, 변경내용 검색" style="flex:1;min-width:200px;">
+      <div class="filters" style="flex-wrap:wrap;gap:6px;">
+        <select id="s-status"><option value="">전체 상태</option><option value="등록">등록</option><option value="점검완료">점검완료</option></select>
+        <select id="s-customer"><option value="">전체 고객사</option>${CUSTOMERS.map(c=>`<option>${esc(c)}</option>`).join("")}</select>
+        <select id="s-inspector"><option value="">전체 점검담당자</option>${inspectorNames.map(n=>`<option>${esc(n)}</option>`).join("")}</select>
+      </div>
+    </div>
+    <div class="toolbar" style="margin-top:-4px;flex-wrap:wrap;gap:8px;">
+      <div class="filters" style="align-items:center;flex-wrap:wrap;gap:6px;">
+        <span class="hint" style="margin:0;">변경일</span>
+        <input type="date" id="s-from" style="width:auto;">
+        <span class="hint" style="margin:0;">~</span>
+        <input type="date" id="s-to" style="width:auto;">
+        <button class="btn btn-sm" id="s-reset">초기화</button>
+        <span class="hint" id="s-count" style="margin:0;font-weight:700;"></span>
+      </div>
+      <div style="display:flex;gap:6px;margin-left:auto;">
+        <button class="btn" id="s-downall">ZIP 다운로드</button>
+        <button class="btn" id="s-downreport">통합보고서(사진+텍스트)</button>
+        <button class="btn btn-primary" id="s-downxlsx">엑셀 다운로드</button>
+      </div>
+    </div>
+    <div id="s-table-wrap" style="overflow-x:auto;"></div>
+  </div>`;
+}
+
+function sortArrow(key){
+  if(statusSort.key !== key) return `<span style="opacity:.3;"> ⇅</span>`;
+  return statusSort.dir === "asc" ? `<span> ▲</span>` : `<span> ▼</span>`;
+}
+
+function statusTableHtml(list){
+  if(list.length === 0) return `<div class="empty">조건에 맞는 변동점이 없습니다.</div>`;
+  const th = (key, label, width) =>
+    `<th style="width:${width};white-space:nowrap;cursor:pointer;user-select:none;" data-sort="${key}" title="클릭하여 정렬">${label}${sortArrow(key)}</th>`;
+  return `
+    <table style="table-layout:fixed;width:100%;min-width:1020px;">
+      <thead><tr>
+        ${th("id", "문서번호", "230px")}
+        ${th("regDate", "변경일", "92px")}
+        ${th("line", "차종/라인", "110px")}
+        ${th("customer", "고객사", "80px")}
+        ${th("m4", "4M", "56px")}
+        <th style="width:180px;">변경내용</th>
+        ${th("regName", "등록자", "76px")}
+        ${th("followName", "점검담당자", "96px")}
+        ${th("status", "상태", "84px")}
+        <th style="width:150px;"></th>
+      </tr></thead>
+      <tbody>
+        ${list.map(it => `
+          <tr class="row-click" data-id="${esc(it.id)}">
+            <td style="font-family:var(--mono);font-size:11.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${esc(it.id)}">${esc(it.id)}</td>
+            <td style="white-space:nowrap;">${esc(fmtDate(it.regDate))}</td>
+            <td style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${esc(it.line)}">${esc(it.line)}</td>
+            <td style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(it.customer)}</td>
+            <td style="white-space:nowrap;">${esc(it.m4)}</td>
+            <td style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${esc(it.content)}">${esc(it.content)}</td>
+            <td style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(it.regName)}</td>
+            <td style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${esc(it.followDept)} / ${esc(it.followName)}">${esc(it.followName)}</td>
+            <td style="white-space:nowrap;"><span class="status-pill st-${esc(it.status)}">${esc(it.status)}</span></td>
+            <td style="white-space:nowrap;"><button class="btn btn-sm" data-dl="${esc(it.id)}" title="ZIP 다운로드">ZIP</button> <button class="btn btn-sm" data-rp="${esc(it.id)}" title="통합보고서(사진+텍스트)">보고서</button></td>
+          </tr>`).join("")}
+      </tbody>
+    </table>`;
+}
+
+function applyStatusFilter(){
+  const q = document.getElementById("s-search").value.trim().toLowerCase();
+  const st = document.getElementById("s-status").value;
+  const cu = document.getElementById("s-customer").value;
+  const insp = document.getElementById("s-inspector").value;
+  const from = document.getElementById("s-from").value;
+  const to = document.getElementById("s-to").value;
+
+  let list = items.filter(it => {
+    if(st && it.status !== st) return false;
+    if(cu && it.customer !== cu) return false;
+    if(insp && it.followName !== insp) return false;
+    const d = String(it.regDate || "").slice(0,10);
+    if(from && d < from) return false;
+    if(to && d > to) return false;
+    if(q){
+      const hay = ((it.id||"") + (it.regName||"") + (it.line||"") + (it.content||"") + (it.followName||"")).toLowerCase();
+      if(!hay.includes(q)) return false;
+    }
+    return true;
+  });
+
+  const key = statusSort.key, dir = statusSort.dir === "asc" ? 1 : -1;
+  list.sort((a,b) => {
+    const av = String(a[key] == null ? "" : a[key]);
+    const bv = String(b[key] == null ? "" : b[key]);
+    return av.localeCompare(bv, "ko") * dir;
+  });
+
+  document.getElementById("s-count").textContent = `총 ${list.length}건`;
+  document.getElementById("s-table-wrap").innerHTML = statusTableHtml(list);
+  lastFilteredStatusList = list;
+  bindStatusRows();
+}
+
+function bindStatusTab(){
+  ["s-search"].forEach(id => document.getElementById(id).oninput = applyStatusFilter);
+  ["s-status","s-customer","s-inspector","s-from","s-to"].forEach(id => document.getElementById(id).onchange = applyStatusFilter);
+  document.getElementById("s-downall").onclick = downloadAll;
+  document.getElementById("s-downreport").onclick = () => downloadReportAll(lastFilteredStatusList);
+  document.getElementById("s-downxlsx").onclick = downloadExcel;
+  document.getElementById("s-reset").onclick = () => {
+    ["s-search","s-status","s-customer","s-inspector","s-from","s-to"].forEach(id => document.getElementById(id).value = "");
+    statusSort = { key: "regDate", dir: "desc" };
+    applyStatusFilter();
+  };
+  applyStatusFilter();
+}
+function bindStatusRows(){
+  document.querySelectorAll("#s-table-wrap [data-sort]").forEach(th => {
+    th.onclick = () => {
+      const key = th.dataset.sort;
+      if(statusSort.key === key) statusSort.dir = statusSort.dir === "asc" ? "desc" : "asc";
+      else statusSort = { key: key, dir: "asc" };
+      applyStatusFilter();
+    };
+  });
+  document.querySelectorAll("#s-table-wrap [data-dl]").forEach(btn => {
+    btn.onclick = (e) => { e.stopPropagation(); downloadOne(btn.dataset.dl); };
+  });
+  document.querySelectorAll("#s-table-wrap [data-rp]").forEach(btn => {
+    btn.onclick = (e) => { e.stopPropagation(); downloadReport(btn.dataset.rp); };
+  });
+  document.querySelectorAll("#s-table-wrap tr[data-id]").forEach(row => {
+    row.onclick = () => openDetailModal(row.dataset.id);
+  });
+}
+
+/* ---------- 상세 모달 (현황) ---------- */
+function openDetailModal(id){
+  const it = items.find(x => x.id === id);
+  if(!it) return;
+  const root = document.getElementById("modal-root");
+  const fileBlock = (label, arr) => arr.length ? `<div class="field"><label>${label}</label><div class="thumbs" style="flex-wrap:wrap;">${arr.map(im => renderFileDisplay(im)).join("")}</div></div>` : "";
+  root.innerHTML = `
+    <div class="modal-overlay" id="dt-overlay">
+      <div class="modal" style="max-width:600px;">
+        <h3>변동점 상세</h3>
+        <span class="status-pill st-${esc(it.status)}">${esc(it.status)}</span>
+        <span class="docnum-badge" style="margin-left:8px;">${esc(it.id)}</span>
+        <div class="section-title">등록 정보</div>
+        <dl class="detail-grid">
+          <dt>변경일자</dt><dd>${esc(fmtDate(it.regDate))}</dd>
+          <dt>등록자</dt><dd>${esc(it.regDept)} / ${esc(it.regName)}</dd>
+          <dt>차종/라인</dt><dd>${esc(it.line)}</dd>
+          <dt>고객사</dt><dd>${esc(it.customer)}</dd>
+          <dt>4M 구분</dt><dd>${esc(it.m4)}</dd>
+          <dt>변동점 내용</dt><dd>${esc(it.content)}</dd>
+          <dt>변경 전</dt><dd>${esc(it.beforeContent)}</dd>
+          <dt>변경 후</dt><dd>${esc(it.afterContent)}</dd>
+          <dt>후행부서</dt><dd>${esc(it.followDept)} / ${esc(it.followName)}</dd>
+        </dl>
+        ${fileBlock("변경 전 첨부", it.beforeImages)}
+        ${fileBlock("변경 후 첨부", it.afterImages)}
+        ${it.status === "점검완료" ? `
+        <div class="section-title">점검 결과</div>
+        <dl class="detail-grid">
+          <dt>점검일자</dt><dd>${esc(fmtDate(it.inspDate))}</dd>
+          <dt>조치결과</dt><dd style="${it.inspResult==='NG'?'color:var(--danger);font-weight:700;':''}">${esc(it.inspResult === "기타" ? it.inspResultEtc : it.inspResult)}</dd>
+          <dt>점검부서</dt><dd>${esc(it.inspDept)} / ${esc(it.inspName)}</dd>
+        </dl>
+        ${fileBlock("점검 확인 첨부", it.inspImages)}
+        ${it.inspResult === "NG" ? `
+        <div class="section-title" style="color:var(--danger);">NG 재발방지 대책</div>
+        <dl class="detail-grid">
+          <dt>재발방지 대책</dt><dd>${esc(it.ngAction || "미입력")}</dd>
+          ${it.ngAction ? `<dt>완료일자</dt><dd>${esc(fmtDate(it.ngActionDate))}</dd><dt>입력자</dt><dd>${esc(it.ngActionBy)}</dd>` : ""}
+        </dl>` : ""}
+        ` : ""}
+        <div class="modal-actions">
+          ${isAdmin() ? `<button class="btn btn-danger" id="dt-delete">삭제</button><button class="btn" id="dt-edit">수정</button>` : ""}
+          ${it.status === "점검완료" && it.inspResult === "NG" ? `<button class="btn btn-accent" id="dt-ng">재발방지 대책</button>` : ""}
+          <button class="btn" id="dt-dl">ZIP 다운로드</button>
+          <button class="btn" id="dt-rp">통합보고서</button>
+          <button class="btn btn-primary" id="dt-close">닫기</button>
+        </div>
+      </div>
+    </div>`;
+  const close = () => { root.innerHTML = ""; };
+  document.getElementById("dt-close").onclick = close;
+  document.getElementById("dt-overlay").onclick = (e) => { if(e.target.id==="dt-overlay") close(); };
+  bindLightbox(root);
+  document.getElementById("dt-dl").onclick = () => downloadOne(it.id);
+  document.getElementById("dt-rp").onclick = () => downloadReport(it.id);
+  if(it.status === "점검완료" && it.inspResult === "NG"){
+    document.getElementById("dt-ng").onclick = () => { close(); openNgModal(it.id); };
+  }
+  if(isAdmin()){
+    document.getElementById("dt-delete").onclick = () => {
+      confirmPopup("삭제 확인", "이 변동점을 삭제하시겠습니까? 삭제 후에는 복구할 수 없습니다.", async () => {
+        showLoading("삭제 처리 중입니다...");
+        const json = await deleteItemStore(it.id);
+        if(!json){ hideLoading(); showToast(lastApiError || "삭제에 실패했습니다."); return; }
+        await loadItems();
+        hideLoading();
+        close();
+        showToast("삭제되었습니다.");
+        render();
+      });
+    };
+    document.getElementById("dt-edit").onclick = () => { close(); openEditModal(it.id); };
+  }
+}
+
+/* ---------- 수정 모달 ---------- */
+function openEditModal(id){
+  const it = items.find(x => x.id === id);
+  if(!it) return;
+  const root = document.getElementById("modal-root");
+  root.innerHTML = `
+    <div class="modal-overlay" id="ed-overlay">
+      <div class="modal" style="max-width:560px;">
+        <h3>변동점 수정</h3>
+        <span class="docnum-badge">${esc(it.id)}</span>
+        <div class="row" style="margin-top:14px;">
+          <div class="field"><label>변경일자</label><input type="date" id="e-date" value="${esc(it.regDate)}"></div>
+          <div class="field"><label>고객사</label><select id="e-customer">${CUSTOMERS.map(c=>`<option ${c===it.customer?'selected':''}>${esc(c)}</option>`).join("")}</select></div>
+        </div>
+        <div class="row">
+          <div class="field"><label>등록 부서</label><input type="text" id="e-regdept" value="${esc(it.regDept)}"></div>
+          <div class="field"><label>등록자 성명</label><input type="text" id="e-regname" value="${esc(it.regName)}"></div>
+        </div>
+        <div class="field"><label>변동점 내용</label><textarea id="e-content">${esc(it.content)}</textarea></div>
+        <div class="row">
+          <div class="field"><label>변경 전</label><textarea id="e-before">${esc(it.beforeContent)}</textarea></div>
+          <div class="field"><label>변경 후</label><textarea id="e-after">${esc(it.afterContent)}</textarea></div>
+        </div>
+        <div class="row">
+          <div class="field"><label>후행담당자</label>
+            <select id="e-followname">
+              <option value="">선택하세요</option>
+              ${directory.map(d => `<option value="${esc(d.name)}" ${d.name===it.followName?"selected":""}>${esc(d.name)} (${esc(d.dept)})</option>`).join("")}
+            </select>
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button class="btn" id="ed-cancel">취소</button>
+          <button class="btn btn-primary" id="ed-save">저장</button>
+        </div>
+      </div>
+    </div>`;
+  const close = () => { root.innerHTML = ""; };
+  document.getElementById("ed-cancel").onclick = close;
+  document.getElementById("ed-overlay").onclick = (e) => { if(e.target.id==="ed-overlay") close(); };
+  document.getElementById("ed-save").onclick = () => {
+    confirmPopup("수정 저장", "변경 내용을 저장하시겠습니까?", async () => {
+      showLoading("수정 사항을 저장하고 있습니다...");
+      const payload = {
+        id: it.id,
+        regDate: document.getElementById("e-date").value,
+        customer: document.getElementById("e-customer").value,
+        regDept: document.getElementById("e-regdept").value,
+        regName: document.getElementById("e-regname").value,
+        content: document.getElementById("e-content").value,
+        beforeContent: document.getElementById("e-before").value,
+        afterContent: document.getElementById("e-after").value,
+        followName: document.getElementById("e-followname").value
+      };
+      const json = await submitEdit(payload);
+      if(!json){
+        hideLoading();
+        showToast(lastApiError || "저장에 실패했습니다. 다시 시도해주세요.");
+        return;
+      }
+      await loadItems();
+      hideLoading();
+      close();
+      let msg = "수정되었습니다.";
+      if(json.emailStatus === "발송성공") msg += " (새 담당자에게 이메일 발송 완료)";
+      else if(json.emailStatus === "발송실패") msg += " (⚠ 새 담당자 이메일 발송 실패)";
+      else if(json.emailStatus === "미대상") msg += " (⚠ 새 담당자의 이메일 주소가 없어 메일을 보내지 못했습니다)";
+      showToast(msg, 4000);
+      render();
+    });
+  };
+}
+
+/* ---------- 다운로드 ---------- */
+async function downloadOne(id){
+  const it = items.find(x => x.id === id);
+  if(!it) return;
+  showToast("다운로드 준비 중...");
+  const zip = new JSZip();
+  const summary = buildSummaryText(it);
+  zip.file("summary.txt", summary);
+  await addFilesToZip(zip, "before", it.beforeImages);
+  await addFilesToZip(zip, "after", it.afterImages);
+  await addFilesToZip(zip, "inspection", it.inspImages);
+  const blob = await zip.generateAsync({ type: "blob" });
+  triggerDownload(blob, it.id.replace(/\s+/g,"_") + ".zip");
+}
+async function downloadAll(){
+  if(items.length === 0){ showToast("다운로드할 데이터가 없습니다."); return; }
+  showToast("전체 다운로드 준비 중...");
+  const zip = new JSZip();
+  let csv = "문서번호,변경일자,등록부서,등록자,차종/라인,고객사,4M구분,변동점내용,변경전,변경후,후행부서,후행담당자,상태,점검일자,조치결과,점검부서,점검담당자\n";
+  for(const it of items){
+    const row = [it.id,it.regDate,it.regDept,it.regName,it.line,it.customer,it.m4,it.content,it.beforeContent,it.afterContent,it.followDept,it.followName,it.status,it.inspDate,(it.inspResult==="기타"?it.inspResultEtc:it.inspResult),it.inspDept,it.inspName]
+      .map(v => `"${String(v||"").replace(/"/g,'""')}"`).join(",");
+    csv += row + "\n";
+    const folder = zip.folder(it.id.replace(/\s+/g,"_"));
+    folder.file("summary.txt", buildSummaryText(it));
+    await addFilesToZip(folder, "before", it.beforeImages);
+    await addFilesToZip(folder, "after", it.afterImages);
+    await addFilesToZip(folder, "inspection", it.inspImages);
+  }
+  zip.file("변동점_전체목록.csv", "\uFEFF" + csv);
+  const blob = await zip.generateAsync({ type: "blob" });
+  triggerDownload(blob, "변동점_전체_" + todayStr() + ".zip");
+}
+async function addFilesToZip(zipOrFolder, prefix, arr){
+  if(!arr || arr.length === 0) return;
+  for(let i = 0; i < arr.length; i++){
+    const f = arr[i];
+    if(!f || !f.data) continue;
+    const src = String(f.data);
+    // URL에서 파일명 추출 (#파일명 또는 name 필드)
+    const hashIdx = src.indexOf("#");
+    const fileName = hashIdx !== -1 ? decodeURIComponent(src.substring(hashIdx + 1)) : (f.name || "file");
+    const safeName = fileName.replace(/[\\/:*?"<>|]/g, "_");
+    try{
+      if(src.startsWith("data:")){
+        // base64 데이터 → 바로 저장
+        zipOrFolder.file(`${prefix}_${i+1}_${safeName}`, dataUrlToBlob(src));
+      } else if(src.includes("drive.google.com")){
+        // Google Drive URL → 프록시로 원본 데이터 가져오기
+        const m = src.match(/[?&]id=([^&]+)/);
+        if(!m) throw new Error("파일 ID를 찾을 수 없음");
+        const json = await apiGet("?type=image&fileId=" + encodeURIComponent(m[1]));
+        if(json.data && json.data.startsWith("data:")){
+          const ext = safeName.includes(".") ? "" : (src.includes("/thumbnail") ? ".jpg" : "");
+          zipOrFolder.file(`${prefix}_${i+1}_${safeName}${ext}`, dataUrlToBlob(json.data));
+        } else {
+          throw new Error("데이터 없음");
+        }
+      } else {
+        zipOrFolder.file(`${prefix}_${i+1}_링크.txt`, src);
+      }
+    }catch(e){
+      // 다운로드 실패 시 링크만 저장
+      zipOrFolder.file(`${prefix}_${i+1}_${safeName}_링크.txt`, src.split("#")[0]);
+    }
+  }
+}
+function buildSummaryText(it){
+  return [
+    `문서번호: ${it.id}`,
+    `상태: ${it.status}`,
+    `변경일자: ${fmtDate(it.regDate)}`,
+    `등록자: ${it.regDept} / ${it.regName}`,
+    `차종/설비/라인: ${it.line}`,
+    `고객사: ${it.customer}`,
+    `4M 구분: ${it.m4}`,
+    `변동점 내용: ${it.content}`,
+    `변경 전: ${it.beforeContent}`,
+    `변경 후: ${it.afterContent}`,
+    `후행부서/담당자: ${it.followDept} / ${it.followName}`,
+    it.status === "점검완료" ? `점검일자: ${fmtDate(it.inspDate)}` : "",
+    it.status === "점검완료" ? `조치결과: ${it.inspResult === "기타" ? it.inspResultEtc : it.inspResult}` : "",
+    it.status === "점검완료" ? `점검부서/담당자: ${it.inspDept} / ${it.inspName}` : ""
+  ].filter(Boolean).join("\n");
+}
+/* ---------- 통합보고서 (사진+텍스트 결합 HTML, 인쇄 시 PDF 저장 가능) ---------- */
+async function resolveReportImages(arr){
+  const out = [];
+  if(!arr || arr.length === 0) return out;
+  for(let i = 0; i < arr.length; i++){
+    const f = arr[i];
+    if(!f || !f.data) continue;
+    const src = String(f.data);
+    const hashIdx = src.indexOf("#");
+    const fileName = hashIdx !== -1 ? decodeURIComponent(src.substring(hashIdx + 1)) : (f.name || "file");
+    let dataUrl = null;
+    try{
+      if(src.startsWith("data:")){
+        dataUrl = src;
+      } else if(src.includes("drive.google.com")){
+        const m = src.match(/[?&]id=([^&]+)/);
+        if(m){
+          const json = await apiGet("?type=image&fileId=" + encodeURIComponent(m[1]));
+          if(json.data && json.data.startsWith("data:")) dataUrl = json.data;
+        }
+      }
+    }catch(e){ /* 실패 시 링크만 표기 */ }
+    out.push({ name: fileName, dataUrl, isImage: !!(dataUrl && dataUrl.startsWith("data:image")), link: src.split("#")[0] });
+  }
+  return out;
+}
+function reportFileBlockHtml(files){
+  if(!files || files.length === 0) return `<p class="rp-empty">첨부 없음</p>`;
+  return `<div class="rp-files">${files.map(f => {
+    if(f.isImage && f.dataUrl){
+      return `<figure class="rp-fig"><img src="${f.dataUrl}"><figcaption>${esc(f.name)}</figcaption></figure>`;
+    }
+    return `<div class="rp-doc">${getFileIcon(f.name)} ${esc(f.name)}${f.dataUrl ? "" : (f.link ? ` <a href="${esc(f.link)}" target="_blank">(원본 링크)</a>` : "")}</div>`;
+  }).join("")}</div>`;
+}
+async function buildReportSectionHtml(it){
+  const [beforeFiles, afterFiles, inspFiles] = await Promise.all([
+    resolveReportImages(it.beforeImages),
+    resolveReportImages(it.afterImages),
+    resolveReportImages(it.inspImages)
+  ]);
+  const row = (label, value, danger) => `<tr><th>${esc(label)}</th><td${danger?' style="color:#c0392b;font-weight:700;"':''}>${esc(value||"")}</td></tr>`;
+  return `
+  <section class="rp-item">
+    <div class="rp-head">
+      <div class="rp-title">변동점 관리 보고서</div>
+      <div class="rp-badges"><span class="rp-pill rp-${esc(it.status)}">${esc(it.status)}</span><span class="rp-docnum">${esc(it.id)}</span></div>
+    </div>
+    <table class="rp-table">
+      ${row("변경일자", fmtDate(it.regDate))}
+      ${row("등록부서/등록자", `${it.regDept||""} / ${it.regName||""}`)}
+      ${row("차종/설비/라인", it.line)}
+      ${row("고객사", it.customer)}
+      ${row("4M 구분", it.m4)}
+      ${row("변동점 내용", it.content)}
+      ${row("변경 전 내용", it.beforeContent)}
+      ${row("변경 후 내용", it.afterContent)}
+      ${row("후행부서/담당자", `${it.followDept||""} / ${it.followName||""}`)}
+      ${it.status === "점검완료" ? row("점검일자", fmtDate(it.inspDate)) : ""}
+      ${it.status === "점검완료" ? row("조치결과", it.inspResult === "기타" ? it.inspResultEtc : it.inspResult, it.inspResult === "NG") : ""}
+      ${it.status === "점검완료" ? row("점검부서/담당자", `${it.inspDept||""} / ${it.inspName||""}`) : ""}
+      ${it.inspResult === "NG" && it.ngAction ? row("재발방지대책", it.ngAction) : ""}
+    </table>
+    <div class="rp-section-title">변경 전 사진/첨부</div>
+    ${reportFileBlockHtml(beforeFiles)}
+    <div class="rp-section-title">변경 후 사진/첨부</div>
+    ${reportFileBlockHtml(afterFiles)}
+    ${it.status === "점검완료" ? `<div class="rp-section-title">점검 확인 사진/첨부</div>${reportFileBlockHtml(inspFiles)}` : ""}
+  </section>`;
+}
+function reportShellHtml(bodyHtml, title){
+  return `<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>${esc(title)}</title>
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: "Malgun Gothic", "Apple SD Gothic Neo", sans-serif; margin: 0; padding: 24px; background:#eef1f5; color:#1c2230; }
+  .rp-toolbar { max-width: 860px; margin: 0 auto 16px; display:flex; justify-content:flex-end; gap:8px; }
+  .rp-toolbar button { padding:8px 16px; border-radius:8px; border:1px solid #c7cedb; background:#fff; cursor:pointer; font-size:13px; font-weight:600; }
+  .rp-toolbar button.primary { background:#2f5fe0; border-color:#2f5fe0; color:#fff; }
+  .rp-item { max-width: 860px; margin: 0 auto 24px; background:#fff; border-radius:10px; padding:28px 32px; box-shadow:0 2px 10px rgba(20,25,40,.08); page-break-after: always; }
+  .rp-item:last-child { page-break-after: auto; }
+  .rp-head { display:flex; justify-content:space-between; align-items:center; border-bottom:3px solid #1c2230; padding-bottom:12px; margin-bottom:16px; }
+  .rp-title { font-size:19px; font-weight:800; }
+  .rp-badges { display:flex; align-items:center; gap:8px; }
+  .rp-pill { font-size:12px; font-weight:700; padding:3px 10px; border-radius:999px; background:#e2e8f5; color:#2f5fe0; }
+  .rp-pill.rp-점검완료 { background:#e1f5ea; color:#1a9c5e; }
+  .rp-docnum { font-family:"Consolas",monospace; font-size:12px; color:#5a6478; }
+  .rp-table { width:100%; border-collapse:collapse; margin-bottom:18px; font-size:13px; }
+  .rp-table th { width:150px; background:#f4f6fa; text-align:left; padding:8px 10px; border:1px solid #dfe4ee; font-weight:700; color:#3a4257; vertical-align:top; }
+  .rp-table td { padding:8px 10px; border:1px solid #dfe4ee; white-space:pre-wrap; word-break:break-word; }
+  .rp-section-title { font-size:13.5px; font-weight:800; color:#2f5fe0; margin:16px 0 8px; padding-left:8px; border-left:4px solid #2f5fe0; }
+  .rp-files { display:flex; flex-wrap:wrap; gap:12px; }
+  .rp-fig { margin:0; width:200px; border:1px solid #dfe4ee; border-radius:8px; overflow:hidden; background:#fafbfd; }
+  .rp-fig img { width:100%; height:150px; object-fit:cover; display:block; }
+  .rp-fig figcaption { font-size:11px; color:#5a6478; padding:5px 8px; word-break:break-all; }
+  .rp-doc { font-size:12.5px; padding:8px 12px; background:#f4f6fa; border-radius:6px; border:1px solid #dfe4ee; }
+  .rp-empty { font-size:12.5px; color:#8891a3; margin:4px 0 0; }
+  @media print {
+    body { background:#fff; padding:0; }
+    .rp-toolbar { display:none; }
+    .rp-item { box-shadow:none; border-radius:0; margin:0; padding:14mm; max-width:none; }
+    .rp-fig img { height:120px; }
+  }
+</style>
+</head>
+<body>
+  <div class="rp-toolbar">
+    <button class="primary" onclick="window.print()">인쇄 / PDF로 저장</button>
+  </div>
+  ${bodyHtml}
+</body>
+</html>`;
+}
+async function downloadReport(id){
+  const it = items.find(x => x.id === id);
+  if(!it) return;
+  showToast("통합보고서 생성 중...");
+  const body = await buildReportSectionHtml(it);
+  const html = reportShellHtml(body, it.id + " 변동점 보고서");
+  const blob = new Blob([html], { type: "text/html;charset=utf-8" });
+  triggerDownload(blob, it.id.replace(/\s+/g,"_") + "_보고서.html");
+  showToast("통합보고서 다운로드 완료");
+}
+async function downloadReportAll(list){
+  if(!list || list.length === 0){ showToast("다운로드할 데이터가 없습니다."); return; }
+  showToast("통합보고서 생성 중... (" + list.length + "건)");
+  const sections = [];
+  for(const it of list){
+    sections.push(await buildReportSectionHtml(it));
+  }
+  const html = reportShellHtml(sections.join(""), "변동점 통합보고서_" + todayStr());
+  const blob = new Blob([html], { type: "text/html;charset=utf-8" });
+  triggerDownload(blob, "변동점_통합보고서_" + todayStr() + ".html");
+  showToast("통합보고서 다운로드 완료 (" + list.length + "건)");
+}
+
+function triggerDownload(blob, filename){
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+/* ---------- A3: 현황 엑셀 다운로드 ---------- */
+function downloadExcel(){
+  const q = document.getElementById("s-search") ? document.getElementById("s-search").value.trim().toLowerCase() : "";
+  const st = document.getElementById("s-status") ? document.getElementById("s-status").value : "";
+  const cu = document.getElementById("s-customer") ? document.getElementById("s-customer").value : "";
+  const insp = document.getElementById("s-inspector") ? document.getElementById("s-inspector").value : "";
+  const from = document.getElementById("s-from") ? document.getElementById("s-from").value : "";
+  const to = document.getElementById("s-to") ? document.getElementById("s-to").value : "";
+  let list = items.filter(it => {
+    if(st && it.status !== st) return false;
+    if(cu && it.customer !== cu) return false;
+    if(insp && it.followName !== insp) return false;
+    const d = String(it.regDate||"").slice(0,10);
+    if(from && d < from) return false;
+    if(to && d > to) return false;
+    if(q){ const hay = ((it.id||"")+(it.regName||"")+(it.line||"")+(it.content||"")+(it.followName||"")).toLowerCase(); if(!hay.includes(q)) return false; }
+    return true;
+  });
+  const headers = ["문서번호","상태","변경일자","등록부서","등록자","차종/설비/라인","고객사","4M구분","변동점내용","변경전","변경후","후행부서","후행담당자","점검일자","조치결과","점검부서","점검담당자","재발방지대책","재발방지완료일"];
+  const rows = list.map(it => [
+    it.id, it.status, it.regDate, it.regDept, it.regName, it.line, it.customer, it.m4,
+    it.content, it.beforeContent, it.afterContent, it.followDept, it.followName,
+    it.inspDate, it.inspResult === "기타" ? it.inspResultEtc : it.inspResult,
+    it.inspDept, it.inspName,
+    it.ngAction || "", it.ngActionDate || ""
+  ]);
+  const wb = XLSX.utils.book_new();
+  const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+  ws['!cols'] = headers.map((h, i) => ({ wch: [22,8,10,12,8,16,8,8,30,20,20,12,8,10,12,12,8,30,10][i] || 12 }));
+  XLSX.utils.book_append_sheet(wb, ws, "변동점현황");
+  const wbout = XLSX.write(wb, { bookType:'xlsx', type:'array' });
+  triggerDownload(new Blob([wbout], { type:'application/octet-stream' }), "변동점현황_" + todayStr() + ".xlsx");
+  showToast("엑셀 다운로드 완료 (" + list.length + "건)");
+}
+
+/* ---------- B2: 대시보드 ---------- */
+function renderDashboardTab(){
+  const content = document.getElementById("content");
+  const total = items.length;
+  const pending = items.filter(it => it.status === "등록").length;
+  const done = items.filter(it => it.status === "점검완료").length;
+  const ng = items.filter(it => it.inspResult === "NG").length;
+  const ngNoAction = items.filter(it => it.inspResult === "NG" && !it.ngAction).length;
+  const myPending = items.filter(it => it.status === "등록" && it.followName === currentUser.name).length;
+
+  // 월별 집계
+  const byMonth = {};
+  items.forEach(it => {
+    const m = String(it.regDate||"").slice(0,7);
+    if(!m) return;
+    if(!byMonth[m]) byMonth[m] = { total:0, done:0, ng:0 };
+    byMonth[m].total++;
+    if(it.status==="점검완료") byMonth[m].done++;
+    if(it.inspResult==="NG") byMonth[m].ng++;
+  });
+  const months = Object.keys(byMonth).sort().slice(-6);
+
+  // 4M 집계
+  const byM4 = {};
+  items.forEach(it => { const k = it.m4||"미분류"; byM4[k] = (byM4[k]||0)+1; });
+
+  // 고객사 집계
+  const byCust = {};
+  items.forEach(it => { const k = it.customer||"미분류"; byCust[k] = (byCust[k]||0)+1; });
+
+  // 처리 소요일 평균 계산
+  const dones = items.filter(it => it.status==="점검완료" && it.regDate && it.inspDate);
+  const avgDays = dones.length > 0 ? Math.round(dones.reduce((s, it) => {
+    const diff = (new Date(it.inspDate) - new Date(it.regDate)) / 86400000;
+    return s + (isNaN(diff) ? 0 : Math.abs(diff));
+  }, 0) / dones.length) : 0;
+
+  const maxMonthTotal = Math.max(...months.map(m => byMonth[m].total), 1);
+
+  content.innerHTML = `
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:18px;">
+    ${[
+      ["전체 등록 건수", total, "var(--primary)"],
+      ["점검 대기", pending, "var(--warn)"],
+      ["점검 완료", done, "var(--success)"],
+      ["NG 발생", ng, "var(--danger)"],
+      ["NG 미조치", ngNoAction, ngNoAction>0?"var(--danger)":"var(--text-muted)"],
+      ["내 미처리", myPending, myPending>0?"var(--accent)":"var(--text-muted)"],
+    ].map(([label, val, color]) => `
+      <div class="card" style="text-align:center;padding:16px 10px;margin-bottom:0;">
+        <div style="font-size:28px;font-weight:800;color:${color};">${val}</div>
+        <div style="font-size:12px;color:var(--text-secondary);margin-top:4px;">${label}</div>
+      </div>`).join("")}
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">
+    <div class="card" style="margin-bottom:0;">
+      <h2 style="margin-bottom:12px;"><span class="num">📅</span>월별 변동점 현황 (최근 6개월)</h2>
+      ${months.length === 0 ? `<div class="empty">데이터가 없습니다.</div>` : `
+      <div style="display:flex;align-items:flex-end;gap:6px;height:120px;padding:0 4px;">
+        ${months.map(m => {
+          const d = byMonth[m];
+          const h = Math.round((d.total / maxMonthTotal) * 100);
+          return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;">
+            <div style="font-size:10px;color:var(--text-muted);">${d.total}</div>
+            <div style="width:100%;height:${h}px;background:var(--primary);border-radius:3px 3px 0 0;position:relative;" title="${m}: ${d.total}건 (완료:${d.done}, NG:${d.ng})">
+              ${d.ng > 0 ? `<div style="position:absolute;bottom:0;width:100%;height:${Math.round(d.ng/d.total*100)}%;background:var(--danger);border-radius:3px 3px 0 0;"></div>` : ""}
+            </div>
+            <div style="font-size:9.5px;color:var(--text-muted);text-align:center;">${m.slice(5)}월</div>
+          </div>`;
+        }).join("")}
+      </div>
+      <div style="display:flex;gap:12px;margin-top:10px;font-size:11px;">
+        <span><span style="display:inline-block;width:10px;height:10px;background:var(--primary);border-radius:2px;margin-right:3px;"></span>전체</span>
+        <span><span style="display:inline-block;width:10px;height:10px;background:var(--danger);border-radius:2px;margin-right:3px;"></span>NG</span>
+      </div>`}
+    </div>
+    <div class="card" style="margin-bottom:0;">
+      <h2 style="margin-bottom:12px;"><span class="num">⚡</span>4M 구분별 / 고객사별</h2>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+        <div>
+          <div style="font-size:11px;font-weight:700;color:var(--text-secondary);margin-bottom:6px;">4M 구분</div>
+          ${Object.entries(byM4).sort((a,b)=>b[1]-a[1]).map(([k,v]) => `
+            <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;margin-bottom:5px;">
+              <span>${esc(k)}</span>
+              <span style="font-weight:700;color:var(--primary);">${v}건</span>
+            </div>`).join("")}
+        </div>
+        <div>
+          <div style="font-size:11px;font-weight:700;color:var(--text-secondary);margin-bottom:6px;">고객사</div>
+          ${Object.entries(byCust).sort((a,b)=>b[1]-a[1]).map(([k,v]) => `
+            <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;margin-bottom:5px;">
+              <span>${esc(k)}</span>
+              <span style="font-weight:700;color:var(--accent);">${v}건</span>
+            </div>`).join("")}
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <h2><span class="num">⏱</span>처리 현황 요약</h2>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;font-size:13px;">
+      <div><span style="color:var(--text-secondary);">평균 점검 소요일:</span> <strong>${avgDays}일</strong></div>
+      <div><span style="color:var(--text-secondary);">점검 완료율:</span> <strong>${total > 0 ? Math.round(done/total*100) : 0}%</strong></div>
+      <div><span style="color:var(--text-secondary);">NG 미조치 건수:</span> <strong style="color:${ngNoAction>0?'var(--danger)':'inherit'}">${ngNoAction}건</strong></div>
+    </div>
+    ${ngNoAction > 0 ? `
+    <div style="margin-top:12px;padding:10px 14px;background:var(--danger-light);border-radius:8px;font-size:12.5px;color:var(--danger);">
+      ⚠ NG 처리 후 재발방지 대책이 입력되지 않은 건이 <strong>${ngNoAction}건</strong> 있습니다. 현황 탭에서 NG 필터 후 조치해주세요.
+    </div>` : ""}
+  </div>`;
+}
+
+/* ---------- B3: NG 후속관리 모달 ---------- */
+function openNgModal(id){
+  const it = items.find(x => x.id === id);
+  if(!it) return;
+  const root = document.getElementById("modal-root");
+  root.innerHTML = `
+    <div class="modal-overlay" id="ng-overlay">
+      <div class="modal" style="max-width:480px;">
+        <h3>NG 재발방지 대책 입력</h3>
+        <span class="docnum-badge">${esc(it.id)}</span>
+        <dl class="detail-grid" style="margin-top:12px;">
+          <dt>조치결과</dt><dd style="color:var(--danger);font-weight:700;">NG${it.inspResultEtc ? " (" + esc(it.inspResultEtc) + ")" : ""}</dd>
+          <dt>변동점 내용</dt><dd>${esc(it.content)}</dd>
+        </dl>
+        <div class="field" style="margin-top:14px;">
+          <label class="required">재발방지 대책</label>
+          <textarea id="ng-action" placeholder="원인 분석 및 재발방지 대책을 입력하세요" style="min-height:100px;">${esc(it.ngAction||"")}</textarea>
+        </div>
+        <div class="field">
+          <label>완료일자</label>
+          <input type="date" id="ng-date" value="${esc(it.ngActionDate||todayStr())}" style="max-width:200px;">
+        </div>
+        ${it.ngActionBy ? `<p class="hint">마지막 입력: ${esc(it.ngActionBy)} / ${esc(it.ngActionDate)}</p>` : ""}
+        <div class="modal-actions">
+          <button class="btn" id="ng-cancel">취소</button>
+          <button class="btn btn-primary" id="ng-save">저장</button>
+        </div>
+      </div>
+    </div>`;
+  const close = () => { root.innerHTML = ""; };
+  document.getElementById("ng-cancel").onclick = close;
+  document.getElementById("ng-overlay").onclick = e => { if(e.target.id==="ng-overlay") close(); };
+  document.getElementById("ng-save").onclick = async () => {
+    const action = document.getElementById("ng-action").value.trim();
+    if(!action){ showToast("재발방지 대책을 입력해주세요."); return; }
+    showLoading("재발방지 대책을 저장하고 있습니다...");
+    const json = await apiPost({ action: "updateNgAction", item: { id: it.id, ngAction: action, ngActionDate: document.getElementById("ng-date").value } });
+    if(!json){ hideLoading(); showToast(lastApiError || "저장에 실패했습니다."); return; }
+    await loadItems();
+    hideLoading();
+    close();
+    showToast("재발방지 대책이 저장되었습니다.");
+    render();
+  };
+}
+
+
+function render(){
+  const content = document.getElementById("content");
+  document.querySelectorAll(".tab-btn").forEach(b => b.classList.toggle("active", b.dataset.tab === currentTab));
+  if(currentTab === "register"){ content.innerHTML = renderRegisterTab(); bindRegisterTab(); }
+  else if(currentTab === "inspect"){ content.innerHTML = renderInspectTab(); bindInspectTab(); }
+  else if(currentTab === "status"){ content.innerHTML = renderStatusTab(); bindStatusTab(); }
+  else if(currentTab === "dashboard"){ renderDashboardTab(); }
+  else if(currentTab === "employees"){ renderEmployeesTab(); }
+}
+function bindTabs(){
+  document.querySelectorAll(".tab-btn").forEach(btn => {
+    btn.onclick = () => { currentTab = btn.dataset.tab; render(); };
+  });
+}
+document.getElementById("btn-show-qr").onclick = openQrModal;
+
+/* ---------- 사용자 정보 칩 / 헤더 ---------- */
+function renderUserChip(){
+  const el = document.getElementById("user-chip");
+  el.innerHTML = `
+    <span class="uc-name">${esc(currentUser.name)} (${esc(currentUser.dept)})</span>
+    <span class="uc-role">${esc(currentUser.role)}</span>
+    <button id="btn-logout" type="button">로그아웃</button>
+  `;
+  document.getElementById("btn-logout").onclick = () => {
+    confirmPopup("로그아웃", "로그아웃 하시겠습니까?", doLogout);
+  };
+}
+function renderMainTabs(){
+  const wrap = document.getElementById("main-tabs");
+  const myPending = items.filter(it => it.status === "등록" && it.followName === currentUser.name).length;
+  const badge = myPending > 0 ? `<span style="display:inline-block;background:var(--danger);color:#fff;border-radius:10px;font-size:10px;font-weight:700;padding:1px 6px;margin-left:5px;">${myPending}</span>` : "";
+  let html = `
+    <button class="tab-btn active" data-tab="register">등록</button>
+    <button class="tab-btn" data-tab="inspect">점검 / 확인${badge}</button>
+    <button class="tab-btn" data-tab="status">현황</button>
+    <button class="tab-btn" data-tab="dashboard">대시보드</button>
+  `;
+  if(isAdmin()) html += `<button class="tab-btn" data-tab="employees">직원 관리</button>`;
+  wrap.innerHTML = html;
+  bindTabs();
+}
+
+/* ---------- 직원 관리 (관리자 전용) ---------- */
+async function renderEmployeesTab(){
+  const content = document.getElementById("content");
+  content.innerHTML = `<div class="empty">불러오는 중입니다...</div>`;
+  let employees;
+  try{ employees = await loadEmployees(); }
+  catch(e){ content.innerHTML = `<div class="empty">직원 목록을 불러오지 못했습니다.</div>`; return; }
+
+  content.innerHTML = `
+  <div class="card">
+    <h2><span class="num">👤</span>직원 계정 관리 (${employees.length}명)<button class="btn btn-sm btn-primary" id="btn-add-emp" type="button" style="margin-left:auto;">계정 추가</button></h2>
+    <div style="overflow-x:auto;">
+    <table style="table-layout:fixed;width:100%;min-width:520px;">
+      <thead><tr>
+        <th style="width:90px;">이름(아이디)</th><th style="width:90px;">부서</th><th>이메일</th>
+        <th style="width:64px;">역할</th><th style="width:64px;">사용여부</th><th style="width:64px;"></th>
+      </tr></thead>
+      <tbody>
+        ${employees.map(e => `
+          <tr>
+            <td style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(e.name)}</td>
+            <td style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(e.dept)}</td>
+            <td style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(e.email)}</td>
+            <td style="white-space:nowrap;"><span class="status-pill ${e.role==='관리자'?'st-등록':'st-점검완료'}">${esc(e.role)}</span></td>
+            <td style="white-space:nowrap;">${e.active==='Y' ? '사용' : '중지'}</td>
+            <td style="white-space:nowrap;"><button class="btn btn-sm" data-edit="${esc(e.username)}">편집</button></td>
+          </tr>`).join("")}
+      </tbody>
+    </table>
+    </div>
+  </div>`;
+  document.getElementById("btn-add-emp").onclick = () => openEmployeeModal(null);
+  content.querySelectorAll("[data-edit]").forEach(btn => {
+    btn.onclick = () => {
+      const emp = employees.find(x => x.username === btn.dataset.edit);
+      openEmployeeModal(emp);
+    };
+  });
+}
+function openEmployeeModal(emp){
+  const isNew = !emp;
+  const root = document.getElementById("modal-root");
+  root.innerHTML = `
+    <div class="modal-overlay" id="emp-overlay">
+      <div class="modal" style="max-width:420px;">
+        <h3>${isNew ? "직원 계정 추가" : "직원 계정 편집"}</h3>
+        <div class="field">
+          <label class="required">이름 (아이디)</label>
+          <input type="text" id="emp-name" value="${isNew ? "" : esc(emp.name)}" ${isNew ? "" : "disabled"}>
+        </div>
+        <div class="row">
+          <div class="field"><label class="required">부서</label><input type="text" id="emp-dept" value="${isNew ? "" : esc(emp.dept)}"></div>
+          <div class="field"><label>이메일</label><input type="text" id="emp-email" value="${isNew ? "" : esc(emp.email)}"></div>
+        </div>
+        <div class="row">
+          <div class="field"><label class="required">역할</label>
+            <select id="emp-role">
+              <option value="일반" ${(!isNew && emp.role==='일반')?'selected':''}>일반</option>
+              <option value="관리자" ${(!isNew && emp.role==='관리자')?'selected':''}>관리자</option>
+            </select>
+          </div>
+          <div class="field"><label class="required">사용여부</label>
+            <select id="emp-active">
+              <option value="Y" ${(isNew || emp.active==='Y')?'selected':''}>사용</option>
+              <option value="N" ${(!isNew && emp.active==='N')?'selected':''}>중지</option>
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <label ${isNew ? 'class="required"' : ''}>${isNew ? "초기 비밀번호" : "비밀번호 재설정 (비워두면 유지)"}</label>
+          <input type="text" id="emp-password" placeholder="${isNew ? "8자 이상, 영문+숫자 조합" : "변경 시에만 입력"}">
+          <p class="hint" style="margin:4px 0 0;">사번은 비밀번호로 사용할 수 없습니다. 본인이 최초 로그인 시 직접 변경하게 됩니다.</p>
+        </div>
+        <div class="modal-actions">
+          ${isNew ? "" : `<button class="btn btn-danger" id="emp-delete" style="margin-right:auto;">계정 삭제</button>`}
+          <button class="btn" id="emp-cancel">취소</button>
+          <button class="btn btn-primary" id="emp-save">저장</button>
+        </div>
+      </div>
+    </div>`;
+  const close = () => { root.innerHTML = ""; render(); };
+  document.getElementById("emp-cancel").onclick = close;
+  document.getElementById("emp-overlay").onclick = (e) => { if(e.target.id==="emp-overlay") close(); };
+  if(!isNew){
+    document.getElementById("emp-delete").onclick = () => {
+      confirmPopup("계정 삭제", `${emp.name} 계정을 삭제하시겠습니까?`, async () => {
+        const json = await deleteEmployeeApi(emp.username);
+        if(!json){ showToast(lastApiError || "삭제에 실패했습니다."); return; }
+        showToast("삭제되었습니다.");
+        close();
+      });
+    };
+  }
+  document.getElementById("emp-save").onclick = async () => {
+    const name = document.getElementById("emp-name").value.trim();
+    const dept = document.getElementById("emp-dept").value.trim();
+    const email = document.getElementById("emp-email").value.trim();
+    const role = document.getElementById("emp-role").value;
+    const active = document.getElementById("emp-active").value;
+    const password = document.getElementById("emp-password").value.trim();
+    if(!name || !dept){ showToast("필수 항목(*)을 입력해주세요."); return; }
+    if(isNew && !password){ showToast("신규 계정은 초기 비밀번호를 입력해주세요."); return; }
+    if(password){
+      const v = validateNewPassword(password, { name: name });
+      if(v){ showToast(v); return; }
+    }
+    let json;
+    if(isNew){
+      json = await addEmployeeApi({ name, dept, email, role, password });
+    }else{
+      json = await updateEmployeeApi({ username: emp.username, dept, email, role, active, password: password || undefined });
+    }
+    if(!json){ showToast(lastApiError || "저장에 실패했습니다."); return; }
+    showToast("저장되었습니다.");
+    close();
+  };
+}
+
+/* ---------- 로그인 화면 ---------- */
+function showLoginScreen(){
+  document.getElementById("login-screen").style.display = "flex";
+  document.getElementById("app").style.display = "none";
+  const userInput = document.getElementById("login-username");
+  const passInput = document.getElementById("login-password");
+  const errEl = document.getElementById("login-err");
+  const btn = document.getElementById("login-submit");
+  const submit = async () => {
+    const username = userInput.value.trim();
+    const password = passInput.value;
+    if(!username || !password) return;
+    errEl.style.display = "none";
+    btn.disabled = true; btn.textContent = "로그인 중...";
+    const json = await doLogin(username, password);
+    btn.disabled = false; btn.textContent = "로그인";
+    if(json && json.ok){
+      authToken = json.token; currentUser = json.user;
+      localStorage.setItem("sy_token", authToken);
+      localStorage.setItem("sy_user", JSON.stringify(currentUser));
+      // 최초 로그인(또는 사번을 비밀번호로 사용 중)이면 변경 화면으로 강제 이동
+      if(currentUser && currentUser.mustChangePw){
+        passInput.value = "";
+        showPasswordChangeScreen(password);
+        return;
+      }
+      await startApp();
+    }else{
+      errEl.textContent = lastApiError || "아이디 또는 비밀번호가 올바르지 않습니다.";
+      errEl.style.display = "block";
+    }
+  };
+  btn.onclick = submit;
+  passInput.onkeydown = (e) => { if(e.key==="Enter") submit(); };
+  userInput.onkeydown = (e) => { if(e.key==="Enter") passInput.focus(); };
+}
+
+/* ---------- 비밀번호 변경 화면 (최초 로그인 시 강제) ---------- */
+function validateNewPassword(pw, user){
+  if(String(pw).length < 8) return "비밀번호는 8자 이상이어야 합니다.";
+  let kinds = 0;
+  if(/[a-zA-Z]/.test(pw)) kinds++;
+  if(/[0-9]/.test(pw)) kinds++;
+  if(/[^a-zA-Z0-9]/.test(pw)) kinds++;
+  if(kinds < 2) return "영문, 숫자, 특수문자 중 2종류 이상을 조합해주세요.";
+  if(/^\d+$/.test(pw)) return "숫자로만 이루어진 비밀번호는 사용할 수 없습니다.";
+  if(user && user.name && pw.includes(user.name)) return "이름이 포함된 비밀번호는 사용할 수 없습니다.";
+  return "";
+}
+function updatePwRuleHints(){
+  const pw = document.getElementById("pw-new").value;
+  const user = currentUser || {};
+  const checks = {
+    len: pw.length >= 8,
+    kind: ((/[a-zA-Z]/.test(pw)?1:0) + (/[0-9]/.test(pw)?1:0) + (/[^a-zA-Z0-9]/.test(pw)?1:0)) >= 2,
+    notnum: pw.length > 0 && !/^\d+$/.test(pw),
+    notid: pw.length > 0 && !(user.name && pw.includes(user.name))
+  };
+  document.querySelectorAll("#pw-rules [data-rule]").forEach(el => {
+    const ok = checks[el.dataset.rule];
+    el.style.color = pw.length === 0 ? "var(--text-secondary)" : (ok ? "var(--accent)" : "var(--danger)");
+  });
+}
+function showPasswordChangeScreen(prefillCurrent){
+  document.getElementById("login-screen").style.display = "none";
+  document.getElementById("app").style.display = "none";
+  const screen = document.getElementById("pwchange-screen");
+  screen.style.display = "flex";
+
+  const curEl = document.getElementById("pw-current");
+  const newEl = document.getElementById("pw-new");
+  const new2El = document.getElementById("pw-new2");
+  const errEl = document.getElementById("pw-err");
+  const btn = document.getElementById("pw-submit");
+
+  curEl.value = prefillCurrent || "";
+  newEl.value = ""; new2El.value = "";
+  errEl.style.display = "none";
+  newEl.oninput = updatePwRuleHints;
+  updatePwRuleHints();
+  setTimeout(() => newEl.focus(), 50);
+
+  const fail = (msg) => { errEl.textContent = msg; errEl.style.display = "block"; };
+
+  const submit = async () => {
+    errEl.style.display = "none";
+    const cur = curEl.value, np = newEl.value, np2 = new2El.value;
+    if(!cur || !np || !np2){ fail("모든 항목을 입력해주세요."); return; }
+    if(np !== np2){ fail("새 비밀번호가 서로 일치하지 않습니다."); return; }
+    if(np === cur){ fail("현재 비밀번호와 다른 비밀번호를 사용해주세요."); return; }
+    const v = validateNewPassword(np, currentUser);
+    if(v){ fail(v); return; }
+
+    btn.disabled = true; btn.textContent = "변경 중...";
+    const json = await changePasswordApi(cur, np);
+    btn.disabled = false; btn.textContent = "비밀번호 변경";
+    if(!json){ fail(lastApiError || "비밀번호 변경에 실패했습니다."); return; }
+
+    if(currentUser){
+      currentUser.mustChangePw = false;
+      localStorage.setItem("sy_user", JSON.stringify(currentUser));
+    }
+    screen.style.display = "none";
+    await startApp();
+    showToast("비밀번호가 변경되었습니다.");
+  };
+  btn.onclick = submit;
+  new2El.onkeydown = (e) => { if(e.key === "Enter") submit(); };
+  document.getElementById("pw-logout").onclick = () => {
+    screen.style.display = "none";
+    doLogout();
+  };
+}
+
+/* ---------- 앱 시작 ---------- */
+async function startApp(){
+  document.getElementById("login-screen").style.display = "none";
+  document.getElementById("pwchange-screen").style.display = "none";
+  document.getElementById("app").style.display = "block";
+  renderUserChip();
+  renderMainTabs();
+  document.getElementById("content").innerHTML = `<div class="empty">불러오는 중입니다...</div>`;
+  await Promise.all([loadMaster(), loadDirectory(), loadItems()]);
+  currentTab = "register";
+  render();
+}
+
+/* ---------- 초기화 ---------- */
+(async function init(){
+  if(authToken && currentUser){
+    try{
+      // 세션 유효성 확인 — 서버가 토큰을 거부하면(만료/권한중지) 로그인 화면으로
+      // ?type=me 는 보안패치 적용 후 사용 가능. 미적용 서버에서는 기존 방식으로 폴백.
+      try{
+        const me = await apiGet("?type=me");
+        // 서버가 내려준 사용자 정보로 갱신 (localStorage 위조 방지)
+        if(me && me.user){
+          currentUser = me.user;
+          localStorage.setItem("sy_user", JSON.stringify(currentUser));
+        }
+      }catch(meErr){
+        if(!authToken) throw meErr;      // 세션 만료로 토큰이 지워진 경우
+        await apiGet("?type=directory"); // 구버전 서버 호환
+      }
+      if(currentUser && currentUser.mustChangePw){
+        showPasswordChangeScreen("");
+        return;
+      }
+      await startApp();
+      return;
+    }catch(e){
+      authToken = ""; currentUser = null;
+      localStorage.removeItem("sy_token"); localStorage.removeItem("sy_user");
+    }
+  }
+  showLoginScreen();
+})();
+</script>
+</body>
+</html>
