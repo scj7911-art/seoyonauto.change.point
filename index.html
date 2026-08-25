@@ -199,42 +199,12 @@
       <input type="text" id="login-username" placeholder="예: 홍길동" autocomplete="username">
     </div>
     <div class="field">
-      <label class="required">비밀번호</label>
-      <input type="password" id="login-password" placeholder="비밀번호" autocomplete="current-password">
+      <label class="required">비밀번호 (사번)</label>
+      <input type="password" id="login-password" placeholder="사번" autocomplete="current-password">
     </div>
     <p id="login-err" style="color:var(--danger);font-size:12.5px;display:none;margin:2px 0 10px;">아이디 또는 비밀번호가 올바르지 않습니다.</p>
     <button class="btn btn-primary btn-block" id="login-submit" style="padding:11px;">로그인</button>
-    <p class="hint" style="margin-top:14px;">아이디는 이름입니다. 최초 로그인 시 비밀번호를 변경해야 합니다. 비밀번호를 잊으신 경우 관리자에게 초기화를 요청하세요.</p>
-  </div>
-</div>
-
-<div id="pwchange-screen" class="login-wrap" style="display:none;">
-  <div class="login-card">
-    <p class="header-titles" style="margin-bottom:8px;">
-      <span class="header-title-line sys-name" style="color:var(--primary);">비밀번호 변경</span>
-    </p>
-    <p class="hint" id="pw-reason" style="margin:0 0 16px;">보안을 위해 최초 로그인 시 비밀번호를 변경해야 합니다.</p>
-    <div class="field">
-      <label class="required">현재 비밀번호</label>
-      <input type="password" id="pw-current" autocomplete="current-password">
-    </div>
-    <div class="field">
-      <label class="required">새 비밀번호</label>
-      <input type="password" id="pw-new" autocomplete="new-password" placeholder="8자 이상">
-    </div>
-    <div class="field">
-      <label class="required">새 비밀번호 확인</label>
-      <input type="password" id="pw-new2" autocomplete="new-password">
-    </div>
-    <div id="pw-rules" style="font-size:11.5px;line-height:1.9;margin:2px 0 12px;color:var(--text-secondary);">
-      <div data-rule="len">· 8자 이상</div>
-      <div data-rule="kind">· 영문 / 숫자 / 특수문자 중 2종류 이상 조합</div>
-      <div data-rule="notnum">· 숫자로만 구성 불가</div>
-      <div data-rule="notid">· 사번 · 이름 사용 불가</div>
-    </div>
-    <p id="pw-err" style="color:var(--danger);font-size:12.5px;display:none;margin:2px 0 10px;"></p>
-    <button class="btn btn-primary btn-block" id="pw-submit" style="padding:11px;">비밀번호 변경</button>
-    <button class="btn btn-block" id="pw-logout" style="padding:9px;margin-top:8px;">로그아웃</button>
+    <p class="hint" style="margin-top:14px;">아이디는 이름, 비밀번호는 사번입니다. 문제가 있으면 관리자에게 문의해주세요.</p>
   </div>
 </div>
 
@@ -260,34 +230,12 @@
   <div class="content" id="content"></div>
 </div>
 <div id="modal-root"></div>
+<div id="lightbox-root"></div>
 <div class="toast" id="toast"></div>
 
-<!--
-  [보안] 외부 CDN 라이브러리
-  ------------------------------------------------------------------
-  현재 Cloudflare CDN에서 3개 라이브러리를 불러옵니다. CDN이 변조되면
-  임의의 스크립트가 실행될 수 있으므로 아래 중 하나를 적용해야 합니다.
-
-  ▶ 권장 : 라이브러리 3개를 내려받아 /lib 폴더에 저장 후 아래처럼 변경
-        <script src="lib/jszip.min.js"></script>
-        <script src="lib/qrcode.min.js"></script>
-        <script src="lib/xlsx.full.min.js"></script>
-     (외부 서비스 의존이 사라져 보안 점검 항목 ⑨⑩ 해소)
-
-  ▶ 차선 : SRI(무결성 해시) 적용
-     cdnjs.com 에서 각 라이브러리 검색 → 파일 옆 [Copy SRI] 클릭 →
-     아래 각 태그에 integrity="sha512-..." 속성을 추가하세요.
-     예) <script src="..." integrity="sha512-xxxx"
-                 crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-     ※ 해시가 틀리면 스크립트가 아예 로드되지 않으니 반드시 검증 후 배포
-  ------------------------------------------------------------------
--->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"
-        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"
-        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"
-        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
 /* ---------- 상수 / 마스터 데이터 기본값 ---------- */
 const DEFAULT_MASTER = {
@@ -304,36 +252,18 @@ let regImages = { before: [], after: [] };
 let inspTargetId = null;
 let inspImages = [];
 let authToken = localStorage.getItem("sy_token") || "";
-/* currentUser는 화면 표시(UI)용 캐시일 뿐입니다.
-   실제 권한 판정은 서버(Apps Script)가 토큰으로 역할을 재조회하여 수행합니다.
-   localStorage를 조작해도 서버가 관리자 전용 action을 거부하므로 권한 상승은 불가합니다. */
 let currentUser = null;
 try{ currentUser = JSON.parse(localStorage.getItem("sy_user") || "null"); }catch(e){ currentUser = null; }
 
 /* ---------- 저장소 헬퍼 (Google Apps Script 연동) ---------- */
 const API_URL = "https://script.google.com/macros/s/AKfycby5eO9cFavm9VcU5zInM5kkYsifDdA4f463Q2XvReetObIJa0iPuXnYgJ8Wu68RIpVs/exec";
 
-/* 세션 만료(code:"AUTH") 응답을 받으면 즉시 로그아웃 처리 */
-let sessionExpiredHandled = false;
-function handleAuthFailure(){
-  if(sessionExpiredHandled) return;
-  sessionExpiredHandled = true;
-  authToken = ""; currentUser = null;
-  localStorage.removeItem("sy_token");
-  localStorage.removeItem("sy_user");
-  alert("세션이 만료되었습니다. 다시 로그인해주세요.");
-  location.reload();
-}
-
 async function apiGet(query){
   const sep = (query && query.includes("?")) ? "&" : "?";
   const url = API_URL + (query || "") + sep + "token=" + encodeURIComponent(authToken);
   const res = await fetch(url);
   const json = await res.json();
-  if(!json.ok){
-    if(json.code === "AUTH") handleAuthFailure();
-    throw new Error(json.error || "조회 실패");
-  }
+  if(!json.ok) throw new Error(json.error || "조회 실패");
   return json;
 }
 /* apiPost: 성공 시 응답 JSON(ok:true 포함) 반환, 실패 시 null 반환.
@@ -351,12 +281,7 @@ async function apiPost(payload){
       });
       const json = await res.json();
       if(json.ok) return json;
-      if(json.error){
-        lastApiError = json.error;
-        // 세션 만료 → 재로그인 / 권한 없음 → 메시지만 표시 (재시도 안 함)
-        if(json.code === "AUTH") handleAuthFailure();
-        return null;
-      }
+      if(json.error){ lastApiError = json.error; return null; }
     }catch(e){ console.error(e); }
     if(attempt === 0) await new Promise(r=>setTimeout(r,600));
   }
@@ -366,9 +291,6 @@ async function apiPost(payload){
 /* ---------- 로그인 / 세션 ---------- */
 async function doLogin(username, password){
   return await apiPost({ action: "login", username: username, password: password });
-}
-async function changePasswordApi(currentPassword, newPassword){
-  return await apiPost({ action: "changePassword", currentPassword: currentPassword, newPassword: newPassword });
 }
 async function doLogout(){
   await apiPost({ action: "logout" });
@@ -652,12 +574,12 @@ function openQrModal(){
 
 /* ---------- 이미지 확대 보기 (라이트박스) ---------- */
 function openLightbox(src){
-  const root = document.getElementById("modal-root");
-  root.innerHTML = `
-    <div class="modal-overlay" id="lb-overlay" style="background:rgba(10,12,18,.86);cursor:zoom-out;">
+  const lb = document.getElementById("lightbox-root");
+  lb.innerHTML = `
+    <div class="modal-overlay" id="lb-overlay" style="background:rgba(10,12,18,.86);cursor:zoom-out;z-index:3000;">
       <img src="${src}" style="max-width:92vw;max-height:88vh;border-radius:8px;box-shadow:0 8px 30px rgba(0,0,0,.5);">
     </div>`;
-  document.getElementById("lb-overlay").onclick = () => { root.innerHTML = ""; render(); };
+  document.getElementById("lb-overlay").onclick = (e) => { e.stopPropagation(); lb.innerHTML = ""; };
 }
 function bindLightbox(container){
   container.querySelectorAll(".thumb img").forEach(img => {
@@ -766,7 +688,19 @@ function openMasterEditor(initialKey){
 /* ---------- 탭: 등록 ---------- */
 function renderRegisterTab(){
   const docnum = previewDocNumber();
+  const myPending = items.filter(it => it.status === "등록" && String(it.followName||"").split(",").map(n=>n.trim()).indexOf(currentUser.name) !== -1);
+  const pendingBanner = myPending.length > 0 ? `
+  <div class="card" style="background:var(--accent-light, #fdf4e8);border-left:4px solid var(--accent);margin-bottom:12px;cursor:pointer;" id="my-pending-banner">
+    <div style="display:flex;align-items:center;justify-content:space-between;">
+      <div>
+        <strong style="color:var(--accent);">📋 내 미처리 변동점: ${myPending.length}건</strong>
+        <div style="font-size:12px;color:var(--text-secondary);margin-top:4px;">${myPending.slice(0,3).map(it => esc(it.id) + " (" + esc(it.content).slice(0,15) + ")").join(" · ")}${myPending.length > 3 ? " ..." : ""}</div>
+      </div>
+      <span style="color:var(--accent);font-size:13px;white-space:nowrap;">점검하러 가기 →</span>
+    </div>
+  </div>` : "";
   return `
+  ${pendingBanner}
   <div class="card">
     <h2><span class="num">1</span>변경일시</h2>
     <div class="field" style="max-width:220px;">
@@ -874,6 +808,8 @@ function renderRegisterTab(){
 
 function bindRegisterTab(){
   if(isAdmin()) document.getElementById("btn-edit-master").onclick = () => openMasterEditor("lines");
+  const banner = document.getElementById("my-pending-banner");
+  if(banner) banner.onclick = () => { currentTab = "inspect"; render(); };
 
   const wireFileBox = (boxId, inputId, thumbsId, bucket) => {
     const box = document.getElementById(boxId);
@@ -1105,7 +1041,7 @@ function openInspectModal(id){
           <div class="thumbs" id="i-thumbs"></div>
         </div>
         <div class="modal-actions">
-          ${isAdmin() ? `<button class="btn btn-danger" id="insp-delete">삭제</button><button class="btn" id="insp-edit">등록내용 수정</button>` : ""}
+          ${isAdmin() ? `<button class="btn btn-danger" id="insp-delete">삭제</button>` : ""}${(isAdmin() || it.regName === currentUser.name) ? `<button class="btn" id="insp-edit">등록내용 수정</button>` : ""}
           <button class="btn" id="insp-cancel">취소</button>
           <button class="btn btn-primary" id="insp-save">저장</button>
         </div>
@@ -1115,8 +1051,10 @@ function openInspectModal(id){
   document.getElementById("insp-cancel").onclick = close;
   document.getElementById("insp-overlay").onclick = (e) => { if(e.target.id==="insp-overlay") close(); };
   bindLightbox(root);
-  if(isAdmin()){
+  if(isAdmin() || it.regName === currentUser.name){
     document.getElementById("insp-edit").onclick = () => { close(); openEditModal(it.id); };
+  }
+  if(isAdmin()){
     document.getElementById("insp-delete").onclick = () => {
       confirmPopup("삭제 확인", "이 변동점을 삭제하시겠습니까? 삭제 후에는 복구할 수 없습니다.", async () => {
         showLoading("삭제 처리 중입니다...");
@@ -1181,7 +1119,6 @@ function openInspectModal(id){
 
 /* ---------- 탭: 현황 ---------- */
 let statusSort = { key: "regDate", dir: "desc" };
-let lastFilteredStatusList = [];
 
 function renderStatusTab(){
   const inspectorNames = Array.from(new Set(
@@ -1208,7 +1145,6 @@ function renderStatusTab(){
       </div>
       <div style="display:flex;gap:6px;margin-left:auto;">
         <button class="btn" id="s-downall">ZIP 다운로드</button>
-        <button class="btn" id="s-downreport">통합보고서(사진+텍스트)</button>
         <button class="btn btn-primary" id="s-downxlsx">엑셀 다운로드</button>
       </div>
     </div>
@@ -1237,7 +1173,7 @@ function statusTableHtml(list){
         ${th("regName", "등록자", "76px")}
         ${th("followName", "점검담당자", "96px")}
         ${th("status", "상태", "84px")}
-        <th style="width:150px;"></th>
+        <th style="width:86px;"></th>
       </tr></thead>
       <tbody>
         ${list.map(it => `
@@ -1251,7 +1187,7 @@ function statusTableHtml(list){
             <td style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(it.regName)}</td>
             <td style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${esc(it.followDept)} / ${esc(it.followName)}">${esc(it.followName)}</td>
             <td style="white-space:nowrap;"><span class="status-pill st-${esc(it.status)}">${esc(it.status)}</span></td>
-            <td style="white-space:nowrap;"><button class="btn btn-sm" data-dl="${esc(it.id)}" title="ZIP 다운로드">ZIP</button> <button class="btn btn-sm" data-rp="${esc(it.id)}" title="통합보고서(사진+텍스트)">보고서</button></td>
+            <td style="white-space:nowrap;"><button class="btn btn-sm" data-dl="${esc(it.id)}" title="다운로드">다운로드</button></td>
           </tr>`).join("")}
       </tbody>
     </table>`;
@@ -1288,7 +1224,6 @@ function applyStatusFilter(){
 
   document.getElementById("s-count").textContent = `총 ${list.length}건`;
   document.getElementById("s-table-wrap").innerHTML = statusTableHtml(list);
-  lastFilteredStatusList = list;
   bindStatusRows();
 }
 
@@ -1296,7 +1231,6 @@ function bindStatusTab(){
   ["s-search"].forEach(id => document.getElementById(id).oninput = applyStatusFilter);
   ["s-status","s-customer","s-inspector","s-from","s-to"].forEach(id => document.getElementById(id).onchange = applyStatusFilter);
   document.getElementById("s-downall").onclick = downloadAll;
-  document.getElementById("s-downreport").onclick = () => downloadReportAll(lastFilteredStatusList);
   document.getElementById("s-downxlsx").onclick = downloadExcel;
   document.getElementById("s-reset").onclick = () => {
     ["s-search","s-status","s-customer","s-inspector","s-from","s-to"].forEach(id => document.getElementById(id).value = "");
@@ -1316,9 +1250,6 @@ function bindStatusRows(){
   });
   document.querySelectorAll("#s-table-wrap [data-dl]").forEach(btn => {
     btn.onclick = (e) => { e.stopPropagation(); downloadOne(btn.dataset.dl); };
-  });
-  document.querySelectorAll("#s-table-wrap [data-rp]").forEach(btn => {
-    btn.onclick = (e) => { e.stopPropagation(); downloadReport(btn.dataset.rp); };
   });
   document.querySelectorAll("#s-table-wrap tr[data-id]").forEach(row => {
     row.onclick = () => openDetailModal(row.dataset.id);
@@ -1367,10 +1298,9 @@ function openDetailModal(id){
         </dl>` : ""}
         ` : ""}
         <div class="modal-actions">
-          ${isAdmin() ? `<button class="btn btn-danger" id="dt-delete">삭제</button><button class="btn" id="dt-edit">수정</button>` : ""}
+          ${isAdmin() ? `<button class="btn btn-danger" id="dt-delete">삭제</button>` : ""}${(isAdmin() || it.regName === currentUser.name) ? `<button class="btn" id="dt-edit">수정</button>` : ""}
           ${it.status === "점검완료" && it.inspResult === "NG" ? `<button class="btn btn-accent" id="dt-ng">재발방지 대책</button>` : ""}
-          <button class="btn" id="dt-dl">ZIP 다운로드</button>
-          <button class="btn" id="dt-rp">통합보고서</button>
+          <button class="btn" id="dt-dl">다운로드</button>
           <button class="btn btn-primary" id="dt-close">닫기</button>
         </div>
       </div>
@@ -1380,7 +1310,6 @@ function openDetailModal(id){
   document.getElementById("dt-overlay").onclick = (e) => { if(e.target.id==="dt-overlay") close(); };
   bindLightbox(root);
   document.getElementById("dt-dl").onclick = () => downloadOne(it.id);
-  document.getElementById("dt-rp").onclick = () => downloadReport(it.id);
   if(it.status === "점검완료" && it.inspResult === "NG"){
     document.getElementById("dt-ng").onclick = () => { close(); openNgModal(it.id); };
   }
@@ -1397,6 +1326,8 @@ function openDetailModal(id){
         render();
       });
     };
+  }
+  if(isAdmin() || it.regName === currentUser.name){
     document.getElementById("dt-edit").onclick = () => { close(); openEditModal(it.id); };
   }
 }
@@ -1559,145 +1490,6 @@ function buildSummaryText(it){
     it.status === "점검완료" ? `점검부서/담당자: ${it.inspDept} / ${it.inspName}` : ""
   ].filter(Boolean).join("\n");
 }
-/* ---------- 통합보고서 (사진+텍스트 결합 HTML, 인쇄 시 PDF 저장 가능) ---------- */
-async function resolveReportImages(arr){
-  const out = [];
-  if(!arr || arr.length === 0) return out;
-  for(let i = 0; i < arr.length; i++){
-    const f = arr[i];
-    if(!f || !f.data) continue;
-    const src = String(f.data);
-    const hashIdx = src.indexOf("#");
-    const fileName = hashIdx !== -1 ? decodeURIComponent(src.substring(hashIdx + 1)) : (f.name || "file");
-    let dataUrl = null;
-    try{
-      if(src.startsWith("data:")){
-        dataUrl = src;
-      } else if(src.includes("drive.google.com")){
-        const m = src.match(/[?&]id=([^&]+)/);
-        if(m){
-          const json = await apiGet("?type=image&fileId=" + encodeURIComponent(m[1]));
-          if(json.data && json.data.startsWith("data:")) dataUrl = json.data;
-        }
-      }
-    }catch(e){ /* 실패 시 링크만 표기 */ }
-    out.push({ name: fileName, dataUrl, isImage: !!(dataUrl && dataUrl.startsWith("data:image")), link: src.split("#")[0] });
-  }
-  return out;
-}
-function reportFileBlockHtml(files){
-  if(!files || files.length === 0) return `<p class="rp-empty">첨부 없음</p>`;
-  return `<div class="rp-files">${files.map(f => {
-    if(f.isImage && f.dataUrl){
-      return `<figure class="rp-fig"><img src="${f.dataUrl}"><figcaption>${esc(f.name)}</figcaption></figure>`;
-    }
-    return `<div class="rp-doc">${getFileIcon(f.name)} ${esc(f.name)}${f.dataUrl ? "" : (f.link ? ` <a href="${esc(f.link)}" target="_blank">(원본 링크)</a>` : "")}</div>`;
-  }).join("")}</div>`;
-}
-async function buildReportSectionHtml(it){
-  const [beforeFiles, afterFiles, inspFiles] = await Promise.all([
-    resolveReportImages(it.beforeImages),
-    resolveReportImages(it.afterImages),
-    resolveReportImages(it.inspImages)
-  ]);
-  const row = (label, value, danger) => `<tr><th>${esc(label)}</th><td${danger?' style="color:#c0392b;font-weight:700;"':''}>${esc(value||"")}</td></tr>`;
-  return `
-  <section class="rp-item">
-    <div class="rp-head">
-      <div class="rp-title">변동점 관리 보고서</div>
-      <div class="rp-badges"><span class="rp-pill rp-${esc(it.status)}">${esc(it.status)}</span><span class="rp-docnum">${esc(it.id)}</span></div>
-    </div>
-    <table class="rp-table">
-      ${row("변경일자", fmtDate(it.regDate))}
-      ${row("등록부서/등록자", `${it.regDept||""} / ${it.regName||""}`)}
-      ${row("차종/설비/라인", it.line)}
-      ${row("고객사", it.customer)}
-      ${row("4M 구분", it.m4)}
-      ${row("변동점 내용", it.content)}
-      ${row("변경 전 내용", it.beforeContent)}
-      ${row("변경 후 내용", it.afterContent)}
-      ${row("후행부서/담당자", `${it.followDept||""} / ${it.followName||""}`)}
-      ${it.status === "점검완료" ? row("점검일자", fmtDate(it.inspDate)) : ""}
-      ${it.status === "점검완료" ? row("조치결과", it.inspResult === "기타" ? it.inspResultEtc : it.inspResult, it.inspResult === "NG") : ""}
-      ${it.status === "점검완료" ? row("점검부서/담당자", `${it.inspDept||""} / ${it.inspName||""}`) : ""}
-      ${it.inspResult === "NG" && it.ngAction ? row("재발방지대책", it.ngAction) : ""}
-    </table>
-    <div class="rp-section-title">변경 전 사진/첨부</div>
-    ${reportFileBlockHtml(beforeFiles)}
-    <div class="rp-section-title">변경 후 사진/첨부</div>
-    ${reportFileBlockHtml(afterFiles)}
-    ${it.status === "점검완료" ? `<div class="rp-section-title">점검 확인 사진/첨부</div>${reportFileBlockHtml(inspFiles)}` : ""}
-  </section>`;
-}
-function reportShellHtml(bodyHtml, title){
-  return `<!DOCTYPE html>
-<html lang="ko">
-<head>
-<meta charset="UTF-8">
-<title>${esc(title)}</title>
-<style>
-  * { box-sizing: border-box; }
-  body { font-family: "Malgun Gothic", "Apple SD Gothic Neo", sans-serif; margin: 0; padding: 24px; background:#eef1f5; color:#1c2230; }
-  .rp-toolbar { max-width: 860px; margin: 0 auto 16px; display:flex; justify-content:flex-end; gap:8px; }
-  .rp-toolbar button { padding:8px 16px; border-radius:8px; border:1px solid #c7cedb; background:#fff; cursor:pointer; font-size:13px; font-weight:600; }
-  .rp-toolbar button.primary { background:#2f5fe0; border-color:#2f5fe0; color:#fff; }
-  .rp-item { max-width: 860px; margin: 0 auto 24px; background:#fff; border-radius:10px; padding:28px 32px; box-shadow:0 2px 10px rgba(20,25,40,.08); page-break-after: always; }
-  .rp-item:last-child { page-break-after: auto; }
-  .rp-head { display:flex; justify-content:space-between; align-items:center; border-bottom:3px solid #1c2230; padding-bottom:12px; margin-bottom:16px; }
-  .rp-title { font-size:19px; font-weight:800; }
-  .rp-badges { display:flex; align-items:center; gap:8px; }
-  .rp-pill { font-size:12px; font-weight:700; padding:3px 10px; border-radius:999px; background:#e2e8f5; color:#2f5fe0; }
-  .rp-pill.rp-점검완료 { background:#e1f5ea; color:#1a9c5e; }
-  .rp-docnum { font-family:"Consolas",monospace; font-size:12px; color:#5a6478; }
-  .rp-table { width:100%; border-collapse:collapse; margin-bottom:18px; font-size:13px; }
-  .rp-table th { width:150px; background:#f4f6fa; text-align:left; padding:8px 10px; border:1px solid #dfe4ee; font-weight:700; color:#3a4257; vertical-align:top; }
-  .rp-table td { padding:8px 10px; border:1px solid #dfe4ee; white-space:pre-wrap; word-break:break-word; }
-  .rp-section-title { font-size:13.5px; font-weight:800; color:#2f5fe0; margin:16px 0 8px; padding-left:8px; border-left:4px solid #2f5fe0; }
-  .rp-files { display:flex; flex-wrap:wrap; gap:12px; }
-  .rp-fig { margin:0; width:200px; border:1px solid #dfe4ee; border-radius:8px; overflow:hidden; background:#fafbfd; }
-  .rp-fig img { width:100%; height:150px; object-fit:cover; display:block; }
-  .rp-fig figcaption { font-size:11px; color:#5a6478; padding:5px 8px; word-break:break-all; }
-  .rp-doc { font-size:12.5px; padding:8px 12px; background:#f4f6fa; border-radius:6px; border:1px solid #dfe4ee; }
-  .rp-empty { font-size:12.5px; color:#8891a3; margin:4px 0 0; }
-  @media print {
-    body { background:#fff; padding:0; }
-    .rp-toolbar { display:none; }
-    .rp-item { box-shadow:none; border-radius:0; margin:0; padding:14mm; max-width:none; }
-    .rp-fig img { height:120px; }
-  }
-</style>
-</head>
-<body>
-  <div class="rp-toolbar">
-    <button class="primary" onclick="window.print()">인쇄 / PDF로 저장</button>
-  </div>
-  ${bodyHtml}
-</body>
-</html>`;
-}
-async function downloadReport(id){
-  const it = items.find(x => x.id === id);
-  if(!it) return;
-  showToast("통합보고서 생성 중...");
-  const body = await buildReportSectionHtml(it);
-  const html = reportShellHtml(body, it.id + " 변동점 보고서");
-  const blob = new Blob([html], { type: "text/html;charset=utf-8" });
-  triggerDownload(blob, it.id.replace(/\s+/g,"_") + "_보고서.html");
-  showToast("통합보고서 다운로드 완료");
-}
-async function downloadReportAll(list){
-  if(!list || list.length === 0){ showToast("다운로드할 데이터가 없습니다."); return; }
-  showToast("통합보고서 생성 중... (" + list.length + "건)");
-  const sections = [];
-  for(const it of list){
-    sections.push(await buildReportSectionHtml(it));
-  }
-  const html = reportShellHtml(sections.join(""), "변동점 통합보고서_" + todayStr());
-  const blob = new Blob([html], { type: "text/html;charset=utf-8" });
-  triggerDownload(blob, "변동점_통합보고서_" + todayStr() + ".html");
-  showToast("통합보고서 다운로드 완료 (" + list.length + "건)");
-}
-
 function triggerDownload(blob, filename){
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
@@ -1783,14 +1575,14 @@ function renderDashboardTab(){
   content.innerHTML = `
   <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:18px;">
     ${[
-      ["전체 등록 건수", total, "var(--primary)"],
-      ["점검 대기", pending, "var(--warn)"],
-      ["점검 완료", done, "var(--success)"],
-      ["NG 발생", ng, "var(--danger)"],
-      ["NG 미조치", ngNoAction, ngNoAction>0?"var(--danger)":"var(--text-muted)"],
-      ["내 미처리", myPending, myPending>0?"var(--accent)":"var(--text-muted)"],
-    ].map(([label, val, color]) => `
-      <div class="card" style="text-align:center;padding:16px 10px;margin-bottom:0;">
+      ["전체 등록 건수", total, "var(--primary)", "status"],
+      ["점검 대기", pending, "var(--warn)", "inspect"],
+      ["점검 완료", done, "var(--success)", "status"],
+      ["NG 발생", ng, "var(--danger)", "status"],
+      ["NG 미조치", ngNoAction, ngNoAction>0?"var(--danger)":"var(--text-muted)", "status"],
+      ["내 미처리", myPending, myPending>0?"var(--accent)":"var(--text-muted)", "inspect"],
+    ].map(([label, val, color, tab]) => `
+      <div class="card" style="text-align:center;padding:16px 10px;margin-bottom:0;cursor:pointer;" onclick="currentTab='${tab}';render();">
         <div style="font-size:28px;font-weight:800;color:${color};">${val}</div>
         <div style="font-size:12px;color:var(--text-secondary);margin-top:4px;">${label}</div>
       </div>`).join("")}
@@ -2012,9 +1804,8 @@ function openEmployeeModal(emp){
           </div>
         </div>
         <div class="field">
-          <label ${isNew ? 'class="required"' : ''}>${isNew ? "초기 비밀번호" : "비밀번호 재설정 (비워두면 유지)"}</label>
-          <input type="text" id="emp-password" placeholder="${isNew ? "8자 이상, 영문+숫자 조합" : "변경 시에만 입력"}">
-          <p class="hint" style="margin:4px 0 0;">사번은 비밀번호로 사용할 수 없습니다. 본인이 최초 로그인 시 직접 변경하게 됩니다.</p>
+          <label ${isNew ? 'class="required"' : ''}>${isNew ? "비밀번호 (사번)" : "비밀번호 재설정 (사번, 비워두면 유지)"}</label>
+          <input type="text" id="emp-password" placeholder="${isNew ? "예: 240101" : "변경 시에만 입력"}">
         </div>
         <div class="modal-actions">
           ${isNew ? "" : `<button class="btn btn-danger" id="emp-delete" style="margin-right:auto;">계정 삭제</button>`}
@@ -2044,11 +1835,7 @@ function openEmployeeModal(emp){
     const active = document.getElementById("emp-active").value;
     const password = document.getElementById("emp-password").value.trim();
     if(!name || !dept){ showToast("필수 항목(*)을 입력해주세요."); return; }
-    if(isNew && !password){ showToast("신규 계정은 초기 비밀번호를 입력해주세요."); return; }
-    if(password){
-      const v = validateNewPassword(password, { name: name });
-      if(v){ showToast(v); return; }
-    }
+    if(isNew && !password){ showToast("신규 계정은 비밀번호(사번)를 입력해주세요."); return; }
     let json;
     if(isNew){
       json = await addEmployeeApi({ name, dept, email, role, password });
@@ -2081,12 +1868,6 @@ function showLoginScreen(){
       authToken = json.token; currentUser = json.user;
       localStorage.setItem("sy_token", authToken);
       localStorage.setItem("sy_user", JSON.stringify(currentUser));
-      // 최초 로그인(또는 사번을 비밀번호로 사용 중)이면 변경 화면으로 강제 이동
-      if(currentUser && currentUser.mustChangePw){
-        passInput.value = "";
-        showPasswordChangeScreen(password);
-        return;
-      }
       await startApp();
     }else{
       errEl.textContent = lastApiError || "아이디 또는 비밀번호가 올바르지 않습니다.";
@@ -2098,87 +1879,9 @@ function showLoginScreen(){
   userInput.onkeydown = (e) => { if(e.key==="Enter") passInput.focus(); };
 }
 
-/* ---------- 비밀번호 변경 화면 (최초 로그인 시 강제) ---------- */
-function validateNewPassword(pw, user){
-  if(String(pw).length < 8) return "비밀번호는 8자 이상이어야 합니다.";
-  let kinds = 0;
-  if(/[a-zA-Z]/.test(pw)) kinds++;
-  if(/[0-9]/.test(pw)) kinds++;
-  if(/[^a-zA-Z0-9]/.test(pw)) kinds++;
-  if(kinds < 2) return "영문, 숫자, 특수문자 중 2종류 이상을 조합해주세요.";
-  if(/^\d+$/.test(pw)) return "숫자로만 이루어진 비밀번호는 사용할 수 없습니다.";
-  if(user && user.name && pw.includes(user.name)) return "이름이 포함된 비밀번호는 사용할 수 없습니다.";
-  return "";
-}
-function updatePwRuleHints(){
-  const pw = document.getElementById("pw-new").value;
-  const user = currentUser || {};
-  const checks = {
-    len: pw.length >= 8,
-    kind: ((/[a-zA-Z]/.test(pw)?1:0) + (/[0-9]/.test(pw)?1:0) + (/[^a-zA-Z0-9]/.test(pw)?1:0)) >= 2,
-    notnum: pw.length > 0 && !/^\d+$/.test(pw),
-    notid: pw.length > 0 && !(user.name && pw.includes(user.name))
-  };
-  document.querySelectorAll("#pw-rules [data-rule]").forEach(el => {
-    const ok = checks[el.dataset.rule];
-    el.style.color = pw.length === 0 ? "var(--text-secondary)" : (ok ? "var(--accent)" : "var(--danger)");
-  });
-}
-function showPasswordChangeScreen(prefillCurrent){
-  document.getElementById("login-screen").style.display = "none";
-  document.getElementById("app").style.display = "none";
-  const screen = document.getElementById("pwchange-screen");
-  screen.style.display = "flex";
-
-  const curEl = document.getElementById("pw-current");
-  const newEl = document.getElementById("pw-new");
-  const new2El = document.getElementById("pw-new2");
-  const errEl = document.getElementById("pw-err");
-  const btn = document.getElementById("pw-submit");
-
-  curEl.value = prefillCurrent || "";
-  newEl.value = ""; new2El.value = "";
-  errEl.style.display = "none";
-  newEl.oninput = updatePwRuleHints;
-  updatePwRuleHints();
-  setTimeout(() => newEl.focus(), 50);
-
-  const fail = (msg) => { errEl.textContent = msg; errEl.style.display = "block"; };
-
-  const submit = async () => {
-    errEl.style.display = "none";
-    const cur = curEl.value, np = newEl.value, np2 = new2El.value;
-    if(!cur || !np || !np2){ fail("모든 항목을 입력해주세요."); return; }
-    if(np !== np2){ fail("새 비밀번호가 서로 일치하지 않습니다."); return; }
-    if(np === cur){ fail("현재 비밀번호와 다른 비밀번호를 사용해주세요."); return; }
-    const v = validateNewPassword(np, currentUser);
-    if(v){ fail(v); return; }
-
-    btn.disabled = true; btn.textContent = "변경 중...";
-    const json = await changePasswordApi(cur, np);
-    btn.disabled = false; btn.textContent = "비밀번호 변경";
-    if(!json){ fail(lastApiError || "비밀번호 변경에 실패했습니다."); return; }
-
-    if(currentUser){
-      currentUser.mustChangePw = false;
-      localStorage.setItem("sy_user", JSON.stringify(currentUser));
-    }
-    screen.style.display = "none";
-    await startApp();
-    showToast("비밀번호가 변경되었습니다.");
-  };
-  btn.onclick = submit;
-  new2El.onkeydown = (e) => { if(e.key === "Enter") submit(); };
-  document.getElementById("pw-logout").onclick = () => {
-    screen.style.display = "none";
-    doLogout();
-  };
-}
-
 /* ---------- 앱 시작 ---------- */
 async function startApp(){
   document.getElementById("login-screen").style.display = "none";
-  document.getElementById("pwchange-screen").style.display = "none";
   document.getElementById("app").style.display = "block";
   renderUserChip();
   renderMainTabs();
@@ -2186,29 +1889,29 @@ async function startApp(){
   await Promise.all([loadMaster(), loadDirectory(), loadItems()]);
   currentTab = "register";
   render();
+  startIdleTimer();
+}
+
+/* ② 미사용 30분 자동 로그아웃 */
+let idleTimer = null;
+const IDLE_TIMEOUT = 30 * 60 * 1000; // 30분
+function startIdleTimer(){
+  const resetIdle = () => {
+    if(idleTimer) clearTimeout(idleTimer);
+    idleTimer = setTimeout(() => {
+      showToast("30분간 사용하지 않아 자동 로그아웃됩니다.", 3000);
+      setTimeout(doLogout, 2000);
+    }, IDLE_TIMEOUT);
+  };
+  ["click","keydown","touchstart","scroll","mousemove"].forEach(ev => document.addEventListener(ev, resetIdle, { passive:true }));
+  resetIdle();
 }
 
 /* ---------- 초기화 ---------- */
 (async function init(){
   if(authToken && currentUser){
     try{
-      // 세션 유효성 확인 — 서버가 토큰을 거부하면(만료/권한중지) 로그인 화면으로
-      // ?type=me 는 보안패치 적용 후 사용 가능. 미적용 서버에서는 기존 방식으로 폴백.
-      try{
-        const me = await apiGet("?type=me");
-        // 서버가 내려준 사용자 정보로 갱신 (localStorage 위조 방지)
-        if(me && me.user){
-          currentUser = me.user;
-          localStorage.setItem("sy_user", JSON.stringify(currentUser));
-        }
-      }catch(meErr){
-        if(!authToken) throw meErr;      // 세션 만료로 토큰이 지워진 경우
-        await apiGet("?type=directory"); // 구버전 서버 호환
-      }
-      if(currentUser && currentUser.mustChangePw){
-        showPasswordChangeScreen("");
-        return;
-      }
+      await apiGet("?type=directory"); // 세션 유효성 간단 확인
       await startApp();
       return;
     }catch(e){
