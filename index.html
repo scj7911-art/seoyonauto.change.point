@@ -300,14 +300,8 @@ async function doLogout(){
   location.reload();
 }
 function isAdmin(){ return !!(currentUser && currentUser.role === "마스터관리자"); }
-function isQuality(){ return !!(currentUser && currentUser.role === "품질"); }
-function isProjectAdmin(){ return !!(currentUser && currentUser.role === "프로젝트관리자"); }
-/* 화면(현황) 목록 자체를 볼 수 있는지: 프로젝트관리자만 완전히 차단(첨부/다운로드는 가능), 나머지는 조회 가능(일반은 서버가 이미 관련건만 필터링해서 줌) */
-function canViewStatusList(){ return !isProjectAdmin(); }
-/* 엑셀/ZIP 다운로드 가능 여부 */
-function canDownload(){ return isAdmin() || isQuality() || isProjectAdmin(); }
-/* 전체(무제한) ZIP 다운로드 가능 여부 - 품질은 필터 적용 시에만, 마스터관리자/프로젝트관리자는 무제한 */
-function canUnrestrictedZip(){ return isAdmin() || isProjectAdmin(); }
+/* 현황 화면은 전 직원에게 개방. 엑셀/ZIP 등 대량 다운로드만 개별 권한(canDownload)으로 제어 */
+function canDownload(){ return !!(currentUser && (currentUser.role === "마스터관리자" || currentUser.canDownload)); }
 
 async function loadMaster(){
   try{
@@ -1149,16 +1143,9 @@ function renderStatusTab(){
   )).sort();
   const downloadButtons = canDownload() ? `
       <div style="display:flex;gap:6px;margin-left:auto;">
-        <button class="btn" id="s-downall">ZIP 다운로드${isQuality() ? " (필터 적용 시)" : ""}</button>
+        <button class="btn" id="s-downall">ZIP 다운로드</button>
         <button class="btn btn-primary" id="s-downxlsx">엑셀 다운로드</button>
       </div>` : "";
-  const noViewNotice = !canViewStatusList() ? `
-    <div class="card" style="background:var(--bg);border-left:4px solid var(--accent);">
-      <strong>현황 목록 화면 조회 권한이 없습니다.</strong>
-      <p class="hint" style="margin-top:6px;">${isProjectAdmin()
-        ? "프로젝트관리자 계정은 전체 이력 목록을 볼 수 없지만, 아래 필터를 설정한 뒤 첨부파일·엑셀·ZIP 다운로드는 가능합니다."
-        : "일반 계정은 본인이 등록했거나 후행담당자로 지정된 건만 점검/확인 탭 또는 상세보기를 통해 확인할 수 있습니다."}</p>
-    </div>` : "";
   return `
   <div class="card">
     <div class="toolbar" style="flex-wrap:wrap;gap:8px;">
@@ -1180,8 +1167,7 @@ function renderStatusTab(){
       </div>
       ${downloadButtons}
     </div>
-    ${noViewNotice}
-    <div id="s-table-wrap" style="overflow-x:auto;${!canViewStatusList() ? "display:none;" : ""}"></div>
+    <div id="s-table-wrap" style="overflow-x:auto;"></div>
   </div>`;
 }
 
@@ -1265,15 +1251,7 @@ function bindStatusTab(){
   ["s-status","s-customer","s-inspector","s-from","s-to"].forEach(id => document.getElementById(id).onchange = applyStatusFilter);
   const downAllBtn = document.getElementById("s-downall");
   const downXlsxBtn = document.getElementById("s-downxlsx");
-  if(downAllBtn) downAllBtn.onclick = () => {
-    if(isQuality()){
-      const hasFilter = document.getElementById("s-status").value || document.getElementById("s-customer").value
-        || document.getElementById("s-inspector").value || document.getElementById("s-from").value
-        || document.getElementById("s-to").value || document.getElementById("s-search").value.trim();
-      if(!hasFilter){ showToast("품질 권한은 검색/필터를 하나 이상 적용한 뒤 ZIP 다운로드가 가능합니다."); return; }
-    }
-    downloadAll();
-  };
+  if(downAllBtn) downAllBtn.onclick = downloadAll;
   if(downXlsxBtn) downXlsxBtn.onclick = downloadExcel;
   document.getElementById("s-reset").onclick = () => {
     ["s-search","s-status","s-customer","s-inspector","s-from","s-to"].forEach(id => document.getElementById(id).value = "");
@@ -1784,8 +1762,6 @@ function renderMainTabs(){
 /* ---------- 직원 관리 (관리자 전용) ---------- */
 function roleBadgeColor(role){
   if(role === "마스터관리자") return "background:var(--primary);color:#fff;";
-  if(role === "품질") return "background:#2E6E52;color:#fff;";
-  if(role === "프로젝트관리자") return "background:var(--accent);color:#fff;";
   return "background:var(--bg);color:var(--text-secondary);";
 }
 async function renderEmployeesTab(){
@@ -1798,11 +1774,12 @@ async function renderEmployeesTab(){
   content.innerHTML = `
   <div class="card">
     <h2><span class="num">👤</span>직원 계정 관리 (${employees.length}명)<button class="btn btn-sm btn-primary" id="btn-add-emp" type="button" style="margin-left:auto;">계정 추가</button></h2>
+    <p class="hint">현황 화면은 전 직원에게 공개됩니다. 아래 "다운로드"는 엑셀/ZIP 등 대량 반출 권한만 별도로 제어합니다.</p>
     <div style="overflow-x:auto;">
-    <table style="table-layout:fixed;width:100%;min-width:600px;">
+    <table style="table-layout:fixed;width:100%;min-width:640px;">
       <thead><tr>
         <th style="width:90px;">이름(아이디)</th><th style="width:80px;">부서</th><th>이메일</th>
-        <th style="width:110px;">역할</th><th style="width:64px;">사용여부</th><th style="width:64px;"></th>
+        <th style="width:90px;">역할</th><th style="width:64px;">다운로드</th><th style="width:64px;">사용여부</th><th style="width:64px;"></th>
       </tr></thead>
       <tbody>
         ${employees.map(e => `
@@ -1811,6 +1788,7 @@ async function renderEmployeesTab(){
             <td style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(e.dept)}</td>
             <td style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(e.email)}</td>
             <td style="white-space:nowrap;"><span class="status-pill" style="${roleBadgeColor(e.role)}">${esc(e.role)}</span></td>
+            <td style="white-space:nowrap;">${(e.role==='마스터관리자' || e.canDownload) ? `<span style="color:var(--success);">허용</span>` : `<span style="color:var(--text-muted);">-</span>`}</td>
             <td style="white-space:nowrap;">${e.active==='Y' ? '사용' : '중지'}</td>
             <td style="white-space:nowrap;"><button class="btn btn-sm" data-edit="${esc(e.username)}">편집</button></td>
           </tr>`).join("")}
@@ -1845,8 +1823,6 @@ function openEmployeeModal(emp){
           <div class="field"><label class="required">역할</label>
             <select id="emp-role">
               <option value="일반" ${(!isNew && emp.role==='일반')?'selected':''}>일반</option>
-              <option value="품질" ${(!isNew && emp.role==='품질')?'selected':''}>품질</option>
-              <option value="프로젝트관리자" ${(!isNew && emp.role==='프로젝트관리자')?'selected':''}>프로젝트관리자</option>
               <option value="마스터관리자" ${(!isNew && emp.role==='마스터관리자')?'selected':''}>마스터관리자</option>
             </select>
           </div>
@@ -1856,6 +1832,12 @@ function openEmployeeModal(emp){
               <option value="N" ${(!isNew && emp.active==='N')?'selected':''}>중지</option>
             </select>
           </div>
+        </div>
+        <div class="field">
+          <label style="display:flex;align-items:center;gap:8px;font-weight:400;">
+            <input type="checkbox" id="emp-candownload" ${(!isNew && emp.canDownload) ? "checked" : ""} style="width:auto;">
+            엑셀/ZIP 다운로드 권한 부여 (마스터관리자는 항상 가능)
+          </label>
         </div>
         <div class="field">
           <label ${isNew ? 'class="required"' : ''}>${isNew ? "비밀번호 (사번)" : "비밀번호 재설정 (사번, 비워두면 유지)"}</label>
@@ -1887,14 +1869,15 @@ function openEmployeeModal(emp){
     const email = document.getElementById("emp-email").value.trim();
     const role = document.getElementById("emp-role").value;
     const active = document.getElementById("emp-active").value;
+    const canDl = document.getElementById("emp-candownload").checked;
     const password = document.getElementById("emp-password").value.trim();
     if(!name || !dept){ showToast("필수 항목(*)을 입력해주세요."); return; }
     if(isNew && !password){ showToast("신규 계정은 비밀번호(사번)를 입력해주세요."); return; }
     let json;
     if(isNew){
-      json = await addEmployeeApi({ name, dept, email, role, password });
+      json = await addEmployeeApi({ name, dept, email, role, password, canDownload: canDl });
     }else{
-      json = await updateEmployeeApi({ username: emp.username, dept, email, role, active, password: password || undefined });
+      json = await updateEmployeeApi({ username: emp.username, dept, email, role, active, canDownload: canDl, password: password || undefined });
     }
     if(!json){ showToast(lastApiError || "저장에 실패했습니다."); return; }
     showToast("저장되었습니다.");
