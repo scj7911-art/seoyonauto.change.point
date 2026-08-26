@@ -208,7 +208,46 @@
   </div>
 </div>
 
+<div id="otp-setup-screen" class="login-wrap" style="display:none;">
+  <div class="login-card" style="max-width:400px;">
+    <p class="header-titles" style="margin-bottom:6px;">
+      <span class="header-title-line brand-name" style="color:var(--accent);">구글 OTP 등록</span>
+    </p>
+    <p class="hint" style="margin-bottom:14px;">보안을 위해 최초 로그인 시 구글 OTP(Google Authenticator) 등록이 필요합니다.</p>
+    <ol style="font-size:12.5px;color:var(--text-secondary);padding-left:18px;margin:0 0 14px;line-height:1.7;">
+      <li>스마트폰에 <strong>Google Authenticator</strong> 앱을 설치하세요 (무료)</li>
+      <li>앱에서 "+" 버튼 → "QR 코드 스캔"으로 아래 QR코드를 스캔하세요</li>
+      <li>앱에 표시되는 6자리 코드를 아래에 입력하고 등록을 완료하세요</li>
+    </ol>
+    <div id="otp-qr-wrap" style="display:flex;justify-content:center;margin:0 0 14px;"></div>
+    <p class="hint" style="text-align:center;margin-bottom:14px;">QR 스캔이 안 되면 수동 입력: <br><span id="otp-secret-text" style="font-family:var(--mono);font-weight:700;color:var(--primary);word-break:break-all;"></span></p>
+    <div class="field">
+      <label class="required">앱에 표시된 6자리 코드</label>
+      <input type="text" id="otp-setup-code" placeholder="000000" maxlength="6" inputmode="numeric" style="letter-spacing:4px;font-size:18px;text-align:center;">
+    </div>
+    <p id="otp-setup-err" style="color:var(--danger);font-size:12.5px;display:none;margin:2px 0 10px;"></p>
+    <button class="btn btn-primary btn-block" id="otp-setup-submit" style="padding:11px;">등록 완료 및 로그인</button>
+  </div>
+</div>
+
+<div id="otp-verify-screen" class="login-wrap" style="display:none;">
+  <div class="login-card">
+    <p class="header-titles" style="margin-bottom:6px;">
+      <span class="header-title-line brand-name" style="color:var(--accent);">구글 OTP 인증</span>
+    </p>
+    <p class="hint" style="margin-bottom:16px;">Google Authenticator 앱에 표시된 6자리 코드를 입력해주세요.</p>
+    <div class="field">
+      <label class="required">인증 코드</label>
+      <input type="text" id="otp-verify-code" placeholder="000000" maxlength="6" inputmode="numeric" style="letter-spacing:4px;font-size:18px;text-align:center;">
+    </div>
+    <p id="otp-verify-err" style="color:var(--danger);font-size:12.5px;display:none;margin:2px 0 10px;"></p>
+    <button class="btn btn-primary btn-block" id="otp-verify-submit" style="padding:11px;">인증 확인</button>
+    <p class="hint" style="margin-top:14px;">앱을 분실하셨거나 기기를 바꾸셨다면 관리자에게 OTP 재설정을 요청해주세요.</p>
+  </div>
+</div>
+
 <div id="pw-change-screen" class="login-wrap" style="display:none;">
+
   <div class="login-card">
     <p class="header-titles" style="margin-bottom:6px;">
       <span class="header-title-line brand-name" style="color:var(--accent);">비밀번호 변경</span>
@@ -229,6 +268,9 @@
     <p id="pw-change-err" style="color:var(--danger);font-size:12.5px;display:none;margin:2px 0 10px;"></p>
     <button class="btn btn-primary btn-block" id="pw-change-submit" style="padding:11px;">비밀번호 변경</button>
     <p class="hint" style="margin-top:14px;">변경 후 새 비밀번호로 다시 로그인해주세요.</p>
+    <p style="text-align:center;margin-top:10px;">
+      <a href="#" id="pw-change-back-link" style="font-size:12.5px;color:var(--text-muted);text-decoration:underline;">취소하고 로그인 화면으로</a>
+    </p>
   </div>
 </div>
 
@@ -296,7 +338,7 @@ async function apiGet(query){
 let lastApiError = "";
 async function apiPost(payload){
   lastApiError = "";
-  const withToken = payload.action === "login" ? payload : Object.assign({ token: authToken }, payload);
+  const withToken = (payload.action === "login" || payload.action === "verifyOtp") ? payload : Object.assign({ token: authToken }, payload);
   for(let attempt = 0; attempt < 2; attempt++){
     try{
       const res = await fetch(API_URL, {
@@ -316,6 +358,9 @@ async function apiPost(payload){
 /* ---------- 로그인 / 세션 ---------- */
 async function doLogin(username, password){
   return await apiPost({ action: "login", username: username, password: password });
+}
+async function doVerifyOtp(tempToken, code){
+  return await apiPost({ action: "verifyOtp", tempToken: tempToken, code: code });
 }
 async function doLogout(){
   await apiPost({ action: "logout" });
@@ -584,7 +629,13 @@ function openQrModal(){
       return;
     }
     wrap.innerHTML = "";
-    new QRCode(wrap, { text: url, width: 200, height: 200, correctLevel: QRCode.CorrectLevel.M });
+    try{
+      new QRCode(wrap, { text: url, width: 200, height: 200, correctLevel: QRCode.CorrectLevel.M });
+    }catch(e){
+      console.error("QR 코드 생성 실패:", e);
+      showToast("QR 코드 생성에 실패했습니다. 네트워크 상태를 확인해주세요.");
+      return;
+    }
     dlBtn.disabled = false;
     dlBtn.onclick = () => {
       const canvas = wrap.querySelector("canvas");
@@ -1908,6 +1959,7 @@ function openEmployeeModal(emp){
           <label ${isNew ? 'class="required"' : ''}>${isNew ? "비밀번호 (사번)" : "비밀번호 재설정 (사번, 비워두면 유지)"}</label>
           <input type="text" id="emp-password" placeholder="${isNew ? "예: 240101" : "변경 시에만 입력"}">
         </div>
+        ${!isNew ? `<p class="hint">구글 OTP 등록 상태: ${emp.totpSecret ? `<span style="color:var(--success);">등록됨</span>` : `<span style="color:var(--text-muted);">미등록</span>`}${emp.totpSecret ? ` <button class="btn btn-sm" id="emp-reset-otp" type="button">OTP 재설정</button>` : ""}</p>` : ""}
         <div class="modal-actions">
           ${isNew ? "" : `<button class="btn btn-danger" id="emp-delete" style="margin-right:auto;">계정 삭제</button>`}
           <button class="btn" id="emp-cancel">취소</button>
@@ -1924,6 +1976,15 @@ function openEmployeeModal(emp){
         const json = await deleteEmployeeApi(emp.username);
         if(!json){ showToast(lastApiError || "삭제에 실패했습니다."); return; }
         showToast("삭제되었습니다.");
+        close();
+      });
+    };
+    const resetOtpBtn = document.getElementById("emp-reset-otp");
+    if(resetOtpBtn) resetOtpBtn.onclick = () => {
+      confirmPopup("OTP 재설정", `${emp.name}님의 구글 OTP 등록을 초기화하시겠습니까?\n다음 로그인 시 새로 등록하게 됩니다. (기기 분실/변경 시 사용)`, async () => {
+        const json = await apiPost({ action: "resetEmployeeOtp", username: emp.username });
+        if(!json){ showToast(lastApiError || "재설정에 실패했습니다."); return; }
+        showToast("OTP가 초기화되었습니다.");
         close();
       });
     };
@@ -1951,10 +2012,14 @@ function openEmployeeModal(emp){
 }
 
 /* ---------- 로그인 화면 ---------- */
+function hideAllAuthScreens(){
+  ["login-screen","otp-setup-screen","otp-verify-screen","pw-change-screen","app"].forEach(id => {
+    document.getElementById(id).style.display = "none";
+  });
+}
 function showLoginScreen(){
+  hideAllAuthScreens();
   document.getElementById("login-screen").style.display = "flex";
-  document.getElementById("pw-change-screen").style.display = "none";
-  document.getElementById("app").style.display = "none";
   const userInput = document.getElementById("login-username");
   const passInput = document.getElementById("login-password");
   const errEl = document.getElementById("login-err");
@@ -1969,13 +2034,13 @@ function showLoginScreen(){
     const json = await doLogin(username, password);
     btn.disabled = false; btn.textContent = "로그인";
     if(json && json.ok){
-      authToken = json.token; currentUser = json.user;
-      localStorage.setItem("sy_token", authToken);
-      localStorage.setItem("sy_user", JSON.stringify(currentUser));
-      if(currentUser.mustChangePassword){
-        showPasswordChangeScreen();
+      if(json.needsOtpSetup){
+        showOtpSetupScreen(json.tempToken, json.otpAuthUrl, json.secret);
+      }else if(json.needsOtp){
+        showOtpVerifyScreen(json.tempToken);
       }else{
-        await startApp();
+        errEl.textContent = "예기치 않은 응답입니다. 다시 시도해주세요.";
+        errEl.style.display = "block";
       }
     }else{
       errEl.textContent = lastApiError || "아이디 또는 비밀번호가 올바르지 않습니다.";
@@ -1987,10 +2052,85 @@ function showLoginScreen(){
   userInput.onkeydown = (e) => { if(e.key==="Enter") passInput.focus(); };
 }
 
+/* ---------- 구글 OTP 최초 등록 화면 (QR 스캔) ---------- */
+function showOtpSetupScreen(tempToken, otpAuthUrl, secret){
+  hideAllAuthScreens();
+  document.getElementById("otp-setup-screen").style.display = "flex";
+  document.getElementById("otp-secret-text").textContent = secret;
+  const qrWrap = document.getElementById("otp-qr-wrap");
+  qrWrap.innerHTML = "";
+  try{
+    new QRCode(qrWrap, { text: otpAuthUrl, width: 180, height: 180 });
+  }catch(e){
+    console.error("QR 코드 생성 실패:", e);
+    qrWrap.innerHTML = `<p class="hint" style="text-align:center;">QR 코드를 표시할 수 없습니다. 아래 코드를 Authenticator 앱에 수동으로 입력해주세요.</p>`;
+  }
+  const codeInput = document.getElementById("otp-setup-code");
+  const errEl = document.getElementById("otp-setup-err");
+  const btn = document.getElementById("otp-setup-submit");
+  codeInput.value = ""; errEl.style.display = "none";
+  const submit = async () => {
+    const code = codeInput.value.trim();
+    if(code.length !== 6){ errEl.textContent = "6자리 코드를 입력해주세요."; errEl.style.display = "block"; return; }
+    errEl.style.display = "none";
+    btn.disabled = true; btn.textContent = "확인 중...";
+    const json = await doVerifyOtp(tempToken, code);
+    btn.disabled = false; btn.textContent = "등록 완료 및 로그인";
+    if(json && json.ok){
+      await completeLogin(json);
+    }else{
+      errEl.textContent = lastApiError || "인증 코드가 올바르지 않습니다.";
+      errEl.style.display = "block";
+    }
+  };
+  btn.onclick = submit;
+  codeInput.onkeydown = (e) => { if(e.key==="Enter") submit(); };
+  codeInput.focus();
+}
+
+/* ---------- 구글 OTP 로그인 인증 화면 (매 로그인마다) ---------- */
+function showOtpVerifyScreen(tempToken){
+  hideAllAuthScreens();
+  document.getElementById("otp-verify-screen").style.display = "flex";
+  const codeInput = document.getElementById("otp-verify-code");
+  const errEl = document.getElementById("otp-verify-err");
+  const btn = document.getElementById("otp-verify-submit");
+  codeInput.value = ""; errEl.style.display = "none";
+  const submit = async () => {
+    const code = codeInput.value.trim();
+    if(code.length !== 6){ errEl.textContent = "6자리 코드를 입력해주세요."; errEl.style.display = "block"; return; }
+    errEl.style.display = "none";
+    btn.disabled = true; btn.textContent = "확인 중...";
+    const json = await doVerifyOtp(tempToken, code);
+    btn.disabled = false; btn.textContent = "인증 확인";
+    if(json && json.ok){
+      await completeLogin(json);
+    }else{
+      errEl.textContent = lastApiError || "인증 코드가 올바르지 않습니다.";
+      errEl.style.display = "block";
+      codeInput.value = ""; codeInput.focus();
+    }
+  };
+  btn.onclick = submit;
+  codeInput.onkeydown = (e) => { if(e.key==="Enter") submit(); };
+  codeInput.focus();
+}
+
+/* OTP 인증까지 끝난 뒤 실제 세션을 확정하고 다음 화면(비번변경 or 앱)으로 진행 */
+async function completeLogin(json){
+  authToken = json.token; currentUser = json.user;
+  localStorage.setItem("sy_token", authToken);
+  localStorage.setItem("sy_user", JSON.stringify(currentUser));
+  if(currentUser.mustChangePassword){
+    showPasswordChangeScreen();
+  }else{
+    await startApp();
+  }
+}
+
 /* ---------- 최초 로그인 비밀번호 강제 변경 화면 ---------- */
 function showPasswordChangeScreen(){
-  document.getElementById("login-screen").style.display = "none";
-  document.getElementById("app").style.display = "none";
+  hideAllAuthScreens();
   document.getElementById("pw-change-screen").style.display = "flex";
   const curInput = document.getElementById("pw-current");
   const newInput = document.getElementById("pw-new");
@@ -2023,12 +2163,15 @@ function showPasswordChangeScreen(){
   };
   btn.onclick = submit;
   confirmInput.onkeydown = (e) => { if(e.key==="Enter") submit(); };
+  document.getElementById("pw-change-back-link").onclick = (e) => {
+    e.preventDefault();
+    confirmPopup("로그인 화면으로", "비밀번호 변경을 취소하고 로그인 화면으로 돌아가시겠습니까?\n(다음 로그인 시 다시 비밀번호 변경이 필요합니다)", doLogout);
+  };
 }
 
 /* ---------- 앱 시작 ---------- */
 async function startApp(){
-  document.getElementById("login-screen").style.display = "none";
-  document.getElementById("pw-change-screen").style.display = "none";
+  hideAllAuthScreens();
   document.getElementById("app").style.display = "block";
   renderUserChip();
   renderMainTabs();
@@ -2057,13 +2200,13 @@ function startIdleTimer(){
 /* ---------- 초기화 ---------- */
 (async function init(){
   if(authToken && currentUser){
-    if(currentUser.mustChangePassword){
-      showPasswordChangeScreen();
-      return;
-    }
     try{
-      await apiGet("?type=directory"); // 세션 유효성 간단 확인
-      await startApp();
+      await apiGet("?type=directory"); // 세션(토큰)이 실제로 아직 유효한지 먼저 확인
+      if(currentUser.mustChangePassword){
+        showPasswordChangeScreen();
+      }else{
+        await startApp();
+      }
       return;
     }catch(e){
       authToken = ""; currentUser = null;
