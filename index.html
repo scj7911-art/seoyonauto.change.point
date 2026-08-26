@@ -240,7 +240,8 @@
 /* ---------- 상수 / 마스터 데이터 기본값 ---------- */
 const DEFAULT_MASTER = {
   lines: ["CV1 칵핏 조립", "CE1 글라스 조립"],
-  m4: ["사람", "설비", "재료", "방법"]
+  m4: ["사람", "설비", "재료", "방법"],
+  excludedFollowDepts: ["임원", "인사노무팀", "기획재무팀"]
 };
 const CUSTOMERS = ["서연이화", "모비스", "기타"];
 
@@ -298,7 +299,15 @@ async function doLogout(){
   localStorage.removeItem("sy_token"); localStorage.removeItem("sy_user");
   location.reload();
 }
-function isAdmin(){ return !!(currentUser && currentUser.role === "관리자"); }
+function isAdmin(){ return !!(currentUser && currentUser.role === "마스터관리자"); }
+function isQuality(){ return !!(currentUser && currentUser.role === "품질"); }
+function isProjectAdmin(){ return !!(currentUser && currentUser.role === "프로젝트관리자"); }
+/* 화면(현황) 목록 자체를 볼 수 있는지: 프로젝트관리자만 완전히 차단(첨부/다운로드는 가능), 나머지는 조회 가능(일반은 서버가 이미 관련건만 필터링해서 줌) */
+function canViewStatusList(){ return !isProjectAdmin(); }
+/* 엑셀/ZIP 다운로드 가능 여부 */
+function canDownload(){ return isAdmin() || isQuality() || isProjectAdmin(); }
+/* 전체(무제한) ZIP 다운로드 가능 여부 - 품질은 필터 적용 시에만, 마스터관리자/프로젝트관리자는 무제한 */
+function canUnrestrictedZip(){ return isAdmin() || isProjectAdmin(); }
 
 async function loadMaster(){
   try{
@@ -608,7 +617,7 @@ function confirmPopup(title, message, onConfirm){
 }
 
 /* ---------- 마스터 데이터 편집 모달 (차종/설비/라인, 4M구분 통합) ---------- */
-const MASTER_CATEGORIES = { lines: "차종/설비/라인", m4: "4M 구분" };
+const MASTER_CATEGORIES = { lines: "차종/설비/라인", m4: "4M 구분", excludedFollowDepts: "후행담당자 제외 부서" };
 function openMasterEditor(initialKey){
   let key = initialKey || "lines";
   const root = document.getElementById("modal-root");
@@ -1022,6 +1031,17 @@ function openInspectModal(id){
             </select>
           </div>
         </div>
+        <div class="row">
+          <div class="field"><label>초품검사결과</label>
+            <select id="i-first-insp">
+              <option value="">선택 안 함</option>
+              <option value="양호">양호</option>
+              <option value="NG">NG</option>
+              <option value="기타">기타</option>
+            </select>
+          </div>
+          <div class="field"><label>LOT NO</label><input type="text" id="i-lotno" placeholder="예: LOT-2026-0819 (없으면 비워두세요)"></div>
+        </div>
         <div class="field" id="i-etc-wrap" style="display:none;margin-bottom:14px;">
           <label>조치결과 (기타 직접입력)</label>
           <input type="text" id="i-etc" placeholder="조치결과를 입력하세요">
@@ -1091,12 +1111,15 @@ function openInspectModal(id){
     const date = val("i-date"), result = document.getElementById("i-result").value;
     const etc = val("i-etc");
     const ngAction = val("i-ng-action");
+    const firstInspResult = document.getElementById("i-first-insp").value;
+    const lotNo = val("i-lotno");
     if(!date || !result || (result==="기타" && !etc)){ showToast("필수 항목(*)을 입력해주세요."); return; }
     if(result==="NG" && !ngAction){ showToast("NG 선택 시 재발방지 대책/코멘트를 입력해주세요."); return; }
     confirmPopup("점검 저장 확인", "점검 결과를 저장하시겠습니까?", async () => {
       showLoading("점검 결과를 저장하고 있습니다...");
       const payload = {
         id: it.id, inspDate: date, inspResult: result, inspResultEtc: etc,
+        firstInspResult: firstInspResult, lotNo: lotNo,
         inspImages: inspImages.slice()
       };
       const json = await submitInspection(payload);
@@ -1124,6 +1147,18 @@ function renderStatusTab(){
   const inspectorNames = Array.from(new Set(
     items.flatMap(it => String(it.followName||"").split(",").map(n=>n.trim())).filter(Boolean)
   )).sort();
+  const downloadButtons = canDownload() ? `
+      <div style="display:flex;gap:6px;margin-left:auto;">
+        <button class="btn" id="s-downall">ZIP 다운로드${isQuality() ? " (필터 적용 시)" : ""}</button>
+        <button class="btn btn-primary" id="s-downxlsx">엑셀 다운로드</button>
+      </div>` : "";
+  const noViewNotice = !canViewStatusList() ? `
+    <div class="card" style="background:var(--bg);border-left:4px solid var(--accent);">
+      <strong>현황 목록 화면 조회 권한이 없습니다.</strong>
+      <p class="hint" style="margin-top:6px;">${isProjectAdmin()
+        ? "프로젝트관리자 계정은 전체 이력 목록을 볼 수 없지만, 아래 필터를 설정한 뒤 첨부파일·엑셀·ZIP 다운로드는 가능합니다."
+        : "일반 계정은 본인이 등록했거나 후행담당자로 지정된 건만 점검/확인 탭 또는 상세보기를 통해 확인할 수 있습니다."}</p>
+    </div>` : "";
   return `
   <div class="card">
     <div class="toolbar" style="flex-wrap:wrap;gap:8px;">
@@ -1143,12 +1178,10 @@ function renderStatusTab(){
         <button class="btn btn-sm" id="s-reset">초기화</button>
         <span class="hint" id="s-count" style="margin:0;font-weight:700;"></span>
       </div>
-      <div style="display:flex;gap:6px;margin-left:auto;">
-        <button class="btn" id="s-downall">ZIP 다운로드</button>
-        <button class="btn btn-primary" id="s-downxlsx">엑셀 다운로드</button>
-      </div>
+      ${downloadButtons}
     </div>
-    <div id="s-table-wrap" style="overflow-x:auto;"></div>
+    ${noViewNotice}
+    <div id="s-table-wrap" style="overflow-x:auto;${!canViewStatusList() ? "display:none;" : ""}"></div>
   </div>`;
 }
 
@@ -1230,8 +1263,18 @@ function applyStatusFilter(){
 function bindStatusTab(){
   ["s-search"].forEach(id => document.getElementById(id).oninput = applyStatusFilter);
   ["s-status","s-customer","s-inspector","s-from","s-to"].forEach(id => document.getElementById(id).onchange = applyStatusFilter);
-  document.getElementById("s-downall").onclick = downloadAll;
-  document.getElementById("s-downxlsx").onclick = downloadExcel;
+  const downAllBtn = document.getElementById("s-downall");
+  const downXlsxBtn = document.getElementById("s-downxlsx");
+  if(downAllBtn) downAllBtn.onclick = () => {
+    if(isQuality()){
+      const hasFilter = document.getElementById("s-status").value || document.getElementById("s-customer").value
+        || document.getElementById("s-inspector").value || document.getElementById("s-from").value
+        || document.getElementById("s-to").value || document.getElementById("s-search").value.trim();
+      if(!hasFilter){ showToast("품질 권한은 검색/필터를 하나 이상 적용한 뒤 ZIP 다운로드가 가능합니다."); return; }
+    }
+    downloadAll();
+  };
+  if(downXlsxBtn) downXlsxBtn.onclick = downloadExcel;
   document.getElementById("s-reset").onclick = () => {
     ["s-search","s-status","s-customer","s-inspector","s-from","s-to"].forEach(id => document.getElementById(id).value = "");
     statusSort = { key: "regDate", dir: "desc" };
@@ -1287,6 +1330,8 @@ function openDetailModal(id){
         <dl class="detail-grid">
           <dt>점검일자</dt><dd>${esc(fmtDate(it.inspDate))}</dd>
           <dt>조치결과</dt><dd style="${it.inspResult==='NG'?'color:var(--danger);font-weight:700;':''}">${esc(it.inspResult === "기타" ? it.inspResultEtc : it.inspResult)}</dd>
+          ${it.firstInspResult ? `<dt>초품검사결과</dt><dd style="${it.firstInspResult==='NG'?'color:var(--danger);font-weight:700;':''}">${esc(it.firstInspResult)}</dd>` : ""}
+          ${it.lotNo ? `<dt>LOT NO</dt><dd>${esc(it.lotNo)}</dd>` : ""}
           <dt>점검부서</dt><dd>${esc(it.inspDept)} / ${esc(it.inspName)}</dd>
         </dl>
         ${fileBlock("점검 확인 첨부", it.inspImages)}
@@ -1516,17 +1561,18 @@ function downloadExcel(){
     if(q){ const hay = ((it.id||"")+(it.regName||"")+(it.line||"")+(it.content||"")+(it.followName||"")).toLowerCase(); if(!hay.includes(q)) return false; }
     return true;
   });
-  const headers = ["문서번호","상태","변경일자","등록부서","등록자","차종/설비/라인","고객사","4M구분","변동점내용","변경전","변경후","후행부서","후행담당자","점검일자","조치결과","점검부서","점검담당자","재발방지대책","재발방지완료일"];
+  const headers = ["문서번호","상태","변경일자","등록부서","등록자","차종/설비/라인","고객사","4M구분","변동점내용","변경전","변경후","후행부서","후행담당자","점검일자","조치결과","초품검사결과","LOT NO","점검부서","점검담당자","재발방지대책","재발방지완료일"];
   const rows = list.map(it => [
     it.id, it.status, it.regDate, it.regDept, it.regName, it.line, it.customer, it.m4,
     it.content, it.beforeContent, it.afterContent, it.followDept, it.followName,
     it.inspDate, it.inspResult === "기타" ? it.inspResultEtc : it.inspResult,
+    it.firstInspResult || "", it.lotNo || "",
     it.inspDept, it.inspName,
     it.ngAction || "", it.ngActionDate || ""
   ]);
   const wb = XLSX.utils.book_new();
   const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
-  ws['!cols'] = headers.map((h, i) => ({ wch: [22,8,10,12,8,16,8,8,30,20,20,12,8,10,12,12,8,30,10][i] || 12 }));
+  ws['!cols'] = headers.map((h, i) => ({ wch: [22,8,10,12,8,16,8,8,30,20,20,12,8,10,12,10,14,12,12,30,10][i] || 12 }));
   XLSX.utils.book_append_sheet(wb, ws, "변동점현황");
   const wbout = XLSX.write(wb, { bookType:'xlsx', type:'array' });
   triggerDownload(new Blob([wbout], { type:'application/octet-stream' }), "변동점현황_" + todayStr() + ".xlsx");
@@ -1736,6 +1782,12 @@ function renderMainTabs(){
 }
 
 /* ---------- 직원 관리 (관리자 전용) ---------- */
+function roleBadgeColor(role){
+  if(role === "마스터관리자") return "background:var(--primary);color:#fff;";
+  if(role === "품질") return "background:#2E6E52;color:#fff;";
+  if(role === "프로젝트관리자") return "background:var(--accent);color:#fff;";
+  return "background:var(--bg);color:var(--text-secondary);";
+}
 async function renderEmployeesTab(){
   const content = document.getElementById("content");
   content.innerHTML = `<div class="empty">불러오는 중입니다...</div>`;
@@ -1747,10 +1799,10 @@ async function renderEmployeesTab(){
   <div class="card">
     <h2><span class="num">👤</span>직원 계정 관리 (${employees.length}명)<button class="btn btn-sm btn-primary" id="btn-add-emp" type="button" style="margin-left:auto;">계정 추가</button></h2>
     <div style="overflow-x:auto;">
-    <table style="table-layout:fixed;width:100%;min-width:520px;">
+    <table style="table-layout:fixed;width:100%;min-width:600px;">
       <thead><tr>
-        <th style="width:90px;">이름(아이디)</th><th style="width:90px;">부서</th><th>이메일</th>
-        <th style="width:64px;">역할</th><th style="width:64px;">사용여부</th><th style="width:64px;"></th>
+        <th style="width:90px;">이름(아이디)</th><th style="width:80px;">부서</th><th>이메일</th>
+        <th style="width:110px;">역할</th><th style="width:64px;">사용여부</th><th style="width:64px;"></th>
       </tr></thead>
       <tbody>
         ${employees.map(e => `
@@ -1758,7 +1810,7 @@ async function renderEmployeesTab(){
             <td style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(e.name)}</td>
             <td style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(e.dept)}</td>
             <td style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(e.email)}</td>
-            <td style="white-space:nowrap;"><span class="status-pill ${e.role==='관리자'?'st-등록':'st-점검완료'}">${esc(e.role)}</span></td>
+            <td style="white-space:nowrap;"><span class="status-pill" style="${roleBadgeColor(e.role)}">${esc(e.role)}</span></td>
             <td style="white-space:nowrap;">${e.active==='Y' ? '사용' : '중지'}</td>
             <td style="white-space:nowrap;"><button class="btn btn-sm" data-edit="${esc(e.username)}">편집</button></td>
           </tr>`).join("")}
@@ -1793,7 +1845,9 @@ function openEmployeeModal(emp){
           <div class="field"><label class="required">역할</label>
             <select id="emp-role">
               <option value="일반" ${(!isNew && emp.role==='일반')?'selected':''}>일반</option>
-              <option value="관리자" ${(!isNew && emp.role==='관리자')?'selected':''}>관리자</option>
+              <option value="품질" ${(!isNew && emp.role==='품질')?'selected':''}>품질</option>
+              <option value="프로젝트관리자" ${(!isNew && emp.role==='프로젝트관리자')?'selected':''}>프로젝트관리자</option>
+              <option value="마스터관리자" ${(!isNew && emp.role==='마스터관리자')?'selected':''}>마스터관리자</option>
             </select>
           </div>
           <div class="field"><label class="required">사용여부</label>
