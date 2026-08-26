@@ -1101,12 +1101,12 @@ function openInspectModal(id){
           </div>
         </div>
         <div class="row">
-          <div class="field"><label>초품검사결과</label>
+          <div class="field"><label class="required">초품검사결과</label>
             <select id="i-first-insp">
-              <option value="">선택 안 함</option>
+              <option value="">선택하세요</option>
               <option value="양호">양호</option>
               <option value="NG">NG</option>
-              <option value="기타">기타</option>
+              <option value="해당없음">해당없음</option>
             </select>
           </div>
           <div class="field"><label>LOT NO</label><input type="text" id="i-lotno" placeholder="예: LOT-2026-0819 (없으면 비워두세요)"></div>
@@ -1182,7 +1182,7 @@ function openInspectModal(id){
     const ngAction = val("i-ng-action");
     const firstInspResult = document.getElementById("i-first-insp").value;
     const lotNo = val("i-lotno");
-    if(!date || !result || (result==="기타" && !etc)){ showToast("필수 항목(*)을 입력해주세요."); return; }
+    if(!date || !result || !firstInspResult || (result==="기타" && !etc)){ showToast("필수 항목(*)을 입력해주세요. (초품검사결과 포함)"); return; }
     if(result==="NG" && !ngAction){ showToast("NG 선택 시 재발방지 대책/코멘트를 입력해주세요."); return; }
     confirmPopup("점검 저장 확인", "점검 결과를 저장하시겠습니까?", async () => {
       showLoading("점검 결과를 저장하고 있습니다...");
