@@ -208,6 +208,30 @@
   </div>
 </div>
 
+<div id="pw-change-screen" class="login-wrap" style="display:none;">
+  <div class="login-card">
+    <p class="header-titles" style="margin-bottom:6px;">
+      <span class="header-title-line brand-name" style="color:var(--accent);">비밀번호 변경</span>
+    </p>
+    <p class="hint" style="margin-bottom:16px;">보안을 위해 최초 로그인 시 비밀번호를 변경해야 합니다. (사번을 그대로 사용하는 것은 안전하지 않습니다)</p>
+    <div class="field">
+      <label class="required">현재 비밀번호</label>
+      <input type="password" id="pw-current" placeholder="현재 비밀번호 (사번)" autocomplete="current-password">
+    </div>
+    <div class="field">
+      <label class="required">새 비밀번호</label>
+      <input type="password" id="pw-new" placeholder="4자리 이상 입력" autocomplete="new-password">
+    </div>
+    <div class="field">
+      <label class="required">새 비밀번호 확인</label>
+      <input type="password" id="pw-new-confirm" placeholder="새 비밀번호를 다시 입력" autocomplete="new-password">
+    </div>
+    <p id="pw-change-err" style="color:var(--danger);font-size:12.5px;display:none;margin:2px 0 10px;"></p>
+    <button class="btn btn-primary btn-block" id="pw-change-submit" style="padding:11px;">비밀번호 변경</button>
+    <p class="hint" style="margin-top:14px;">변경 후 새 비밀번호로 다시 로그인해주세요.</p>
+  </div>
+</div>
+
 <div id="app" style="display:none;">
   <div class="header">
     <div class="header-row">
@@ -1738,10 +1762,51 @@ function renderUserChip(){
   el.innerHTML = `
     <span class="uc-name">${esc(currentUser.name)} (${esc(currentUser.dept)})</span>
     <span class="uc-role">${esc(currentUser.role)}</span>
+    <button id="btn-mypw" type="button" title="비밀번호 변경">비밀번호</button>
     <button id="btn-logout" type="button">로그아웃</button>
   `;
   document.getElementById("btn-logout").onclick = () => {
     confirmPopup("로그아웃", "로그아웃 하시겠습니까?", doLogout);
+  };
+  document.getElementById("btn-mypw").onclick = openMyPasswordModal;
+}
+function openMyPasswordModal(){
+  const root = document.getElementById("modal-root");
+  root.innerHTML = `
+    <div class="modal-overlay" id="mypw-overlay">
+      <div class="modal" style="max-width:380px;">
+        <h3>비밀번호 변경</h3>
+        <div class="field"><label class="required">현재 비밀번호</label><input type="password" id="mypw-current" autocomplete="current-password"></div>
+        <div class="field"><label class="required">새 비밀번호</label><input type="password" id="mypw-new" placeholder="4자리 이상" autocomplete="new-password"></div>
+        <div class="field"><label class="required">새 비밀번호 확인</label><input type="password" id="mypw-confirm" autocomplete="new-password"></div>
+        <p id="mypw-err" style="color:var(--danger);font-size:12px;display:none;margin:6px 0 0;"></p>
+        <div class="modal-actions">
+          <button class="btn" id="mypw-cancel">취소</button>
+          <button class="btn btn-primary" id="mypw-save">변경</button>
+        </div>
+      </div>
+    </div>`;
+  const close = () => { root.innerHTML = ""; };
+  document.getElementById("mypw-cancel").onclick = close;
+  document.getElementById("mypw-overlay").onclick = e => { if(e.target.id==="mypw-overlay") close(); };
+  document.getElementById("mypw-save").onclick = async () => {
+    const cur = document.getElementById("mypw-current").value;
+    const nw = document.getElementById("mypw-new").value;
+    const confirm = document.getElementById("mypw-confirm").value;
+    const errEl = document.getElementById("mypw-err");
+    errEl.style.display = "none";
+    if(!cur || !nw || !confirm){ errEl.textContent = "모든 항목을 입력해주세요."; errEl.style.display = "block"; return; }
+    if(nw.length < 4){ errEl.textContent = "새 비밀번호는 4자리 이상이어야 합니다."; errEl.style.display = "block"; return; }
+    if(nw !== confirm){ errEl.textContent = "새 비밀번호가 서로 일치하지 않습니다."; errEl.style.display = "block"; return; }
+    const json = await apiPost({ action: "changeMyPassword", currentPassword: cur, newPassword: nw });
+    if(json && json.ok){
+      close();
+      showToast("비밀번호가 변경되었습니다. 다시 로그인해주세요.", 3000);
+      setTimeout(doLogout, 1500);
+    }else{
+      errEl.textContent = lastApiError || "비밀번호 변경에 실패했습니다.";
+      errEl.style.display = "block";
+    }
   };
 }
 function renderMainTabs(){
@@ -1888,11 +1953,13 @@ function openEmployeeModal(emp){
 /* ---------- 로그인 화면 ---------- */
 function showLoginScreen(){
   document.getElementById("login-screen").style.display = "flex";
+  document.getElementById("pw-change-screen").style.display = "none";
   document.getElementById("app").style.display = "none";
   const userInput = document.getElementById("login-username");
   const passInput = document.getElementById("login-password");
   const errEl = document.getElementById("login-err");
   const btn = document.getElementById("login-submit");
+  passInput.value = "";
   const submit = async () => {
     const username = userInput.value.trim();
     const password = passInput.value;
@@ -1905,7 +1972,11 @@ function showLoginScreen(){
       authToken = json.token; currentUser = json.user;
       localStorage.setItem("sy_token", authToken);
       localStorage.setItem("sy_user", JSON.stringify(currentUser));
-      await startApp();
+      if(currentUser.mustChangePassword){
+        showPasswordChangeScreen();
+      }else{
+        await startApp();
+      }
     }else{
       errEl.textContent = lastApiError || "아이디 또는 비밀번호가 올바르지 않습니다.";
       errEl.style.display = "block";
@@ -1916,9 +1987,48 @@ function showLoginScreen(){
   userInput.onkeydown = (e) => { if(e.key==="Enter") passInput.focus(); };
 }
 
+/* ---------- 최초 로그인 비밀번호 강제 변경 화면 ---------- */
+function showPasswordChangeScreen(){
+  document.getElementById("login-screen").style.display = "none";
+  document.getElementById("app").style.display = "none";
+  document.getElementById("pw-change-screen").style.display = "flex";
+  const curInput = document.getElementById("pw-current");
+  const newInput = document.getElementById("pw-new");
+  const confirmInput = document.getElementById("pw-new-confirm");
+  const errEl = document.getElementById("pw-change-err");
+  const btn = document.getElementById("pw-change-submit");
+  curInput.value = ""; newInput.value = ""; confirmInput.value = "";
+  errEl.style.display = "none";
+  const submit = async () => {
+    const cur = curInput.value;
+    const nw = newInput.value;
+    const confirm = confirmInput.value;
+    errEl.style.display = "none";
+    if(!cur || !nw || !confirm){ errEl.textContent = "모든 항목을 입력해주세요."; errEl.style.display = "block"; return; }
+    if(nw.length < 4){ errEl.textContent = "새 비밀번호는 4자리 이상이어야 합니다."; errEl.style.display = "block"; return; }
+    if(nw !== confirm){ errEl.textContent = "새 비밀번호가 서로 일치하지 않습니다."; errEl.style.display = "block"; return; }
+    if(nw === cur){ errEl.textContent = "기존 비밀번호와 다른 비밀번호로 설정해주세요."; errEl.style.display = "block"; return; }
+    btn.disabled = true; btn.textContent = "변경 중...";
+    const json = await apiPost({ action: "changeMyPassword", currentPassword: cur, newPassword: nw });
+    btn.disabled = false; btn.textContent = "비밀번호 변경";
+    if(json && json.ok){
+      authToken = ""; currentUser = null;
+      localStorage.removeItem("sy_token"); localStorage.removeItem("sy_user");
+      showLoginScreen();
+      showToast("비밀번호가 변경되었습니다. 새 비밀번호로 다시 로그인해주세요.", 4000);
+    }else{
+      errEl.textContent = lastApiError || "비밀번호 변경에 실패했습니다.";
+      errEl.style.display = "block";
+    }
+  };
+  btn.onclick = submit;
+  confirmInput.onkeydown = (e) => { if(e.key==="Enter") submit(); };
+}
+
 /* ---------- 앱 시작 ---------- */
 async function startApp(){
   document.getElementById("login-screen").style.display = "none";
+  document.getElementById("pw-change-screen").style.display = "none";
   document.getElementById("app").style.display = "block";
   renderUserChip();
   renderMainTabs();
@@ -1947,6 +2057,10 @@ function startIdleTimer(){
 /* ---------- 초기화 ---------- */
 (async function init(){
   if(authToken && currentUser){
+    if(currentUser.mustChangePassword){
+      showPasswordChangeScreen();
+      return;
+    }
     try{
       await apiGet("?type=directory"); // 세션 유효성 간단 확인
       await startApp();
