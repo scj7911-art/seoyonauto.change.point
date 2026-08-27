@@ -103,7 +103,13 @@
   .modal-overlay{position:fixed;inset:0;background:rgba(20,25,35,.5);display:flex;align-items:center;justify-content:center;z-index:1000;padding:16px;}
   .modal{background:#fff;border-radius:12px;max-width:520px;width:100%;max-height:88vh;overflow:auto;padding:22px;}
   .modal h3{margin:0 0 14px;font-size:16px;color:var(--primary);}
-  .modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:18px;}
+  .modal-actions{
+    display:flex;gap:8px;justify-content:flex-end;margin-top:18px;
+    position:sticky;bottom:-22px;
+    margin-left:-22px;margin-right:-22px;margin-bottom:-22px;
+    padding:12px 22px;background:#fff;
+    box-shadow:0 -6px 10px -6px rgba(0,0,0,.15);
+  }
   .master-list{list-style:none;margin:0 0 12px;padding:0;max-height:220px;overflow:auto;border:1px solid var(--border);border-radius:8px;}
   .master-list li{display:flex;align-items:center;gap:8px;padding:7px 10px;border-bottom:1px solid var(--border);font-size:13px;}
   .master-list li:last-child{border-bottom:none;}
@@ -127,6 +133,25 @@
 
   /* ---------- 로딩 오버레이 ---------- */
   .loading-overlay{position:fixed;inset:0;background:rgba(20,25,35,.55);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:2000;gap:14px;}
+
+  /* ---------- 커스텀 날짜 선택기 (PC/모바일 동일 동작 보장) ---------- */
+  .date-input-trigger{cursor:pointer;background:#fff;}
+  .date-input-trigger::placeholder{color:var(--text-muted);}
+  .dp-popup{position:fixed;z-index:2500;background:#fff;border:1px solid var(--border);border-radius:10px;box-shadow:0 8px 28px rgba(20,25,35,.22);width:270px;padding:12px;}
+  .dp-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+  .dp-header button{background:none;border:none;font-size:16px;color:var(--primary);cursor:pointer;padding:4px 10px;border-radius:6px;}
+  .dp-header button:hover{background:var(--bg);}
+  .dp-title{font-size:13.5px;font-weight:700;color:var(--primary);}
+  .dp-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;}
+  .dp-weekday{font-size:10.5px;color:var(--text-muted);text-align:center;padding:4px 0;font-weight:600;}
+  .dp-day{font-size:12.5px;text-align:center;padding:6px 0;border-radius:6px;cursor:pointer;color:var(--text);}
+  .dp-day:hover{background:var(--bg);}
+  .dp-day.dp-muted{color:var(--text-muted);opacity:.45;}
+  .dp-day.dp-today{font-weight:700;color:var(--accent);}
+  .dp-day.dp-selected{background:var(--primary);color:#fff;font-weight:700;}
+  .dp-footer{display:flex;justify-content:space-between;margin-top:8px;padding-top:8px;border-top:1px solid var(--border);}
+  .dp-footer button{font-size:11.5px;background:none;border:none;color:var(--text-secondary);cursor:pointer;padding:4px 8px;}
+  .dp-footer button:hover{color:var(--primary);}
   .loading-spinner{width:44px;height:44px;border:4px solid rgba(255,255,255,.25);border-top:4px solid #fff;border-radius:50%;animation:spin .8s linear infinite;}
   @keyframes spin{to{transform:rotate(360deg);}}
   .loading-text{color:#fff;font-size:15px;font-weight:600;text-align:center;}
@@ -176,7 +201,7 @@
     .modal{padding:16px;max-width:94vw;width:94vw;}
     .modal h3{font-size:15px;}
     .detail-grid{grid-template-columns:88px 1fr;font-size:12.5px;}
-    .modal-actions{flex-wrap:wrap;}
+    .modal-actions{flex-wrap:wrap;bottom:-16px;margin-left:-16px;margin-right:-16px;margin-bottom:-16px;padding:10px 16px;}
     .modal-actions button{flex:1;min-width:80px;}
 
     .thumb{width:56px;height:56px;}
@@ -298,6 +323,7 @@
 <div id="modal-root"></div>
 <div id="confirm-root"></div>
 <div id="lightbox-root"></div>
+<div id="datepicker-root"></div>
 <div class="toast" id="toast"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -657,6 +683,104 @@ function openQrModal(){
 }
 
 /* ---------- 이미지 확대 보기 (라이트박스) ---------- */
+/* ---------- 커스텀 날짜 선택기 ----------
+ * PC/모바일/브라우저 종류와 무관하게 항상 동일하게 동작하도록,
+ * 네이티브 <input type="date"> 대신 자체 제작 달력 팝업을 사용합니다. */
+const DP_WEEKDAYS = ["일","월","화","수","목","금","토"];
+function dpPad(n){ return String(n).padStart(2, "0"); }
+function dpFormat(y, m, d){ return `${y}-${dpPad(m+1)}-${dpPad(d)}`; }
+function dpParse(str){
+  if(!str) return null;
+  const m = String(str).match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if(!m) return null;
+  return { y: Number(m[1]), m: Number(m[2]) - 1, d: Number(m[3]) };
+}
+function closeDatePicker(){
+  const root = document.getElementById("datepicker-root");
+  if(root) root.innerHTML = "";
+}
+function renderDatePickerCalendar(inputEl, viewY, viewM){
+  const root = document.getElementById("datepicker-root");
+  const selected = dpParse(inputEl.value);
+  const today = new Date();
+  const firstWeekday = new Date(viewY, viewM, 1).getDay();
+  const daysInMonth = new Date(viewY, viewM + 1, 0).getDate();
+  const daysInPrevMonth = new Date(viewY, viewM, 0).getDate();
+
+  let cells = [];
+  for(let i = firstWeekday - 1; i >= 0; i--){
+    cells.push({ d: daysInPrevMonth - i, muted: true, y: viewM === 0 ? viewY - 1 : viewY, m: viewM === 0 ? 11 : viewM - 1 });
+  }
+  for(let d = 1; d <= daysInMonth; d++){
+    cells.push({ d, muted: false, y: viewY, m: viewM });
+  }
+  while(cells.length % 7 !== 0 || cells.length < 42){
+    const last = cells[cells.length - 1];
+    const nd = last.muted && last.y === viewY && last.m === viewM ? 1 : (cells.filter(c=>!c.muted).length ? (cells[cells.length-1].d + 1) : 1);
+    cells.push({ d: nd, muted: true, y: viewM === 11 ? viewY + 1 : viewY, m: viewM === 11 ? 0 : viewM + 1 });
+    if(cells.length >= 42) break;
+  }
+
+  const rect = inputEl.getBoundingClientRect();
+  let left = rect.left;
+  let top = rect.bottom + 6;
+  const popupW = 270, popupH = 340;
+  if(left + popupW > window.innerWidth - 8) left = window.innerWidth - popupW - 8;
+  if(left < 8) left = 8;
+  if(top + popupH > window.innerHeight - 8) top = Math.max(8, rect.top - popupH - 6);
+
+  root.innerHTML = `
+    <div class="dp-popup" id="dp-popup" style="left:${left}px;top:${top}px;">
+      <div class="dp-header">
+        <button type="button" id="dp-prev">‹</button>
+        <span class="dp-title">${viewY}년 ${viewM + 1}월</span>
+        <button type="button" id="dp-next">›</button>
+      </div>
+      <div class="dp-grid">
+        ${DP_WEEKDAYS.map(w => `<div class="dp-weekday">${w}</div>`).join("")}
+        ${cells.map(c => {
+          const isToday = !c.muted && c.y === today.getFullYear() && c.m === today.getMonth() && c.d === today.getDate();
+          const isSelected = selected && c.y === selected.y && c.m === selected.m && c.d === selected.d;
+          return `<div class="dp-day${c.muted?" dp-muted":""}${isToday?" dp-today":""}${isSelected?" dp-selected":""}" data-y="${c.y}" data-m="${c.m}" data-d="${c.d}">${c.d}</div>`;
+        }).join("")}
+      </div>
+      <div class="dp-footer">
+        <button type="button" id="dp-today">오늘</button>
+        <button type="button" id="dp-clear">지우기</button>
+      </div>
+    </div>`;
+
+  document.getElementById("dp-prev").onclick = (e) => { e.stopPropagation(); const nm = viewM === 0 ? 11 : viewM - 1; const ny = viewM === 0 ? viewY - 1 : viewY; renderDatePickerCalendar(inputEl, ny, nm); };
+  document.getElementById("dp-next").onclick = (e) => { e.stopPropagation(); const nm = viewM === 11 ? 0 : viewM + 1; const ny = viewM === 11 ? viewY + 1 : viewY; renderDatePickerCalendar(inputEl, ny, nm); };
+  document.getElementById("dp-today").onclick = (e) => { e.stopPropagation(); setDpValue(inputEl, today.getFullYear(), today.getMonth(), today.getDate()); };
+  document.getElementById("dp-clear").onclick = (e) => { e.stopPropagation(); inputEl.value = ""; inputEl.dispatchEvent(new Event("change", { bubbles:true })); closeDatePicker(); };
+  root.querySelectorAll(".dp-day").forEach(cell => {
+    cell.onclick = (e) => {
+      e.stopPropagation();
+      setDpValue(inputEl, Number(cell.dataset.y), Number(cell.dataset.m), Number(cell.dataset.d));
+    };
+  });
+  document.getElementById("dp-popup").onclick = (e) => e.stopPropagation();
+}
+function setDpValue(inputEl, y, m, d){
+  inputEl.value = dpFormat(y, m, d);
+  inputEl.dispatchEvent(new Event("change", { bubbles: true }));
+  closeDatePicker();
+}
+function attachDatePicker(id){
+  const el = document.getElementById(id);
+  if(!el) return;
+  el.onclick = (e) => {
+    e.stopPropagation();
+    const parsed = dpParse(el.value) || (() => { const t = new Date(); return { y: t.getFullYear(), m: t.getMonth(), d: t.getDate() }; })();
+    renderDatePickerCalendar(el, parsed.y, parsed.m);
+  };
+}
+// 팝업 바깥을 클릭/스크롤하면 닫힘
+document.addEventListener("click", closeDatePicker);
+window.addEventListener("scroll", closeDatePicker, true);
+window.addEventListener("resize", closeDatePicker);
+
 function openLightbox(src){
   const lb = document.getElementById("lightbox-root");
   lb.innerHTML = `
@@ -789,7 +913,7 @@ function renderRegisterTab(){
     <h2><span class="num">1</span>변경일시</h2>
     <div class="field" style="max-width:220px;">
       <label class="required">변경일자</label>
-      <input type="date" id="f-date" value="">
+      <input type="text" id="f-date" class="date-input-trigger" readonly placeholder="YYYY-MM-DD" value="">
     </div>
   </div>
 
@@ -891,6 +1015,7 @@ function renderRegisterTab(){
 }
 
 function bindRegisterTab(){
+  attachDatePicker("f-date");
   if(isAdmin()) document.getElementById("btn-edit-master").onclick = () => openMasterEditor("lines");
   const banner = document.getElementById("my-pending-banner");
   if(banner) banner.onclick = () => { currentTab = "inspect"; render(); };
@@ -1096,7 +1221,7 @@ function openInspectModal(id){
 
         <div class="section-title">점검 입력</div>
         <div class="row">
-          <div class="field"><label class="required">점검일자</label><input type="date" id="i-date" value=""></div>
+          <div class="field"><label class="required">점검일자</label><input type="text" id="i-date" class="date-input-trigger" readonly placeholder="YYYY-MM-DD" value=""></div>
           <div class="field"><label class="required">조치결과</label>
             <select id="i-result">
               <option value="">선택하세요</option>
@@ -1163,6 +1288,7 @@ function openInspectModal(id){
       });
     };
   }
+  attachDatePicker("i-date");
   document.getElementById("i-result").onchange = (e) => {
     document.getElementById("i-etc-wrap").style.display = e.target.value === "기타" ? "block" : "none";
     document.getElementById("i-ng-wrap").style.display = e.target.value === "NG" ? "block" : "none";
@@ -1240,9 +1366,9 @@ function renderStatusTab(){
     <div class="toolbar" style="margin-top:-4px;flex-wrap:wrap;gap:8px;">
       <div class="filters" style="align-items:center;flex-wrap:wrap;gap:6px;">
         <span class="hint" style="margin:0;">변경일</span>
-        <input type="date" id="s-from" style="width:auto;">
+        <input type="text" id="s-from" class="date-input-trigger" readonly placeholder="YYYY-MM-DD" style="width:130px;">
         <span class="hint" style="margin:0;">~</span>
-        <input type="date" id="s-to" style="width:auto;">
+        <input type="text" id="s-to" class="date-input-trigger" readonly placeholder="YYYY-MM-DD" style="width:130px;">
         <button class="btn btn-sm" id="s-reset">초기화</button>
         <span class="hint" id="s-count" style="margin:0;font-weight:700;"></span>
       </div>
@@ -1328,6 +1454,8 @@ function applyStatusFilter(){
 }
 
 function bindStatusTab(){
+  attachDatePicker("s-from");
+  attachDatePicker("s-to");
   ["s-search"].forEach(id => document.getElementById(id).oninput = applyStatusFilter);
   ["s-status","s-customer","s-inspector","s-from","s-to"].forEach(id => document.getElementById(id).onchange = applyStatusFilter);
   const downAllBtn = document.getElementById("s-downall");
@@ -1447,7 +1575,7 @@ function openEditModal(id){
         <h3>변동점 수정</h3>
         <span class="docnum-badge">${esc(it.id)}</span>
         <div class="row" style="margin-top:14px;">
-          <div class="field"><label>변경일자</label><input type="date" id="e-date" value="${esc(it.regDate)}"></div>
+          <div class="field"><label>변경일자</label><input type="text" id="e-date" class="date-input-trigger" readonly value="${esc(it.regDate)}"></div>
           <div class="field"><label>고객사</label><select id="e-customer">${CUSTOMERS.map(c=>`<option ${c===it.customer?'selected':''}>${esc(c)}</option>`).join("")}</select></div>
         </div>
         <div class="row">
@@ -1476,6 +1604,7 @@ function openEditModal(id){
   const close = () => { root.innerHTML = ""; };
   document.getElementById("ed-cancel").onclick = close;
   document.getElementById("ed-overlay").onclick = (e) => { if(e.target.id==="ed-overlay") close(); };
+  attachDatePicker("e-date");
   document.getElementById("ed-save").onclick = () => {
     confirmPopup("수정 저장", "변경 내용을 저장하시겠습니까?", async () => {
       showLoading("수정 사항을 저장하고 있습니다...");
@@ -1770,7 +1899,7 @@ function openNgModal(id){
         </div>
         <div class="field">
           <label>완료일자</label>
-          <input type="date" id="ng-date" value="${esc(it.ngActionDate||todayStr())}" style="max-width:200px;">
+          <input type="text" id="ng-date" class="date-input-trigger" readonly value="${esc(it.ngActionDate||todayStr())}" style="max-width:200px;">
         </div>
         ${it.ngActionBy ? `<p class="hint">마지막 입력: ${esc(it.ngActionBy)} / ${esc(it.ngActionDate)}</p>` : ""}
         <div class="modal-actions">
@@ -1782,6 +1911,7 @@ function openNgModal(id){
   const close = () => { root.innerHTML = ""; };
   document.getElementById("ng-cancel").onclick = close;
   document.getElementById("ng-overlay").onclick = e => { if(e.target.id==="ng-overlay") close(); };
+  attachDatePicker("ng-date");
   document.getElementById("ng-save").onclick = async () => {
     const action = document.getElementById("ng-action").value.trim();
     if(!action){ showToast("재발방지 대책을 입력해주세요."); return; }
@@ -1849,14 +1979,17 @@ function isAnyModalOpen(){
   const modalRoot = document.getElementById("modal-root");
   const confirmRoot = document.getElementById("confirm-root");
   const lightboxRoot = document.getElementById("lightbox-root");
+  const datepickerRoot = document.getElementById("datepicker-root");
   return (modalRoot && modalRoot.innerHTML.trim() !== "")
       || (confirmRoot && confirmRoot.innerHTML.trim() !== "")
-      || (lightboxRoot && lightboxRoot.innerHTML.trim() !== "");
+      || (lightboxRoot && lightboxRoot.innerHTML.trim() !== "")
+      || (datepickerRoot && datepickerRoot.innerHTML.trim() !== "");
 }
 function initBackButtonHandling(){
   const modalRoot = document.getElementById("modal-root");
   const confirmRoot = document.getElementById("confirm-root");
   const lightboxRoot = document.getElementById("lightbox-root");
+  const datepickerRoot = document.getElementById("datepicker-root");
 
   if(!appGuardActive){
     appGuardActive = true;
@@ -1873,12 +2006,13 @@ function initBackButtonHandling(){
     }else if(!open && modalHistoryActive){
       modalHistoryActive = false;
       syntheticPop = true;
-      history.back(); // 화면 안의 '취소/닫기' 버튼으로 모달이 닫힌 경우 → 쌓아둔 히스토리도 같이 정리
+      history.back(); // 화면 안의 '취소/닫기' 버튼(또는 바깥 클릭)으로 닫힌 경우 → 쌓아둔 히스토리도 같이 정리
     }
   });
   observer.observe(modalRoot, { childList: true });
   observer.observe(confirmRoot, { childList: true });
   observer.observe(lightboxRoot, { childList: true });
+  observer.observe(datepickerRoot, { childList: true });
 
   window.addEventListener("popstate", () => {
     if(syntheticPop){
@@ -1891,9 +2025,11 @@ function initBackButtonHandling(){
       return;
     }
     if(isAnyModalOpen()){
-      // 진짜 뒤로가기가 눌렸는데 모달/확인창/라이트박스가 열려있음 → 가장 위에 있는 것 하나만 닫음
+      // 진짜 뒤로가기가 눌렸는데 날짜팝업/모달/확인창/라이트박스가 열려있음 → 가장 위에 있는 것 하나만 닫음
       modalHistoryActive = false;
-      if(lightboxRoot.innerHTML.trim() !== ""){
+      if(datepickerRoot.innerHTML.trim() !== ""){
+        datepickerRoot.innerHTML = "";
+      }else if(lightboxRoot.innerHTML.trim() !== ""){
         lightboxRoot.innerHTML = "";
       }else if(confirmRoot.innerHTML.trim() !== ""){
         confirmRoot.innerHTML = "";
