@@ -350,7 +350,7 @@ let currentUser = null;
 try{ currentUser = JSON.parse(localStorage.getItem("sy_user") || "null"); }catch(e){ currentUser = null; }
 
 /* ---------- 저장소 헬퍼 (Google Apps Script 연동) ---------- */
-const API_URL = "https://script.google.com/macros/s/AKfycby5eO9cFavm9VcU5zInM5kkYsifDdA4f463Q2XvReetObIJa0iPuXnYgJ8Wu68RIpVs/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbzGvkQ5bRx03I9z5RYEP8Gl9wS8MRIJqzWdDBF_EKufd2hBujyqYGWbYykMwG9EyTZFTw/exec";
 
 async function apiGet(query){
   const sep = (query && query.includes("?")) ? "&" : "?";
