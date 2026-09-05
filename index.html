@@ -613,9 +613,45 @@ async function processFile(file){
   }
 }
 
+/* Drive 이미지 로딩 실패 시: 대체 URL로 순차 재시도 → 그래도 실패하면 안내 문구로 교체
+ * (일부 네트워크/브라우저 환경, 특히 모바일에서 특정 서빙 방식이 불안정한 경우 대응) */
+function handleDriveImgError(imgEl, fileId){
+  if(!imgEl.dataset.altTried){
+    imgEl.dataset.altTried = "1";
+    imgEl.src = "https://drive.google.com/uc?export=view&id=" + fileId;
+    return;
+  }
+  if(!imgEl.dataset.alt2Tried){
+    imgEl.dataset.alt2Tried = "1";
+    imgEl.src = "https://drive.google.com/thumbnail?id=" + fileId + "&sz=w1000";
+    return;
+  }
+  // 모든 대체 경로도 실패 -> 안내 문구로 교체
+  const wrap = imgEl.closest(".thumb") || imgEl.parentElement;
+  if(wrap){
+    wrap.innerHTML = `<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;min-height:60px;padding:6px;text-align:center;">
+      <span style="font-size:11px;color:var(--text-muted);">사진을 불러올 수 없습니다</span>
+      <a href="https://drive.google.com/file/d/${fileId}/view" target="_blank" style="font-size:11px;color:var(--primary);margin-top:3px;">원본 열기</a>
+    </div>`;
+  }
+}
+function extractDriveFileId(url){
+  const s = String(url);
+  const m1 = s.match(/[?&]id=([^&]+)/);
+  if(m1) return m1[1];
+  const m2 = s.match(/\/d\/([^=&/?]+)/); // lh3.googleusercontent.com/d/{fileId}=w1000 형식
+  if(m2) return m2[1];
+  return "";
+}
+function driveImgTag(url, extraStyle){
+  const fileId = extractDriveFileId(url);
+  const onerr = fileId ? ` onerror="handleDriveImgError(this,'${fileId}')"` : "";
+  return `<img src="${imgSrc(url)}"${extraStyle ? ` style="${extraStyle}"` : ""}${onerr}>`;
+}
+
 function renderFileThumb(item, index){
-  if(item.isImage || (item.data && String(item.data).startsWith("data:image")) || (item.data && String(item.data).includes("drive.google.com"))){
-    return `<div class="thumb"><img src="${imgSrc(item.data)}"><div class="rm" data-i="${index}">×</div></div>`;
+  if(item.isImage || (item.data && String(item.data).startsWith("data:image")) || (item.data && (String(item.data).includes("drive.google.com") || String(item.data).includes("googleusercontent.com")))){
+    return `<div class="thumb">${driveImgTag(item.data)}<div class="rm" data-i="${index}">×</div></div>`;
   }
   return `<div class="thumb file-thumb" title="${esc(item.name)}">
     <span class="file-icon">${getFileIcon(item.name)}</span>
@@ -627,8 +663,8 @@ function renderFileThumb(item, index){
 function renderFileDisplay(item){
   const src = item.data || "";
   // 이미지 파일 (data:image 또는 Drive 썸네일 URL)
-  if(item.isImage !== false && (src.startsWith("data:image") || src.includes("drive.google.com/thumbnail"))){
-    return `<div class="thumb"><img src="${imgSrc(src)}"></div>`;
+  if(item.isImage !== false && (src.startsWith("data:image") || src.includes("drive.google.com/thumbnail") || src.includes("googleusercontent.com"))){
+    return `<div class="thumb">${driveImgTag(src)}</div>`;
   }
   // 문서 파일 (Drive 다운로드 URL — #파일명 포함)
   const hashIdx = src.indexOf("#");
@@ -1718,13 +1754,13 @@ async function addFilesToZip(zipOrFolder, prefix, arr){
       if(src.startsWith("data:")){
         // base64 데이터 → 바로 저장
         zipOrFolder.file(`${prefix}_${i+1}_${safeName}`, dataUrlToBlob(src));
-      } else if(src.includes("drive.google.com")){
+      } else if(src.includes("drive.google.com") || src.includes("googleusercontent.com")){
         // Google Drive URL → 프록시로 원본 데이터 가져오기
-        const m = src.match(/[?&]id=([^&]+)/);
-        if(!m) throw new Error("파일 ID를 찾을 수 없음");
-        const json = await apiGet("?type=image&fileId=" + encodeURIComponent(m[1]));
+        const fileId = extractDriveFileId(src);
+        if(!fileId) throw new Error("파일 ID를 찾을 수 없음");
+        const json = await apiGet("?type=image&fileId=" + encodeURIComponent(fileId));
         if(json.data && json.data.startsWith("data:")){
-          const ext = safeName.includes(".") ? "" : (src.includes("/thumbnail") ? ".jpg" : "");
+          const ext = safeName.includes(".") ? "" : ((src.includes("/thumbnail") || src.includes("googleusercontent.com")) ? ".jpg" : "");
           zipOrFolder.file(`${prefix}_${i+1}_${safeName}${ext}`, dataUrlToBlob(json.data));
         } else {
           throw new Error("데이터 없음");
