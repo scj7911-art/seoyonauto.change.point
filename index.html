@@ -18,7 +18,8 @@
     --mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
   }
   *{box-sizing:border-box;}
-  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font);}
+  html{overscroll-behavior-y: contain;}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font);overscroll-behavior-y: contain;}
   #app{max-width:1080px;margin:0 auto;padding:0 0 60px;}
 
   .header{background:var(--primary);color:#fff;padding:22px 28px;}
@@ -573,8 +574,19 @@ function fileToCompressedDataUrl(file, maxW){
 async function processFile(file){
   if(file.size > MAX_FILE_SIZE) throw new Error("파일 크기가 10MB를 초과합니다: " + file.name);
   if(isImageFile(file)){
-    const data = await fileToCompressedDataUrl(file, 1000);
-    return { name: file.name, data: data, isImage: true };
+    try{
+      const data = await fileToCompressedDataUrl(file, 1000);
+      return { name: file.name, data: data, isImage: true };
+    }catch(err){
+      // 고화소 사진 등으로 압축(리사이즈)이 실패하면, 압축 없이 원본이라도 첨부되도록 대체 처리
+      console.error("이미지 압축 실패, 원본으로 대체:", err);
+      try{
+        const rawData = await fileToDataUrl(file);
+        return { name: file.name, data: rawData, isImage: true };
+      }catch(err2){
+        throw new Error("사진을 처리하지 못했습니다: " + file.name);
+      }
+    }
   }else{
     const data = await fileToDataUrl(file);
     return { name: file.name, data: data, isImage: false };
@@ -1316,6 +1328,7 @@ function openInspectModal(id){
     const lotNo = val("i-lotno");
     if(!date || !result || !firstInspResult || (result==="기타" && !etc)){ showToast("필수 항목(*)을 입력해주세요. (초품검사결과 포함)"); return; }
     if(result==="NG" && !ngAction){ showToast("NG 선택 시 재발방지 대책/코멘트를 입력해주세요."); return; }
+    if(it.regDate && new Date(date) < new Date(it.regDate)){ showToast("점검일자는 변경일자(" + it.regDate + ")보다 빠를 수 없습니다."); return; }
     confirmPopup("점검 저장 확인", "점검 결과를 저장하시겠습니까?", async () => {
       showLoading("점검 결과를 저장하고 있습니다...");
       const payload = {
