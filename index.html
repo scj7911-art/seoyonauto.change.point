@@ -556,35 +556,55 @@ function fileToCompressedDataUrl(file, maxW){
     reader.onload = e => {
       const img = new Image();
       img.onload = () => {
-        const scale = Math.min(1, maxW / img.width);
-        const w = Math.round(img.width * scale);
-        const h = Math.round(img.height * scale);
-        const canvas = document.createElement("canvas");
-        canvas.width = w; canvas.height = h;
-        canvas.getContext("2d").drawImage(img, 0, 0, w, h);
-        resolve(canvas.toDataURL("image/jpeg", 0.72));
+        try{
+          if(!img.width || !img.height){
+            reject(new Error("이미지 크기를 읽을 수 없습니다 (0x0)"));
+            return;
+          }
+          const scale = Math.min(1, maxW / img.width);
+          const w = Math.round(img.width * scale);
+          const h = Math.round(img.height * scale);
+          const canvas = document.createElement("canvas");
+          canvas.width = w; canvas.height = h;
+          canvas.getContext("2d").drawImage(img, 0, 0, w, h);
+          const out = canvas.toDataURL("image/jpeg", 0.72);
+          if(!out || out.length < 100){
+            reject(new Error("압축 결과가 비어있습니다 (canvas 제한 가능성)"));
+            return;
+          }
+          resolve(out);
+        }catch(drawErr){
+          reject(new Error("이미지 처리 중 오류: " + (drawErr && drawErr.message ? drawErr.message : String(drawErr))));
+        }
       };
-      img.onerror = reject;
+      img.onerror = () => reject(new Error("브라우저가 이 이미지 형식을 열지 못했습니다 (형식: " + (file.type || "알수없음") + ")"));
       img.src = e.target.result;
     };
-    reader.onerror = reject;
+    reader.onerror = () => reject(new Error("파일을 읽지 못했습니다: " + file.name));
     reader.readAsDataURL(file);
   });
 }
 async function processFile(file){
   if(file.size > MAX_FILE_SIZE) throw new Error("파일 크기가 10MB를 초과합니다: " + file.name);
-  if(isImageFile(file)){
+
+  // 확장자로도 이미지 여부를 재판별 (일부 안드로이드 기기는 file.type이 비어있는 경우가 있음)
+  const looksLikeImage = isImageFile(file) || /\.(jpe?g|png|gif|webp|bmp|heic|heif)$/i.test(file.name || "");
+
+  if(looksLikeImage){
     try{
       const data = await fileToCompressedDataUrl(file, 1000);
       return { name: file.name, data: data, isImage: true };
     }catch(err){
-      // 고화소 사진 등으로 압축(리사이즈)이 실패하면, 압축 없이 원본이라도 첨부되도록 대체 처리
-      console.error("이미지 압축 실패, 원본으로 대체:", err);
+      // 압축(리사이즈)이 실패하면, 압축 없이 원본이라도 첨부되도록 대체 처리
+      const reason = err && err.message ? err.message : String(err);
+      console.error("이미지 압축 실패, 원본으로 대체:", reason);
       try{
         const rawData = await fileToDataUrl(file);
+        showToast("사진을 원본 그대로 첨부했습니다. (" + reason + ")", 4000);
         return { name: file.name, data: rawData, isImage: true };
       }catch(err2){
-        throw new Error("사진을 처리하지 못했습니다: " + file.name);
+        const reason2 = err2 && err2.message ? err2.message : String(err2);
+        throw new Error("사진 첨부 실패: " + reason2);
       }
     }
   }else{
@@ -1039,7 +1059,7 @@ function bindRegisterTab(){
     const handleFiles = async (fileList) => {
       for(const f of Array.from(fileList)){
         try{ bucket.push(await processFile(f)); }
-        catch(err){ showToast(err.message || "파일 처리 실패: " + f.name); }
+        catch(err){ showToast(err.message || ("파일 처리 실패: " + f.name), 6000); }
       }
       renderThumbs(thumbsId, bucket);
     };
@@ -1314,7 +1334,7 @@ function openInspectModal(id){
   document.getElementById("i-box").onclick = () => document.getElementById("i-file").click();
   document.getElementById("i-file").onchange = async (e) => {
     for(const f of Array.from(e.target.files)){
-      try{ inspImages.push(await processFile(f)); }catch(err){ showToast(err.message || "파일 처리 실패"); }
+      try{ inspImages.push(await processFile(f)); }catch(err){ showToast(err.message || "파일 처리 실패", 6000); }
     }
     e.target.value = "";
     renderInspThumbs();
