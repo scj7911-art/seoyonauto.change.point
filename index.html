@@ -228,6 +228,10 @@
       <label class="required">비밀번호 (사번)</label>
       <input type="password" id="login-password" placeholder="사번" autocomplete="current-password">
     </div>
+    <label style="display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--text-secondary);margin:-4px 0 12px;font-weight:400;">
+      <input type="checkbox" id="login-remember" style="width:auto;">
+      아이디 저장 (비밀번호는 저장되지 않습니다)
+    </label>
     <p id="login-err" style="color:var(--danger);font-size:12.5px;display:none;margin:2px 0 10px;">아이디 또는 비밀번호가 올바르지 않습니다.</p>
     <button class="btn btn-primary btn-block" id="login-submit" style="padding:11px;">로그인</button>
     <p class="hint" style="margin-top:14px;">아이디는 이름, 비밀번호는 사번입니다. 문제가 있으면 관리자에게 문의해주세요.</p>
@@ -2020,6 +2024,8 @@ function render(){
   else if(currentTab === "status"){ content.innerHTML = renderStatusTab(); bindStatusTab(); }
   else if(currentTab === "dashboard"){ renderDashboardTab(); }
   else if(currentTab === "employees"){ renderEmployeesTab(); }
+  else if(currentTab === "feedback"){ renderFeedbackTab(); }
+  else if(currentTab === "notices"){ renderNoticesAdminTab(); }
 }
 /* 탭 전환은 항상 이 함수를 통해서만 수행 (뒤로가기 히스토리에 정확히 기록되도록) */
 function switchTab(targetTab){
@@ -2210,8 +2216,9 @@ function renderMainTabs(){
     <button class="tab-btn" data-tab="inspect">점검 / 확인${badge}</button>
     <button class="tab-btn" data-tab="status">현황</button>
     <button class="tab-btn" data-tab="dashboard">대시보드</button>
+    <button class="tab-btn" data-tab="feedback">건의사항</button>
   `;
-  if(isAdmin()) html += `<button class="tab-btn" data-tab="employees">직원 관리</button>`;
+  if(isAdmin()) html += `<button class="tab-btn" data-tab="employees">직원 관리</button><button class="tab-btn" data-tab="notices">공지관리</button>`;
   wrap.innerHTML = html;
   bindTabs();
 }
@@ -2221,6 +2228,133 @@ function roleBadgeColor(role){
   if(role === "마스터관리자") return "background:var(--primary);color:#fff;";
   return "background:var(--bg);color:var(--text-secondary);";
 }
+/* ---------- 건의사항 (전 직원: 본인 작성건만 조회 / 관리자: 전체 조회+답변) ---------- */
+async function renderFeedbackTab(){
+  const content = document.getElementById("content");
+  content.innerHTML = `<div class="empty">불러오는 중입니다...</div>`;
+  let list;
+  try{
+    const json = await apiGet("?type=feedback");
+    list = json.feedback || [];
+  }catch(e){ content.innerHTML = `<div class="empty">건의사항을 불러오지 못했습니다.</div>`; return; }
+
+  const statusColor = { "미확인": "var(--text-muted)", "확인": "var(--accent)", "완료": "var(--success)" };
+  content.innerHTML = `
+  <div class="card">
+    <h2><span class="num">💬</span>건의사항 / 불편사항</h2>
+    <p class="hint">시스템 사용 중 불편한 점이나 개선 요청사항을 자유롭게 남겨주세요. ${isAdmin() ? "전체 건의사항이 보입니다." : "본인이 작성한 건만 보입니다."}</p>
+    <textarea id="fb-content" placeholder="예: 등록 화면에서 ○○ 기능이 있으면 좋겠습니다 / ○○ 화면이 이렇게 불편합니다" style="min-height:80px;"></textarea>
+    <button class="btn btn-primary" id="fb-submit" style="margin-top:8px;">등록</button>
+  </div>
+  <div class="card">
+    <h2><span class="num">📋</span>${isAdmin() ? "전체 건의사항" : "내가 작성한 건의사항"} (${list.length}건)</h2>
+    <div id="fb-list">
+      ${list.length === 0 ? `<div class="empty">등록된 건의사항이 없습니다.</div>` : list.map(fb => `
+        <div class="card" style="background:var(--bg);margin-bottom:10px;">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">
+            <div style="flex:1;">
+              <div style="font-size:12px;color:var(--text-secondary);margin-bottom:4px;">${esc(fb.writerName)} (${esc(fb.writerDept)}) · ${esc(fmtDate(fb.createdAt))}</div>
+              <div style="font-size:13.5px;white-space:pre-wrap;">${esc(fb.content)}</div>
+            </div>
+            <span class="status-pill" style="background:${statusColor[fb.status]||'var(--bg)'};color:#fff;white-space:nowrap;">${esc(fb.status)}</span>
+          </div>
+          ${fb.reply ? `<div style="margin-top:10px;padding:10px;background:var(--light,#EDF2F9);border-radius:8px;">
+            <div style="font-size:11.5px;color:var(--primary);font-weight:700;margin-bottom:3px;">관리자 답변 (${esc(fb.repliedBy)}, ${esc(fmtDate(fb.repliedAt))})</div>
+            <div style="font-size:13px;white-space:pre-wrap;">${esc(fb.reply)}</div>
+          </div>` : ""}
+          ${isAdmin() ? `
+          <div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
+            <select class="fb-status-select" data-id="${esc(fb.id)}" style="width:auto;">
+              <option value="미확인" ${fb.status==='미확인'?'selected':''}>미확인</option>
+              <option value="확인" ${fb.status==='확인'?'selected':''}>확인</option>
+              <option value="완료" ${fb.status==='완료'?'selected':''}>완료</option>
+            </select>
+            <input type="text" class="fb-reply-input" data-id="${esc(fb.id)}" placeholder="답변 입력" value="${esc(fb.reply||'')}" style="flex:1;min-width:140px;">
+            <button class="btn btn-sm btn-primary fb-save-btn" data-id="${esc(fb.id)}">저장</button>
+          </div>` : ""}
+        </div>
+      `).join("")}
+    </div>
+  </div>`;
+
+  document.getElementById("fb-submit").onclick = async () => {
+    const val = document.getElementById("fb-content").value.trim();
+    if(!val){ showToast("내용을 입력해주세요."); return; }
+    const json = await apiPost({ action: "addFeedback", content: val });
+    if(!json){ showToast(lastApiError || "등록에 실패했습니다."); return; }
+    showToast("건의사항이 등록되었습니다.");
+    render();
+  };
+  if(isAdmin()){
+    document.querySelectorAll(".fb-save-btn").forEach(btn => {
+      btn.onclick = async () => {
+        const id = btn.dataset.id;
+        const status = document.querySelector(`.fb-status-select[data-id="${id}"]`).value;
+        const reply = document.querySelector(`.fb-reply-input[data-id="${id}"]`).value.trim();
+        const json = await apiPost({ action: "updateFeedbackStatus", id, status, reply });
+        if(!json){ showToast(lastApiError || "저장에 실패했습니다."); return; }
+        showToast("저장되었습니다.");
+        render();
+      };
+    });
+  }
+}
+
+/* ---------- 공지관리 (관리자 전용) ---------- */
+async function renderNoticesAdminTab(){
+  const content = document.getElementById("content");
+  content.innerHTML = `<div class="empty">불러오는 중입니다...</div>`;
+  let list;
+  try{
+    const json = await apiGet("?type=notices");
+    list = json.notices || [];
+  }catch(e){ content.innerHTML = `<div class="empty">공지사항을 불러오지 못했습니다.</div>`; return; }
+
+  content.innerHTML = `
+  <div class="card">
+    <h2><span class="num">📢</span>공지사항 작성</h2>
+    <p class="hint">작성하면 아직 확인하지 않은 전 직원에게 다음 로그인 시 팝업으로 표시됩니다.</p>
+    <div class="field"><label class="required">제목</label><input type="text" id="nt-title" placeholder="공지 제목"></div>
+    <div class="field"><label>내용</label><textarea id="nt-content" placeholder="공지 내용" style="min-height:80px;"></textarea></div>
+    <button class="btn btn-primary" id="nt-submit">등록</button>
+  </div>
+  <div class="card">
+    <h2><span class="num">📋</span>등록된 공지 (${list.length}건, 활성 상태만 표시)</h2>
+    ${list.length === 0 ? `<div class="empty">등록된 공지가 없습니다.</div>` : list.map(n => `
+      <div class="card" style="background:var(--bg);margin-bottom:10px;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">
+          <div style="flex:1;">
+            <div style="font-weight:700;font-size:14px;">${esc(n.title)}</div>
+            <div style="font-size:11.5px;color:var(--text-secondary);margin:3px 0 6px;">${esc(fmtDate(n.createdAt))} · ${esc(n.createdBy)}</div>
+            <div style="font-size:13px;white-space:pre-wrap;">${esc(n.content||"")}</div>
+          </div>
+          <button class="btn btn-sm btn-danger nt-deactivate-btn" data-id="${esc(n.id)}">비활성화</button>
+        </div>
+      </div>
+    `).join("")}
+  </div>`;
+
+  document.getElementById("nt-submit").onclick = async () => {
+    const title = document.getElementById("nt-title").value.trim();
+    const contentVal = document.getElementById("nt-content").value.trim();
+    if(!title){ showToast("제목을 입력해주세요."); return; }
+    const json = await apiPost({ action: "addNotice", title, content: contentVal });
+    if(!json){ showToast(lastApiError || "등록에 실패했습니다."); return; }
+    showToast("공지사항이 등록되었습니다.");
+    render();
+  };
+  document.querySelectorAll(".nt-deactivate-btn").forEach(btn => {
+    btn.onclick = () => {
+      confirmPopup("공지 비활성화", "이 공지를 비활성화하시겠습니까? (더 이상 팝업으로 표시되지 않습니다)", async () => {
+        const json = await apiPost({ action: "setNoticeActive", id: btn.dataset.id, active: false });
+        if(!json){ showToast(lastApiError || "처리에 실패했습니다."); return; }
+        showToast("비활성화되었습니다.");
+        render();
+      });
+    };
+  });
+}
+
 async function renderEmployeesTab(){
   const content = document.getElementById("content");
   content.innerHTML = `<div class="empty">불러오는 중입니다...</div>`;
@@ -2363,9 +2497,17 @@ function showLoginScreen(){
   document.getElementById("login-screen").style.display = "flex";
   const userInput = document.getElementById("login-username");
   const passInput = document.getElementById("login-password");
+  const rememberChk = document.getElementById("login-remember");
   const errEl = document.getElementById("login-err");
   const btn = document.getElementById("login-submit");
   passInput.value = "";
+  // 저장된 아이디가 있으면 자동 입력 (비밀번호는 절대 저장하지 않음)
+  const savedUsername = localStorage.getItem("sy_saved_username");
+  if(savedUsername){
+    userInput.value = savedUsername;
+    rememberChk.checked = true;
+    passInput.focus();
+  }
   const submit = async () => {
     const username = userInput.value.trim();
     const password = passInput.value;
@@ -2375,6 +2517,11 @@ function showLoginScreen(){
     const json = await doLogin(username, password);
     btn.disabled = false; btn.textContent = "로그인";
     if(json && json.ok){
+      if(rememberChk.checked){
+        localStorage.setItem("sy_saved_username", username);
+      }else{
+        localStorage.removeItem("sy_saved_username");
+      }
       if(json.needsOtpSetup){
         showOtpSetupScreen(json.tempToken, json.otpAuthUrl, json.secret);
       }else if(json.needsOtp){
@@ -2522,6 +2669,43 @@ async function startApp(){
   render();
   startIdleTimer();
   initBackButtonHandling();
+  checkAndShowNotices();
+}
+
+/* ---------- 공지사항 팝업 (확인하면 다음부터 안 뜸) ---------- */
+async function checkAndShowNotices(){
+  try{
+    const json = await apiGet("?type=notices");
+    const notices = json.notices || [];
+    const seenIds = JSON.parse(localStorage.getItem("sy_seen_notices") || "[]");
+    const unseen = notices.filter(n => seenIds.indexOf(n.id) === -1);
+    if(unseen.length > 0) showNoticeModal(unseen, 0, seenIds);
+  }catch(e){ /* 공지 조회 실패는 조용히 무시 (핵심 기능 아님) */ }
+}
+function showNoticeModal(list, index, seenIds){
+  if(index >= list.length) return;
+  const n = list[index];
+  const root = document.getElementById("modal-root");
+  root.innerHTML = `
+    <div class="modal-overlay" id="notice-overlay">
+      <div class="modal" style="max-width:420px;">
+        <h3>📢 ${esc(n.title)}</h3>
+        <p class="hint" style="margin:-6px 0 12px;">${esc(fmtDate(n.createdAt))} · ${esc(n.createdBy)}</p>
+        <p style="font-size:13.5px;color:var(--text);white-space:pre-wrap;line-height:1.6;">${esc(n.content || "")}</p>
+        ${list.length > 1 ? `<p class="hint" style="margin-top:10px;">${index+1} / ${list.length}</p>` : ""}
+        <div class="modal-actions">
+          <button class="btn btn-primary" id="notice-ok">확인</button>
+        </div>
+      </div>
+    </div>`;
+  document.getElementById("notice-ok").onclick = () => {
+    const updated = seenIds.concat([n.id]);
+    localStorage.setItem("sy_seen_notices", JSON.stringify(updated));
+    root.innerHTML = "";
+    if(index + 1 < list.length){
+      setTimeout(() => showNoticeModal(list, index + 1, updated), 150);
+    }
+  };
 }
 
 /* ② 미사용 30분 자동 로그아웃 */
