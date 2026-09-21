@@ -84,7 +84,63 @@
   .thumb .file-icon{font-size:22px;line-height:1;}
   .thumb .file-name{font-size:9px;color:var(--text-secondary);text-align:center;line-height:1.2;word-break:break-all;max-width:58px;overflow:hidden;}
 
-  .status-pill{display:inline-block;padding:3px 9px;border-radius:20px;font-size:11.5px;font-weight:700;}
+  .status-pill{display:inline-block;padding:3px 9px;border-radius:20px;font-size:11.5px;font-weight:700;white-space:nowrap;}
+  .st-ng{background:var(--danger-light);color:var(--danger);}
+  .st-ng-open{background:var(--danger);color:#fff;}
+
+  /* 관리 탭 하위 메뉴 */
+  .subnav{display:flex;gap:6px;margin-bottom:12px;}
+  .subnav-btn{padding:8px 16px;border:1px solid var(--border);background:var(--card);border-radius:20px;font-size:13px;font-weight:600;color:var(--text-secondary);cursor:pointer;}
+  .subnav-btn.active{background:var(--primary);border-color:var(--primary);color:#fff;}
+
+  /* 인라인 로딩 */
+  .inline-loading{display:flex;align-items:center;justify-content:center;gap:10px;padding:40px 0;color:var(--text-muted);font-size:13px;}
+  .inline-loading::before{content:"";width:18px;height:18px;border:2.5px solid var(--border);border-top-color:var(--primary);border-radius:50%;animation:spin .8s linear infinite;}
+
+  /* 목록: PC는 표, 모바일은 카드 */
+  .mob-only{display:none;}
+  .mcard{border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px;margin-bottom:8px;background:var(--card);cursor:pointer;}
+  .mcard:active{background:var(--bg);}
+  .mcard-top{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px;}
+  .mcard-id{font-family:var(--mono);font-size:11px;color:var(--text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .mcard-title{font-size:14px;font-weight:600;color:var(--text);margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .mcard-meta{font-size:12px;color:var(--text-secondary);line-height:1.6;}
+  .mcard-actions{margin-top:10px;display:flex;gap:6px;}
+  .mcard-actions .btn{flex:1;}
+  @media (max-width: 720px){
+    .desk-only{display:none !important;}
+    .mob-only{display:block;}
+  }
+
+  /* ── 대시보드 ── */
+  .dash-hero{display:grid;grid-template-columns:1.6fr 1fr;gap:12px;margin-bottom:12px;}
+  .dash-hero-main{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:22px 24px;cursor:pointer;transition:border-color .15s;}
+  .dash-hero-main:hover{border-color:var(--accent);}
+  .dash-hero-label{font-size:13px;color:var(--text-secondary);}
+  .dash-hero-value{font-size:52px;font-weight:800;line-height:1.05;margin:6px 0 2px;font-variant-numeric:tabular-nums;}
+  .dash-hero-sub{font-size:12px;color:var(--text-muted);}
+  .dash-hero-side{display:grid;grid-template-rows:1fr 1fr;gap:12px;}
+  .dash-mini{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:12px 16px;cursor:pointer;display:flex;align-items:baseline;gap:10px;transition:border-color .15s;}
+  .dash-mini:hover{border-color:var(--border-strong);}
+  .dash-mini.is-alert{border-color:var(--danger);background:var(--danger-light);}
+  .dash-mini-value{font-size:26px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1;}
+  .dash-mini-label{font-size:12.5px;color:var(--text-secondary);}
+  .dash-strip{display:flex;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:12px;overflow:hidden;}
+  .dash-strip-item{flex:1;padding:14px 8px;text-align:center;cursor:pointer;border-right:1px solid var(--border);display:flex;flex-direction:column;gap:3px;transition:background .15s;}
+  .dash-strip-item:last-child{border-right:none;}
+  .dash-strip-item[onclick]:hover{background:var(--bg);}
+  .dash-strip-value{font-size:21px;font-weight:700;color:var(--text);font-variant-numeric:tabular-nums;line-height:1.1;}
+  .dash-strip-label{font-size:11.5px;color:var(--text-secondary);}
+  .dash-alert{background:var(--danger-light);border-left:3px solid var(--danger);border-radius:6px;padding:11px 14px;font-size:12.5px;color:var(--danger);margin-bottom:12px;cursor:pointer;}
+  .dash-grid{display:grid;grid-template-columns:1.2fr 1fr;gap:12px;}
+  @media (max-width: 720px){
+    .dash-hero{grid-template-columns:1fr;}
+    .dash-hero-value{font-size:44px;}
+    .dash-hero-side{grid-template-rows:none;grid-template-columns:1fr 1fr;}
+    .dash-strip{flex-wrap:wrap;}
+    .dash-strip-item{flex:1 1 33%;border-bottom:1px solid var(--border);}
+    .dash-grid{grid-template-columns:1fr;}
+  }
   .st-등록{background:var(--warn-light);color:var(--warn);}
   .st-점검완료{background:var(--success-light);color:var(--success);}
 
@@ -181,7 +237,9 @@
     .header-logo{height:36px;}
     .qr-header-btn{padding:6px 8px;font-size:11.5px;}
 
-    .tab-btn{padding:11px 4px;font-size:12.5px;}
+    .tabs{overflow-x:auto;scrollbar-width:none;}
+    .tabs::-webkit-scrollbar{display:none;}
+    .tab-btn{flex:1 0 auto;padding:12px 12px;font-size:13px;white-space:nowrap;}
 
     .content{padding:12px;}
     .card{padding:14px 14px;margin-bottom:12px;}
@@ -725,7 +783,7 @@ function openQrModal(){
     </div>`;
   const close = () => { root.innerHTML = ""; };
   document.getElementById("qr-close").onclick = close;
-  document.getElementById("qr-overlay").onclick = (e) => { if(e.target.id==="qr-overlay") close(); };
+  document.getElementById("qr-overlay").onclick = (e) => { if(e.target.id==="qr-overlay" && overlayPressStartedOn(e.target)) close(); };
   const generate = () => {
     const url = document.getElementById("qr-url-input").value.trim();
     const wrap = document.getElementById("qr-canvas-wrap");
@@ -870,6 +928,15 @@ function bindLightbox(container){
 }
 
 /* ---------- 확인 팝업 ---------- */
+
+/* 팝업 바깥 클릭 판정: 브라우저는 누른 곳과 뗀 곳이 다르면 "뗀 곳"을 클릭한 것으로 처리함.
+ * 입력칸에서 글자를 드래그하다 팝업 밖에서 마우스를 떼면 창이 닫혀버리는 문제를 막기 위해,
+ * "누른 지점도 바깥(오버레이)이었을 때"만 닫히도록 판정 */
+let __pressTarget = null;
+document.addEventListener("pointerdown", e => { __pressTarget = e.target; }, true);
+document.addEventListener("mousedown", e => { __pressTarget = e.target; }, true);
+function overlayPressStartedOn(el){ return __pressTarget === el; }
+
 function confirmPopup(title, message, onConfirm){
   const root = document.getElementById("confirm-root");
   root.innerHTML = `
@@ -885,7 +952,7 @@ function confirmPopup(title, message, onConfirm){
     </div>`;
   const close = () => { root.innerHTML = ""; };
   document.getElementById("cf-cancel").onclick = close;
-  document.getElementById("cf-overlay").onclick = (e) => { if(e.target.id==="cf-overlay") close(); };
+  document.getElementById("cf-overlay").onclick = (e) => { if(e.target.id==="cf-overlay" && overlayPressStartedOn(e.target)) close(); };
   document.getElementById("cf-ok").onclick = () => { close(); onConfirm(); };
 }
 
@@ -925,7 +992,7 @@ function openMasterEditor(initialKey){
       </div>`;
     const close = () => { root.innerHTML = ""; render(); };
     document.getElementById("me-close").onclick = close;
-    document.getElementById("me-overlay").onclick = (e) => { if(e.target.id==="me-overlay") close(); };
+    document.getElementById("me-overlay").onclick = (e) => { if(e.target.id==="me-overlay" && overlayPressStartedOn(e.target)) close(); };
     document.getElementById("me-category").onchange = (e) => { key = e.target.value; renderModal(); };
     document.getElementById("ml-add").onclick = async () => {
       const v = document.getElementById("ml-new").value.trim();
@@ -1068,14 +1135,18 @@ function renderRegisterTab(){
         </select>
       </div>
       <div class="field">
-        <label class="required">담당자 선택 (복수 가능)</label>
-        <select id="f-followname" multiple size="4" style="min-height:90px;">
-          ${directory.map(d => `<option value="${esc(d.name)}" data-dept="${esc(d.dept)}">${esc(d.name)} (${esc(d.dept)})</option>`).join("")}
-        </select>
+        <label>이름 검색</label>
+        <input type="text" id="f-follow-search" placeholder="이름을 입력해 검색">
       </div>
     </div>
+    <div class="field" style="margin-top:8px;">
+      <label class="required">담당자 선택 (복수 가능)</label>
+      <select id="f-followname" multiple size="4" style="min-height:90px;">
+        ${directory.map(d => `<option value="${esc(d.name)}" data-dept="${esc(d.dept)}">${esc(d.name)} (${esc(d.dept)})</option>`).join("")}
+      </select>
+    </div>
     <div id="f-follow-selected" style="margin-top:6px;"></div>
-    <p class="hint">Ctrl(또는 Cmd) 키를 누른 채 클릭하면 여러 명을 선택할 수 있습니다. 선택된 담당자 모두에게 이메일이 발송됩니다.</p>
+    <p class="hint">부서 필터와 이름 검색은 동시에 적용됩니다. Ctrl(또는 Cmd) 키를 누른 채 클릭하면 여러 명을 선택할 수 있습니다.</p>
   </div>
 
   <div class="card">
@@ -1127,16 +1198,22 @@ function bindRegisterTab(){
   renderThumbs("thumbs-before", regImages.before);
   renderThumbs("thumbs-after", regImages.after);
 
-  // 후행담당자: 부서 필터 + 복수선택
+  // 후행담당자: 부서 필터 + 이름 검색(동시 적용) + 복수선택
   const deptFilter = document.getElementById("f-follow-dept-filter");
+  const nameSearch = document.getElementById("f-follow-search");
   const followSelect = document.getElementById("f-followname");
   const followSelected = document.getElementById("f-follow-selected");
-  deptFilter.onchange = () => {
+  const applyFollowFilter = () => {
     const dept = deptFilter.value;
+    const kw = nameSearch.value.trim().toLowerCase();
     Array.from(followSelect.options).forEach(opt => {
-      opt.style.display = (!dept || opt.dataset.dept === dept) ? "" : "none";
+      const deptOk = !dept || opt.dataset.dept === dept;
+      const nameOk = !kw || opt.value.toLowerCase().includes(kw);
+      opt.style.display = (deptOk && nameOk) ? "" : "none";
     });
   };
+  deptFilter.onchange = applyFollowFilter;
+  nameSearch.oninput = applyFollowFilter;
   const renderFollowChips = () => {
     const names = Array.from(followSelect.selectedOptions).map(o => o.value).filter(Boolean);
     followSelected.innerHTML = names.length > 0
@@ -1196,12 +1273,45 @@ function canProcessInspection(it){
   const names = String(it.followName || "").split(",").map(n => n.trim());
   return names.indexOf(currentUser.name) !== -1;
 }
+/* 상태 배지: 모든 화면에서 같은 규칙으로 표시
+ *  점검대기(주황) / 점검완료(초록) / NG 대책완료(연빨강) / NG 대책미입력(진빨강) */
+function statusBadge(it){
+  if(it.status === "등록") return `<span class="status-pill st-등록">점검대기</span>`;
+  if(it.inspResult === "NG"){
+    return it.ngAction
+      ? `<span class="status-pill st-ng">NG 대책완료</span>`
+      : `<span class="status-pill st-ng-open">NG 대책미입력</span>`;
+  }
+  return `<span class="status-pill st-점검완료">점검완료</span>`;
+}
+function loadingBlock(msg){ return `<div class="inline-loading">${esc(msg || "불러오는 중입니다")}</div>`; }
 function inspResultDisplay(it){
   const r = it.inspResult;
   if(r === "NG") return `<span style="color:var(--danger);font-weight:700;">NG</span>`;
   if(r === "기타") return esc(it.inspResultEtc || "기타");
   return esc(r);
 }
+/* 모바일용 카드 목록 (PC는 기존 표 그대로 사용) */
+function mobileCardList(list, mode){
+  return `<div class="mob-only">${list.map(it => `
+    <div class="mcard" data-id="${esc(it.id)}">
+      <div class="mcard-top">
+        <span class="mcard-id">${esc(it.id)}</span>
+        ${statusBadge(it)}
+      </div>
+      <div class="mcard-title">${esc(it.content || "")}</div>
+      <div class="mcard-meta">
+        ${esc(fmtDate(it.regDate))} · ${esc(it.line || "")} · ${esc(it.m4 || "")}<br>
+        등록 ${esc(it.regName || "")} → 점검 ${esc(it.followName || "")}
+        ${mode === "done" ? `<br>점검일 ${esc(fmtDate(it.inspDate))} · 결과 ${inspResultDisplay(it)}` : ""}
+      </div>
+      ${mode === "pending" ? `<div class="mcard-actions">${canProcessInspection(it)
+          ? `<button class="btn btn-accent" data-open="${esc(it.id)}">점검 입력</button>`
+          : `<span class="hint" style="margin:0;">지정된 담당자만 처리할 수 있습니다</span>`}</div>` : ""}
+      ${mode === "status" ? `<div class="mcard-actions"><button class="btn btn-sm" data-dl="${esc(it.id)}">다운로드</button></div>` : ""}
+    </div>`).join("")}</div>`;
+}
+
 function renderInspectTab(){
   const pending = items.filter(it => it.status === "등록");
   const done = items.filter(it => it.status === "점검완료");
@@ -1209,7 +1319,8 @@ function renderInspectTab(){
   <div class="card">
     <h2><span class="num">1</span>점검 대기 (${pending.length}건)</h2>
     ${pending.length === 0 ? `<div class="empty">점검 대기 중인 변동점이 없습니다.</div>` : `
-    <div style="overflow-x:auto;">
+    ${mobileCardList(pending, "pending")}
+    <div class="desk-only" style="overflow-x:auto;">
     <table style="min-width:700px;">
       <thead><tr><th style="width:200px;">문서번호</th><th>변경일</th><th>차종/라인</th><th>4M</th><th>변경내용</th><th>등록자</th><th>점검담당자</th><th></th></tr></thead>
       <tbody>
@@ -1231,7 +1342,8 @@ function renderInspectTab(){
   <div class="card">
     <h2><span class="num">2</span>점검 완료 (${done.length}건)</h2>
     ${done.length === 0 ? `<div class="empty">점검 완료된 변동점이 없습니다.</div>` : `
-    <div style="overflow-x:auto;">
+    ${mobileCardList(done, "done")}
+    <div class="desk-only" style="overflow-x:auto;">
     <table style="min-width:800px;">
       <thead><tr><th style="width:200px;">문서번호</th><th>변경일</th><th>차종/라인</th><th>고객사</th><th>변경내용</th><th>조치결과</th><th>점검일</th><th>점검자</th><th>NG대책</th></tr></thead>
       <tbody>
@@ -1245,7 +1357,7 @@ function renderInspectTab(){
             <td style="white-space:nowrap;">${inspResultDisplay(it)}</td>
             <td style="white-space:nowrap;">${esc(fmtDate(it.inspDate))}</td>
             <td style="white-space:nowrap;">${esc(it.inspName)}</td>
-            <td style="white-space:nowrap;">${it.inspResult==="NG" ? (it.ngAction ? `<span style="color:var(--success);">완료</span>` : `<span style="color:var(--danger);">미입력</span>`) : "-"}</td>
+            <td style="white-space:nowrap;">${it.inspResult==="NG" ? statusBadge(it) : "-"}</td>
           </tr>`).join("")}
       </tbody>
     </table>
@@ -1258,7 +1370,7 @@ function bindInspectTab(){
   document.querySelectorAll("[data-open]").forEach(btn => {
     btn.onclick = (e) => { e.stopPropagation(); openInspectModal(btn.dataset.open); };
   });
-  document.querySelectorAll("#content tr[data-id]").forEach(row => {
+  document.querySelectorAll("#content tr[data-id], #content .mcard[data-id]").forEach(row => {
     row.onclick = () => {
       const it = items.find(x => x.id === row.dataset.id);
       if(it.status === "등록" && canProcessInspection(it)) openInspectModal(it.id);
@@ -1343,7 +1455,7 @@ function openInspectModal(id){
     </div>`;
   const close = () => { root.innerHTML = ""; };
   document.getElementById("insp-cancel").onclick = close;
-  document.getElementById("insp-overlay").onclick = (e) => { if(e.target.id==="insp-overlay") close(); };
+  document.getElementById("insp-overlay").onclick = (e) => { if(e.target.id==="insp-overlay" && overlayPressStartedOn(e.target)) close(); };
   bindLightbox(root);
   if(isAdmin() || it.regName === currentUser.name){
     document.getElementById("insp-edit").onclick = () => { close(); openEditModal(it.id); };
@@ -1433,7 +1545,7 @@ function renderStatusTab(){
     <div class="toolbar" style="flex-wrap:wrap;gap:8px;">
       <input type="text" class="search" id="s-search" placeholder="문서번호, 등록자, 차종/라인, 변경내용 검색" style="flex:1;min-width:200px;">
       <div class="filters" style="flex-wrap:wrap;gap:6px;">
-        <select id="s-status"><option value="">전체 상태</option><option value="등록">등록</option><option value="점검완료">점검완료</option></select>
+        <select id="s-status"><option value="">전체 상태</option><option value="등록">점검대기</option><option value="점검완료">점검완료</option></select>
         <select id="s-customer"><option value="">전체 고객사</option>${CUSTOMERS.map(c=>`<option>${esc(c)}</option>`).join("")}</select>
         <select id="s-inspector"><option value="">전체 점검담당자</option>${inspectorNames.map(n=>`<option>${esc(n)}</option>`).join("")}</select>
       </div>
@@ -1463,9 +1575,10 @@ function statusTableHtml(list){
   const th = (key, label, width) =>
     `<th style="width:${width};white-space:nowrap;cursor:pointer;user-select:none;" data-sort="${key}" title="클릭하여 정렬">${label}${sortArrow(key)}</th>`;
   return `
-    <table style="table-layout:fixed;width:100%;min-width:1020px;">
+    ${mobileCardList(list, "status")}
+    <table class="desk-only" style="table-layout:fixed;width:100%;min-width:1020px;">
       <thead><tr>
-        ${th("id", "문서번호", "230px")}
+        ${th("id", "문서번호", "200px")}
         ${th("regDate", "변경일", "92px")}
         ${th("line", "차종/라인", "110px")}
         ${th("customer", "고객사", "80px")}
@@ -1473,7 +1586,7 @@ function statusTableHtml(list){
         <th style="width:180px;">변경내용</th>
         ${th("regName", "등록자", "76px")}
         ${th("followName", "점검담당자", "96px")}
-        ${th("status", "상태", "84px")}
+        ${th("status", "상태", "118px")}
         <th style="width:86px;"></th>
       </tr></thead>
       <tbody>
@@ -1487,7 +1600,7 @@ function statusTableHtml(list){
             <td style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${esc(it.content)}">${esc(it.content)}</td>
             <td style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(it.regName)}</td>
             <td style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${esc(it.followDept)} / ${esc(it.followName)}">${esc(it.followName)}</td>
-            <td style="white-space:nowrap;"><span class="status-pill st-${esc(it.status)}">${esc(it.status)}</span></td>
+            <td style="white-space:nowrap;">${statusBadge(it)}</td>
             <td style="white-space:nowrap;"><button class="btn btn-sm" data-dl="${esc(it.id)}" title="다운로드">다운로드</button></td>
           </tr>`).join("")}
       </tbody>
@@ -1556,7 +1669,7 @@ function bindStatusRows(){
   document.querySelectorAll("#s-table-wrap [data-dl]").forEach(btn => {
     btn.onclick = (e) => { e.stopPropagation(); downloadOne(btn.dataset.dl); };
   });
-  document.querySelectorAll("#s-table-wrap tr[data-id]").forEach(row => {
+  document.querySelectorAll("#s-table-wrap tr[data-id], #s-table-wrap .mcard[data-id]").forEach(row => {
     row.onclick = () => openDetailModal(row.dataset.id);
   });
 }
@@ -1571,7 +1684,7 @@ function openDetailModal(id){
     <div class="modal-overlay" id="dt-overlay">
       <div class="modal" style="max-width:600px;">
         <h3>변동점 상세</h3>
-        <span class="status-pill st-${esc(it.status)}">${esc(it.status)}</span>
+        ${statusBadge(it)}
         <span class="docnum-badge" style="margin-left:8px;">${esc(it.id)}</span>
         <div class="section-title">등록 정보</div>
         <dl class="detail-grid">
@@ -1614,7 +1727,7 @@ function openDetailModal(id){
     </div>`;
   const close = () => { root.innerHTML = ""; };
   document.getElementById("dt-close").onclick = close;
-  document.getElementById("dt-overlay").onclick = (e) => { if(e.target.id==="dt-overlay") close(); };
+  document.getElementById("dt-overlay").onclick = (e) => { if(e.target.id==="dt-overlay" && overlayPressStartedOn(e.target)) close(); };
   bindLightbox(root);
   document.getElementById("dt-dl").onclick = () => downloadOne(it.id);
   if(it.status === "점검완료" && it.inspResult === "NG"){
@@ -1678,7 +1791,7 @@ function openEditModal(id){
     </div>`;
   const close = () => { root.innerHTML = ""; };
   document.getElementById("ed-cancel").onclick = close;
-  document.getElementById("ed-overlay").onclick = (e) => { if(e.target.id==="ed-overlay") close(); };
+  document.getElementById("ed-overlay").onclick = (e) => { if(e.target.id==="ed-overlay" && overlayPressStartedOn(e.target)) close(); };
   attachDatePicker("e-date");
   document.getElementById("ed-save").onclick = () => {
     confirmPopup("수정 저장", "변경 내용을 저장하시겠습니까?", async () => {
@@ -1843,6 +1956,108 @@ function downloadExcel(){
 }
 
 /* ---------- B2: 대시보드 ---------- */
+/* 대시보드 카드 클릭 시: 탭 이동 없이 그 자리에서 요약 팝업으로 목록 확인 */
+function dashboardFilterItems(key){
+  switch(key){
+    case "all": return items;
+    case "pending": return items.filter(it => it.status === "등록");
+    case "done": return items.filter(it => it.status === "점검완료");
+    case "ng": return items.filter(it => it.inspResult === "NG");
+    case "ngNoAction": return items.filter(it => it.inspResult === "NG" && !it.ngAction);
+    case "myPending": return items.filter(it => it.status === "등록" && it.followName === currentUser.name);
+    default: return [];
+  }
+}
+function openDashboardSummary(key, label){
+  const list = dashboardFilterItems(key);
+  const root = document.getElementById("modal-root");
+  root.innerHTML = `
+    <div class="modal-overlay" id="dashsum-overlay">
+      <div class="modal" style="max-width:520px;">
+        <h3>${esc(label)} (${list.length}건)</h3>
+        <div style="max-height:60vh;overflow-y:auto;margin-top:10px;">
+          ${list.length === 0 ? `<div class="empty">해당하는 변동점이 없습니다.</div>` : list.map(it => `
+            <div class="dashsum-row" data-id="${esc(it.id)}" style="padding:10px 8px;border-bottom:1px solid var(--border);cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:8px;">
+              <div style="flex:1;min-width:0;">
+                <div style="font-size:11.5px;color:var(--text-muted);font-family:var(--mono);">${esc(it.id)}</div>
+                <div style="font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(it.content || "")}</div>
+                <div style="font-size:11px;color:var(--text-secondary);margin-top:2px;">${esc(it.regDate||"")} · ${esc(it.line||"")} · ${esc(it.regName||"")}</div>
+              </div>
+              ${statusBadge(it)}
+            </div>`).join("")}
+        </div>
+        <div class="modal-actions">
+          <button class="btn" id="dashsum-close">닫기</button>
+        </div>
+      </div>
+    </div>`;
+  const close = () => { root.innerHTML = ""; };
+  document.getElementById("dashsum-close").onclick = close;
+  document.getElementById("dashsum-overlay").onclick = (e) => { if(e.target.id==="dashsum-overlay" && overlayPressStartedOn(e.target)) close(); };
+  root.querySelectorAll(".dashsum-row").forEach(row => {
+    row.onclick = () => { close(); openDetailModal(row.dataset.id); };
+  });
+}
+
+/* 월별 추이 차트 (SVG) — 전체 대비 NG를 누적 막대로 표현 */
+function renderMonthlyChart(months, byMonth){
+  if(months.length === 0) return `<div class="empty">아직 등록된 변동점이 없습니다.</div>`;
+  const W = 320, H = 180, padL = 30, padR = 10, padT = 18, padB = 26;
+  const plotW = W - padL - padR, plotH = H - padT - padB;
+  const maxV = Math.max(...months.map(m => byMonth[m].total), 1);
+  // 눈금은 1/2/5 배수로 올림해 읽기 좋은 값으로
+  const niceMax = (v => { const p = Math.pow(10, Math.floor(Math.log10(v))); const n = v/p; return (n<=1?1:n<=2?2:n<=5?5:10)*p; })(maxV);
+  const ticks = [0, niceMax/2, niceMax];
+  const barW = plotW / months.length;
+  const bw = Math.min(barW * 0.5, 30);
+
+  return `
+  <svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;display:block;" role="img" aria-label="월별 변동점 추이">
+    ${ticks.map(t => {
+      const y = padT + plotH - (t/niceMax)*plotH;
+      return `<g>
+        <line x1="${padL}" y1="${y}" x2="${W-padR}" y2="${y}" stroke="var(--border)" stroke-width="1" ${t===0?'':'stroke-dasharray="3 3"'}/>
+        <text x="${padL-6}" y="${y+3.5}" text-anchor="end" font-size="10" fill="var(--text-muted)">${t}</text>
+      </g>`;
+    }).join("")}
+    ${months.map((m, i) => {
+      const d = byMonth[m];
+      const cx = padL + barW*i + barW/2;
+      const hTotal = (d.total/niceMax)*plotH;
+      const hNg = (d.ng/niceMax)*plotH;
+      const yTotal = padT + plotH - hTotal;
+      return `<g>
+        <title>${m} · 전체 ${d.total}건 / 점검완료 ${d.done}건 / NG ${d.ng}건</title>
+        <rect x="${cx-bw/2}" y="${yTotal}" width="${bw}" height="${hTotal}" rx="2" fill="var(--primary)"/>
+        ${d.ng>0 ? `<rect x="${cx-bw/2}" y="${padT+plotH-hNg}" width="${bw}" height="${hNg}" rx="2" fill="var(--danger)"/>` : ""}
+        <text x="${cx}" y="${yTotal-5}" text-anchor="middle" font-size="10" fill="var(--text-secondary)" font-weight="700">${d.total}</text>
+        <text x="${cx}" y="${H-9}" text-anchor="middle" font-size="10" fill="var(--text-muted)">${Number(m.slice(5))}월</text>
+      </g>`;
+    }).join("")}
+  </svg>
+  <div style="display:flex;gap:14px;margin-top:6px;font-size:11.5px;color:var(--text-secondary);">
+    <span style="display:flex;align-items:center;gap:5px;"><span style="width:9px;height:9px;background:var(--primary);border-radius:2px;"></span>전체</span>
+    <span style="display:flex;align-items:center;gap:5px;"><span style="width:9px;height:9px;background:var(--danger);border-radius:2px;"></span>NG</span>
+  </div>`;
+}
+
+/* 항목별 분포를 가로 막대로 — 숫자 나열보다 비교가 한눈에 들어오도록 */
+function renderBreakdownBars(obj, barColor){
+  const entries = Object.entries(obj).sort((a,b) => b[1]-a[1]);
+  if(entries.length === 0) return `<div class="empty" style="padding:12px 0;">데이터 없음</div>`;
+  const max = Math.max(...entries.map(e => e[1]), 1);
+  return entries.map(([k,v]) => `
+    <div style="margin-bottom:9px;">
+      <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px;">
+        <span style="color:var(--text);">${esc(k)}</span>
+        <span style="color:var(--text-secondary);font-variant-numeric:tabular-nums;">${v}</span>
+      </div>
+      <div style="height:5px;background:var(--bg);border-radius:3px;overflow:hidden;">
+        <div style="height:100%;width:${Math.round(v/max*100)}%;background:${barColor};border-radius:3px;"></div>
+      </div>
+    </div>`).join("");
+}
+
 function renderDashboardTab(){
   const content = document.getElementById("content");
   const total = items.length;
@@ -1879,78 +2094,64 @@ function renderDashboardTab(){
     return s + (isNaN(diff) ? 0 : Math.abs(diff));
   }, 0) / dones.length) : 0;
 
-  const maxMonthTotal = Math.max(...months.map(m => byMonth[m].total), 1);
+  const maxMonthTotal = Math.max(...months.map(m => byMonth[m].total), 1); // (차트 내부에서 자체 계산하므로 참고용)
 
   content.innerHTML = `
-  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:18px;">
+  <div class="dash-hero">
+    <div class="dash-hero-main" onclick="openDashboardSummary('myPending','내 미처리')">
+      <div class="dash-hero-label">내가 점검해야 할 건</div>
+      <div class="dash-hero-value" style="color:${myPending>0?'var(--accent)':'var(--text-muted)'}">${myPending}</div>
+      <div class="dash-hero-sub">${myPending>0 ? "눌러서 목록 확인" : "모두 처리했습니다"}</div>
+    </div>
+    <div class="dash-hero-side">
+      <div class="dash-mini ${ngNoAction>0?'is-alert':''}" onclick="openDashboardSummary('ngNoAction','NG 미조치')">
+        <div class="dash-mini-value" style="color:${ngNoAction>0?'var(--danger)':'var(--text-muted)'}">${ngNoAction}</div>
+        <div class="dash-mini-label">NG 미조치</div>
+      </div>
+      <div class="dash-mini" onclick="openDashboardSummary('pending','점검 대기')">
+        <div class="dash-mini-value" style="color:${pending>0?'var(--warn)':'var(--text-muted)'}">${pending}</div>
+        <div class="dash-mini-label">점검 대기</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="dash-strip">
     ${[
-      ["전체 등록 건수", total, "var(--primary)", "status"],
-      ["점검 대기", pending, "var(--warn)", "inspect"],
-      ["점검 완료", done, "var(--success)", "status"],
-      ["NG 발생", ng, "var(--danger)", "status"],
-      ["NG 미조치", ngNoAction, ngNoAction>0?"var(--danger)":"var(--text-muted)", "status"],
-      ["내 미처리", myPending, myPending>0?"var(--accent)":"var(--text-muted)", "inspect"],
-    ].map(([label, val, color, tab]) => `
-      <div class="card" style="text-align:center;padding:16px 10px;margin-bottom:0;cursor:pointer;" onclick="switchTab('${tab}')">
-        <div style="font-size:28px;font-weight:800;color:${color};">${val}</div>
-        <div style="font-size:12px;color:var(--text-secondary);margin-top:4px;">${label}</div>
+      ["전체 등록", total, "all"],
+      ["점검 완료", done, "done"],
+      ["NG 발생", ng, "ng"],
+    ].map(([label, val, key]) => `
+      <div class="dash-strip-item" onclick="openDashboardSummary('${key}','${esc(label)}')">
+        <span class="dash-strip-value">${val}</span>
+        <span class="dash-strip-label">${label}</span>
       </div>`).join("")}
-  </div>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">
-    <div class="card" style="margin-bottom:0;">
-      <h2 style="margin-bottom:12px;"><span class="num">📅</span>월별 변동점 현황 (최근 6개월)</h2>
-      ${months.length === 0 ? `<div class="empty">데이터가 없습니다.</div>` : `
-      <div style="display:flex;align-items:flex-end;gap:6px;height:120px;padding:0 4px;">
-        ${months.map(m => {
-          const d = byMonth[m];
-          const h = Math.round((d.total / maxMonthTotal) * 100);
-          return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;">
-            <div style="font-size:10px;color:var(--text-muted);">${d.total}</div>
-            <div style="width:100%;height:${h}px;background:var(--primary);border-radius:3px 3px 0 0;position:relative;" title="${m}: ${d.total}건 (완료:${d.done}, NG:${d.ng})">
-              ${d.ng > 0 ? `<div style="position:absolute;bottom:0;width:100%;height:${Math.round(d.ng/d.total*100)}%;background:var(--danger);border-radius:3px 3px 0 0;"></div>` : ""}
-            </div>
-            <div style="font-size:9.5px;color:var(--text-muted);text-align:center;">${m.slice(5)}월</div>
-          </div>`;
-        }).join("")}
-      </div>
-      <div style="display:flex;gap:12px;margin-top:10px;font-size:11px;">
-        <span><span style="display:inline-block;width:10px;height:10px;background:var(--primary);border-radius:2px;margin-right:3px;"></span>전체</span>
-        <span><span style="display:inline-block;width:10px;height:10px;background:var(--danger);border-radius:2px;margin-right:3px;"></span>NG</span>
-      </div>`}
+    <div class="dash-strip-item" style="cursor:default;">
+      <span class="dash-strip-value">${total > 0 ? Math.round(done/total*100) : 0}<span style="font-size:14px;">%</span></span>
+      <span class="dash-strip-label">점검 완료율</span>
     </div>
-    <div class="card" style="margin-bottom:0;">
-      <h2 style="margin-bottom:12px;"><span class="num">⚡</span>4M 구분별 / 고객사별</h2>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-        <div>
-          <div style="font-size:11px;font-weight:700;color:var(--text-secondary);margin-bottom:6px;">4M 구분</div>
-          ${Object.entries(byM4).sort((a,b)=>b[1]-a[1]).map(([k,v]) => `
-            <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;margin-bottom:5px;">
-              <span>${esc(k)}</span>
-              <span style="font-weight:700;color:var(--primary);">${v}건</span>
-            </div>`).join("")}
-        </div>
-        <div>
-          <div style="font-size:11px;font-weight:700;color:var(--text-secondary);margin-bottom:6px;">고객사</div>
-          ${Object.entries(byCust).sort((a,b)=>b[1]-a[1]).map(([k,v]) => `
-            <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;margin-bottom:5px;">
-              <span>${esc(k)}</span>
-              <span style="font-weight:700;color:var(--accent);">${v}건</span>
-            </div>`).join("")}
-        </div>
-      </div>
+    <div class="dash-strip-item" style="cursor:default;">
+      <span class="dash-strip-value">${avgDays}<span style="font-size:14px;">일</span></span>
+      <span class="dash-strip-label">평균 소요일</span>
     </div>
   </div>
-  <div class="card">
-    <h2><span class="num">⏱</span>처리 현황 요약</h2>
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;font-size:13px;">
-      <div><span style="color:var(--text-secondary);">평균 점검 소요일:</span> <strong>${avgDays}일</strong></div>
-      <div><span style="color:var(--text-secondary);">점검 완료율:</span> <strong>${total > 0 ? Math.round(done/total*100) : 0}%</strong></div>
-      <div><span style="color:var(--text-secondary);">NG 미조치 건수:</span> <strong style="color:${ngNoAction>0?'var(--danger)':'inherit'}">${ngNoAction}건</strong></div>
+
+  ${ngNoAction > 0 ? `
+  <div class="dash-alert" onclick="openDashboardSummary('ngNoAction','NG 미조치')">
+    NG 판정 후 재발방지 대책이 아직 입력되지 않은 건이 ${ngNoAction}건 있습니다. 눌러서 확인하세요.
+  </div>` : ""}
+
+  <div class="dash-grid">
+    <div class="card" style="margin-bottom:0;">
+      <h2 style="margin-bottom:10px;">월별 추이<span style="font-size:11.5px;font-weight:400;color:var(--text-muted);margin-left:8px;">최근 6개월</span></h2>
+      ${renderMonthlyChart(months, byMonth)}
     </div>
-    ${ngNoAction > 0 ? `
-    <div style="margin-top:12px;padding:10px 14px;background:var(--danger-light);border-radius:8px;font-size:12.5px;color:var(--danger);">
-      ⚠ NG 처리 후 재발방지 대책이 입력되지 않은 건이 <strong>${ngNoAction}건</strong> 있습니다. 현황 탭에서 NG 필터 후 조치해주세요.
-    </div>` : ""}
+    <div class="card" style="margin-bottom:0;">
+      <h2 style="margin-bottom:12px;">구분별 분포</h2>
+      <div style="font-size:11.5px;font-weight:700;color:var(--text-secondary);margin-bottom:8px;">4M 구분</div>
+      ${renderBreakdownBars(byM4, "var(--primary)")}
+      <div style="font-size:11.5px;font-weight:700;color:var(--text-secondary);margin:14px 0 8px;">고객사</div>
+      ${renderBreakdownBars(byCust, "var(--accent)")}
+    </div>
   </div>`;
 }
 
@@ -1985,7 +2186,7 @@ function openNgModal(id){
     </div>`;
   const close = () => { root.innerHTML = ""; };
   document.getElementById("ng-cancel").onclick = close;
-  document.getElementById("ng-overlay").onclick = e => { if(e.target.id==="ng-overlay") close(); };
+  document.getElementById("ng-overlay").onclick = e => { if(e.target.id==="ng-overlay" && overlayPressStartedOn(e.target)) close(); };
   attachDatePicker("ng-date");
   document.getElementById("ng-save").onclick = async () => {
     const action = document.getElementById("ng-action").value.trim();
@@ -2023,9 +2224,8 @@ function render(){
   else if(currentTab === "inspect"){ content.innerHTML = renderInspectTab(); bindInspectTab(); }
   else if(currentTab === "status"){ content.innerHTML = renderStatusTab(); bindStatusTab(); }
   else if(currentTab === "dashboard"){ renderDashboardTab(); }
-  else if(currentTab === "employees"){ renderEmployeesTab(); }
+  else if(currentTab === "admin"){ renderAdminTab(); }
   else if(currentTab === "feedback"){ renderFeedbackTab(); }
-  else if(currentTab === "notices"){ renderNoticesAdminTab(); }
 }
 /* 탭 전환은 항상 이 함수를 통해서만 수행 (뒤로가기 히스토리에 정확히 기록되도록) */
 function switchTab(targetTab){
@@ -2186,7 +2386,7 @@ function openMyPasswordModal(){
     </div>`;
   const close = () => { root.innerHTML = ""; };
   document.getElementById("mypw-cancel").onclick = close;
-  document.getElementById("mypw-overlay").onclick = e => { if(e.target.id==="mypw-overlay") close(); };
+  document.getElementById("mypw-overlay").onclick = e => { if(e.target.id==="mypw-overlay" && overlayPressStartedOn(e.target)) close(); };
   document.getElementById("mypw-save").onclick = async () => {
     const cur = document.getElementById("mypw-current").value;
     const nw = document.getElementById("mypw-new").value;
@@ -2218,7 +2418,7 @@ function renderMainTabs(){
     <button class="tab-btn" data-tab="dashboard">대시보드</button>
     <button class="tab-btn" data-tab="feedback">건의사항</button>
   `;
-  if(isAdmin()) html += `<button class="tab-btn" data-tab="employees">직원 관리</button><button class="tab-btn" data-tab="notices">공지관리</button>`;
+  if(isAdmin()) html += `<button class="tab-btn" data-tab="admin">관리</button>`;
   wrap.innerHTML = html;
   bindTabs();
 }
@@ -2228,10 +2428,26 @@ function roleBadgeColor(role){
   if(role === "마스터관리자") return "background:var(--primary);color:#fff;";
   return "background:var(--bg);color:var(--text-secondary);";
 }
+/* ---------- 관리 탭 (관리자 전용: 직원 관리 / 공지관리를 하나로 묶음) ---------- */
+let adminSub = "employees";
+function renderAdminTab(){
+  const content = document.getElementById("content");
+  content.innerHTML = `
+    <div class="subnav">
+      <button class="subnav-btn ${adminSub==="employees"?"active":""}" data-sub="employees">직원 관리</button>
+      <button class="subnav-btn ${adminSub==="notices"?"active":""}" data-sub="notices">공지관리</button>
+    </div>
+    <div id="admin-body"></div>`;
+  content.querySelectorAll(".subnav-btn").forEach(b => {
+    b.onclick = () => { if(adminSub !== b.dataset.sub){ adminSub = b.dataset.sub; renderAdminTab(); } };
+  });
+  if(adminSub === "notices") renderNoticesAdminTab(); else renderEmployeesTab();
+}
+
 /* ---------- 건의사항 (전 직원: 본인 작성건만 조회 / 관리자: 전체 조회+답변) ---------- */
 async function renderFeedbackTab(){
   const content = document.getElementById("content");
-  content.innerHTML = `<div class="empty">불러오는 중입니다...</div>`;
+  content.innerHTML = loadingBlock();
   let list;
   try{
     const json = await apiGet("?type=feedback");
@@ -2302,8 +2518,8 @@ async function renderFeedbackTab(){
 
 /* ---------- 공지관리 (관리자 전용) ---------- */
 async function renderNoticesAdminTab(){
-  const content = document.getElementById("content");
-  content.innerHTML = `<div class="empty">불러오는 중입니다...</div>`;
+  const content = document.getElementById("admin-body") || document.getElementById("content");
+  content.innerHTML = loadingBlock();
   let list;
   try{
     const json = await apiGet("?type=notices");
@@ -2356,8 +2572,8 @@ async function renderNoticesAdminTab(){
 }
 
 async function renderEmployeesTab(){
-  const content = document.getElementById("content");
-  content.innerHTML = `<div class="empty">불러오는 중입니다...</div>`;
+  const content = document.getElementById("admin-body") || document.getElementById("content");
+  content.innerHTML = loadingBlock();
   let employees;
   try{ employees = await loadEmployees(); }
   catch(e){ content.innerHTML = `<div class="empty">직원 목록을 불러오지 못했습니다.</div>`; return; }
@@ -2444,7 +2660,7 @@ function openEmployeeModal(emp){
     </div>`;
   const close = () => { root.innerHTML = ""; render(); };
   document.getElementById("emp-cancel").onclick = close;
-  document.getElementById("emp-overlay").onclick = (e) => { if(e.target.id==="emp-overlay") close(); };
+  document.getElementById("emp-overlay").onclick = (e) => { if(e.target.id==="emp-overlay" && overlayPressStartedOn(e.target)) close(); };
   if(!isNew){
     document.getElementById("emp-delete").onclick = () => {
       confirmPopup("계정 삭제", `${emp.name} 계정을 삭제하시겠습니까?`, async () => {
@@ -2663,7 +2879,7 @@ async function startApp(){
   document.getElementById("app").style.display = "block";
   renderUserChip();
   renderMainTabs();
-  document.getElementById("content").innerHTML = `<div class="empty">불러오는 중입니다...</div>`;
+  document.getElementById("content").innerHTML = loadingBlock();
   await Promise.all([loadMaster(), loadDirectory(), loadItems()]);
   currentTab = "register";
   render();
