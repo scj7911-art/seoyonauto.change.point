@@ -189,6 +189,52 @@
   ::placeholder{color:var(--text-muted);}
 
   /* ---------- 로딩 오버레이 ---------- */
+  /* ---------- 사용설명서(도움말) ---------- */
+  .manual-header-btn{flex-shrink:0;background:var(--accent);border-color:var(--accent);color:#fff;font-weight:700;}
+  .manual-header-btn:hover{background:#B36A22;border-color:#B36A22;color:#fff;}
+  .manual-modal{max-width:940px;width:100%;max-height:92vh;padding:0;display:flex;flex-direction:column;overflow:hidden;}
+  .manual-head{background:var(--primary);color:#fff;padding:16px 20px 12px;flex-shrink:0;}
+  .manual-head h3{margin:0 0 3px;color:#fff;font-size:17px;}
+  .manual-head p{margin:0;font-size:12px;color:#BFD0E6;line-height:1.6;}
+  .manual-head-row{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;}
+  .manual-close{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.32);color:#fff;border-radius:8px;padding:6px 13px;font-size:12.5px;cursor:pointer;flex-shrink:0;font-family:var(--font);}
+  .manual-close:hover{background:rgba(255,255,255,.24);}
+  .manual-search{margin-top:12px;}
+  .manual-search input{width:100%;padding:9px 12px;border-radius:8px;border:1px solid rgba(255,255,255,.28);background:rgba(255,255,255,.13);color:#fff;font-size:13px;font-family:var(--font);}
+  .manual-search input::placeholder{color:#A9BCD4;}
+  .manual-search input:focus{outline:none;border-color:var(--accent);background:rgba(255,255,255,.2);}
+  .manual-nav{display:flex;gap:6px;overflow-x:auto;padding:10px 20px;background:var(--primary-light);border-bottom:1px solid var(--border);flex-shrink:0;}
+  .manual-nav button{flex:0 0 auto;background:#fff;border:1px solid var(--border-strong);color:var(--text-secondary);border-radius:999px;padding:6px 13px;font-size:12.5px;font-weight:600;cursor:pointer;white-space:nowrap;font-family:var(--font);}
+  .manual-nav button:hover{border-color:var(--primary);color:var(--primary);}
+  .manual-nav button.active{background:var(--primary);border-color:var(--primary);color:#fff;}
+  .manual-body{position:relative;overflow-y:auto;padding:0 20px 28px;flex:1 1 auto;-webkit-overflow-scrolling:touch;background:var(--bg);}
+  .manual-sec{padding-top:22px;}
+  .manual-sec > h4{margin:0 0 5px;font-size:15.5px;color:var(--primary);display:flex;align-items:center;gap:8px;}
+  .manual-sec > h4 .mn-ix{background:var(--accent);color:#fff;min-width:22px;height:22px;padding:0 5px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;font-size:11.5px;flex-shrink:0;}
+  .manual-sec > p.mn-lead{margin:0 0 12px;font-size:12.5px;color:var(--text-muted);line-height:1.65;}
+  .mn-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;margin-bottom:10px;}
+  .mn-card h5{margin:0 0 9px;font-size:13.5px;color:var(--text);}
+  .mn-card p{margin:0 0 8px;font-size:13px;line-height:1.75;color:var(--text-secondary);}
+  .mn-card p:last-child{margin-bottom:0;}
+  .mn-list{margin:0;padding-left:19px;font-size:13px;line-height:1.75;color:var(--text-secondary);}
+  .mn-list li{margin-bottom:5px;}
+  .mn-list li:last-child{margin-bottom:0;}
+  .mn-list b, .mn-card p b{color:var(--text);}
+  .mn-key{display:inline-block;background:var(--primary-light);color:var(--primary);border:1px solid #CBD8EA;border-radius:5px;padding:1px 6px;font-size:12px;font-weight:700;}
+  .mn-tip{background:var(--accent-light);border-left:3px solid var(--accent);border-radius:6px;padding:10px 12px;font-size:12.5px;line-height:1.7;color:#6B4416;margin:10px 0 0;}
+  .mn-warn{background:var(--danger-light);border-left:3px solid var(--danger);border-radius:6px;padding:10px 12px;font-size:12.5px;line-height:1.7;color:#7A2626;margin:10px 0 0;}
+  .mn-ok{background:var(--success-light);border-left:3px solid var(--success);border-radius:6px;padding:10px 12px;font-size:12.5px;line-height:1.7;color:#1F4F3A;margin:10px 0 0;}
+  .mn-flow{display:flex;align-items:stretch;gap:6px;flex-wrap:wrap;}
+  .mn-step{flex:1 1 110px;background:var(--primary-light);border:1px solid #CBD8EA;border-radius:8px;padding:10px 8px;text-align:center;}
+  .mn-step-t{font-size:12.5px;font-weight:700;color:var(--primary);}
+  .mn-step-d{font-size:11px;color:var(--text-secondary);margin-top:3px;line-height:1.5;}
+  .mn-arrow{align-self:center;color:var(--text-muted);font-size:13px;}
+  .mn-tblwrap{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+  .mn-table{width:100%;border-collapse:collapse;font-size:12.5px;min-width:420px;}
+  .mn-table th,.mn-table td{border:1px solid var(--border);padding:7px 9px;text-align:left;vertical-align:top;line-height:1.65;}
+  .mn-table th{background:var(--primary-light);color:var(--primary);font-weight:700;white-space:nowrap;}
+  .mn-empty{padding:34px 4px;text-align:center;color:var(--text-muted);font-size:13px;line-height:1.7;}
+  .mn-foot{margin-top:20px;padding-top:14px;border-top:1px dashed var(--border-strong);font-size:12px;color:var(--text-muted);line-height:1.7;text-align:center;}
   .loading-overlay{position:fixed;inset:0;background:rgba(20,25,35,.55);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:2000;gap:14px;}
 
   /* ---------- 커스텀 날짜 선택기 (PC/모바일 동일 동작 보장) ---------- */
@@ -269,6 +315,19 @@
     .header-title-line{font-size:17px;}
     .header-logo{height:32px;}
   }
+  /* 사용설명서 모바일 — 뒤쪽 .modal 미디어쿼리보다 나중에 와야 전체화면이 적용됨 */
+  @media (max-width:720px){
+    .modal-overlay#manual-overlay{padding:0;}
+    .modal.manual-modal{max-width:100vw;width:100vw;height:100vh;max-height:100vh;border-radius:0;padding:0;}
+    .manual-head{padding:13px 14px 10px;}
+    .manual-head h3{font-size:15.5px;}
+    .manual-nav{padding:8px 14px;}
+    .manual-body{padding:0 14px 44px;}
+    .mn-arrow{display:none;}
+    .mn-step{flex:1 1 100%;}
+    .mn-card{padding:13px 14px;}
+    .mn-table{min-width:340px;font-size:12px;}
+  }
 </style>
 </head>
 <body>
@@ -293,6 +352,7 @@
     <p id="login-err" style="color:var(--danger);font-size:12.5px;display:none;margin:2px 0 10px;">아이디 또는 비밀번호가 올바르지 않습니다.</p>
     <button class="btn btn-primary btn-block" id="login-submit" style="padding:11px;">로그인</button>
     <p class="hint" style="margin-top:14px;">아이디는 이름입니다. 비밀번호는 최초 1회는 사번, 이후 변경하셨다면 새로 설정한 비밀번호를 입력해주세요. 문제가 있으면 관리자에게 문의해주세요.</p>
+    <p style="margin:10px 0 0;text-align:center;"><button type="button" id="btn-show-manual-login" style="background:none;border:none;color:var(--accent);font-size:12.5px;font-weight:700;cursor:pointer;text-decoration:underline;font-family:var(--font);padding:4px;">사용설명서 보기 (처음 사용 · 구글 OTP 등록 방법)</button></p>
   </div>
 </div>
 
@@ -371,6 +431,7 @@
       </div>
       <div class="header-actions">
       <img class="header-logo" src="data:image/png;base64,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" alt="서연오토비전 로고">
+      <button class="btn btn-sm manual-header-btn" id="btn-show-manual" type="button" title="시스템 사용설명서 보기"><span>사용설명서</span></button>
       <button class="btn btn-sm qr-header-btn" id="btn-show-qr" type="button" title="접속 QR 코드 보기"><span>QR 코드</span></button>
       <div class="user-chip" id="user-chip"></div>
       </div>
@@ -758,6 +819,453 @@ function dataUrlToBlob(dataUrl){
   const arr = new Uint8Array(bin.length);
   for(let i=0;i<bin.length;i++) arr[i] = bin.charCodeAt(i);
   return new Blob([arr], {type:mime});
+}
+
+/* ---------- 사용설명서(도움말) ----------
+ * 시스템 안에서 바로 열어보는 사용설명서.
+ * 외부 PPT 매뉴얼과 달리 화면이 바뀌면 이 글도 같이 바뀌므로 항상 최신 상태가 유지됨.
+ * 검색창 + 목차 이동 지원. 관리자 전용 섹션은 마스터관리자에게만 보임.
+ */
+function manualSections(){
+  const secs = [];
+
+  secs.push({ id:"start", ix:"1", title:"처음 시작하기 (로그인 · 구글 OTP)",
+    lead:"로그인은 ① 이름 → ② 비밀번호 → ③ 구글 OTP 6자리, 3단계로 진행됩니다.",
+    html:`
+    <div class="mn-card">
+      <h5>1) 아이디와 비밀번호</h5>
+      <ul class="mn-list">
+        <li><b>아이디는 본인 이름</b>입니다. (예: 홍길동)</li>
+        <li><b>최초 1회 비밀번호는 사번</b>입니다. (예: 240707)</li>
+        <li>최초 로그인에 성공하면 <b>비밀번호 변경 화면이 자동으로 나타납니다.</b> 여기서 본인만 아는 비밀번호로 반드시 변경해주세요.</li>
+        <li>변경 후에는 <b>새로 설정한 비밀번호</b>로 로그인합니다.</li>
+        <li><span class="mn-key">아이디 저장</span>을 체크하면 다음 접속 시 이름이 자동으로 채워집니다. (비밀번호는 저장되지 않습니다)</li>
+      </ul>
+      <div class="mn-warn">비밀번호를 잊으셨다면 스스로 찾을 수 없습니다. 관리자에게 요청하시면 <b>사번으로 다시 초기화</b>해 드립니다.</div>
+    </div>
+    <div class="mn-card">
+      <h5>2) 구글 OTP(Google Authenticator) 등록 — 최초 1회만</h5>
+      <p>비밀번호가 유출되어도 본인 휴대폰이 없으면 로그인할 수 없도록, 2단계 인증을 사용합니다.</p>
+      <ul class="mn-list">
+        <li><b>①</b> 휴대폰에서 스토어를 열고 <b>Google Authenticator</b>를 설치합니다. (Play 스토어 / App Store 모두 무료)</li>
+        <li><b>②</b> PC에서 로그인하면 <b>QR 코드 등록 화면</b>이 나타납니다.</li>
+        <li><b>③</b> 앱에서 <b>+ → QR 코드 스캔</b>을 눌러 화면의 QR을 찍습니다. <br>휴대폰으로 접속해 QR을 찍을 수 없는 경우에는, 화면에 함께 표시된 <b>설정 키를 앱에 직접 입력</b>하셔도 됩니다.</li>
+        <li><b>④</b> 앱에 표시된 <b>6자리 숫자</b>를 화면에 입력하면 등록이 완료됩니다.</li>
+      </ul>
+      <div class="mn-tip">앱의 6자리 숫자는 <b>30초마다 바뀝니다.</b> 입력하는 동안 숫자가 바뀌었다면, 새로 바뀐 번호를 입력해주세요. 인터넷이 없어도 앱은 정상 동작합니다.</div>
+    </div>
+    <div class="mn-card">
+      <h5>3) 두 번째 로그인부터</h5>
+      <p>이름 + 비밀번호를 입력하면 <b>OTP 6자리 입력 화면</b>이 나옵니다. Google Authenticator 앱을 열어 현재 표시된 번호를 입력하시면 됩니다.</p>
+      <div class="mn-warn"><b>휴대폰을 바꾸거나 앱을 지우셨다면</b> 기존 OTP는 사용할 수 없습니다. 관리자에게 <b>OTP 재설정</b>을 요청하시면, 다음 로그인 때 새 QR로 다시 등록하실 수 있습니다.</div>
+    </div>
+    <div class="mn-card">
+      <h5>4) 자동 로그아웃</h5>
+      <div class="mn-tblwrap"><table class="mn-table">
+        <thead><tr><th>구분</th><th>시간</th><th>설명</th></tr></thead>
+        <tbody>
+          <tr><td>절대 만료</td><td>2시간</td><td>로그인한 지 2시간이 지나면 자동으로 로그아웃됩니다.</td></tr>
+          <tr><td>미사용 만료</td><td>30분</td><td>아무 동작 없이 30분이 지나면 자동으로 로그아웃됩니다.</td></tr>
+          <tr><td>비밀번호 변경 시</td><td>즉시</td><td>기존에 로그인되어 있던 모든 기기가 로그아웃됩니다.</td></tr>
+        </tbody>
+      </table></div>
+      <p style="margin-top:9px;">작업 중 로그아웃되어 내용이 사라지는 것을 막기 위해, <b>등록 화면에서는 작성 중 내용이 있으면 이동 전에 한 번 더 확인</b>합니다.</p>
+    </div>`});
+
+  secs.push({ id:"flow", ix:"2", title:"전체 업무 흐름과 상태 표시",
+    lead:"변동점은 '등록 → 점검 → 완료'의 흐름을 따르며, 각 건의 현재 위치는 상태 배지로 표시됩니다.",
+    html:`
+    <div class="mn-card">
+      <h5>업무 흐름</h5>
+      <div class="mn-flow">
+        <div class="mn-step"><div class="mn-step-t">① 변동점 발생</div><div class="mn-step-d">4M(사람·설비·재료·방법)에 변경이 생김</div></div>
+        <div class="mn-arrow">▶</div>
+        <div class="mn-step"><div class="mn-step-t">② 등록</div><div class="mn-step-d">발생 부서가 등록 · 후행담당자 지정</div></div>
+        <div class="mn-arrow">▶</div>
+        <div class="mn-step"><div class="mn-step-t">③ 메일 통보</div><div class="mn-step-d">후행담당자에게 접속 링크 자동 발송</div></div>
+        <div class="mn-arrow">▶</div>
+        <div class="mn-step"><div class="mn-step-t">④ 점검 · 확인</div><div class="mn-step-d">후행담당자가 결과 입력</div></div>
+        <div class="mn-arrow">▶</div>
+        <div class="mn-step"><div class="mn-step-t">⑤ 완료 / NG 대책</div><div class="mn-step-d">NG면 재발방지대책까지 입력</div></div>
+      </div>
+      <div class="mn-tip">변동점은 <b>발생 부서가 등록</b>하고, <b>지정된 후행담당자가 점검</b>하는 구조입니다. 등록은 전 직원이 가능합니다.</div>
+    </div>
+    <div class="mn-card">
+      <h5>상태 배지의 뜻</h5>
+      <div class="mn-tblwrap"><table class="mn-table">
+        <thead><tr><th>배지</th><th>의미</th><th>다음에 할 일</th></tr></thead>
+        <tbody>
+          <tr><td><b>점검대기</b></td><td>등록은 되었으나 아직 점검 결과가 입력되지 않은 상태</td><td>후행담당자가 점검 입력</td></tr>
+          <tr><td><b>점검완료</b></td><td>점검 결과가 양호(또는 기타)로 입력되어 마무리된 상태</td><td>없음 (종결)</td></tr>
+          <tr><td><b>NG 대책미입력</b></td><td>점검 결과가 NG인데 재발방지대책이 아직 없는 상태</td><td>후행담당자 또는 관리자가 대책 입력</td></tr>
+          <tr><td><b>NG 대책완료</b></td><td>NG였으나 재발방지대책까지 입력이 끝난 상태</td><td>없음 (종결)</td></tr>
+        </tbody>
+      </table></div>
+      <div class="mn-warn"><b>NG 대책미입력</b>은 가장 먼저 처리해야 하는 상태입니다. 고객사 심사나 내부 감사에서 미조치 건으로 지적될 수 있습니다.</div>
+    </div>`});
+
+  secs.push({ id:"register", ix:"3", title:"변동점 등록 방법",
+    lead:"[등록] 탭에서 1번부터 6번까지 순서대로 작성하고 맨 아래 [등록] 버튼을 누르면 됩니다.",
+    html:`
+    <div class="mn-card">
+      <h5>입력 항목 한눈에 보기</h5>
+      <div class="mn-tblwrap"><table class="mn-table">
+        <thead><tr><th>번호 · 항목</th><th>필수</th><th>작성 방법</th></tr></thead>
+        <tbody>
+          <tr><td><b>1. 변경일자</b></td><td>필수</td><td>칸을 누르면 달력이 열립니다. 직접 타이핑하지 않으셔도 됩니다. <b>실제로 변동점이 발생한 날</b>을 선택하세요.</td></tr>
+          <tr><td><b>2. 등록자 정보</b></td><td>자동</td><td>로그인 계정의 부서 · 이름이 자동으로 채워집니다. 수정할 수 없습니다.</td></tr>
+          <tr><td><b>3. 고객사</b></td><td>필수</td><td>서연이화 / 모비스 / 기타 중 선택</td></tr>
+          <tr><td><b>3. 차종 / 설비 / 라인</b></td><td>필수</td><td>해당 라인을 선택. 목록에 없으면 관리자에게 추가를 요청하세요.</td></tr>
+          <tr><td><b>3. 4M 구분</b></td><td>필수</td><td>사람 / 설비 / 재료 / 방법 중 이번 변동점의 성격에 맞는 것을 선택</td></tr>
+          <tr><td><b>4. 변동점 내용</b></td><td>필수</td><td>무엇이 어떻게 바뀌었는지 한 문장으로. (예: CV1 칵핏 조립 3공정 작업자 교체)</td></tr>
+          <tr><td><b>4. 변경 전 / 변경 후</b></td><td>필수</td><td>바뀌기 전 상태와 바뀐 후 상태를 각각 적습니다. 비교가 되도록 같은 기준으로 쓰는 것이 좋습니다.</td></tr>
+          <tr><td><b>4. 첨부</b></td><td>선택</td><td>변경 전 / 변경 후 각각 첨부할 수 있습니다. 사진이 있으면 점검이 훨씬 빠릅니다.</td></tr>
+          <tr><td><b>5. 점검 후행 담당자</b></td><td>필수</td><td>이 변동점을 확인해줄 사람을 지정합니다. <b>복수 지정 가능</b>합니다.</td></tr>
+          <tr><td><b>6. 문서번호</b></td><td>자동</td><td>SYAT - Change Point - 등록일(YYMMDD) - 당일 순번. 등록할 때 서버에서 자동으로 부여됩니다.</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+    <div class="mn-card">
+      <h5>후행담당자 찾는 방법 (5번)</h5>
+      <ul class="mn-list">
+        <li><b>부서 필터</b>로 팀을 먼저 고르면, 그 팀 사람만 목록에 남습니다.</li>
+        <li><b>이름 검색</b>에 이름 일부를 입력하면 바로 걸러집니다. (부서 필터와 함께 적용됩니다)</li>
+        <li>여러 명을 지정할 때는 <b>PC에서 Ctrl(맥은 Cmd) 키를 누른 채 클릭</b>하시면 됩니다. 선택한 사람은 목록 아래에 표시됩니다.</li>
+      </ul>
+      <div class="mn-tip">목록에 나오지 않는 사람이 있다면, 해당 부서가 <b>후행담당자 제외 부서</b>로 설정되어 있거나 계정이 없는 경우입니다. 관리자에게 문의해주세요.</div>
+    </div>
+    <div class="mn-card">
+      <h5>첨부파일 올리기</h5>
+      <ul class="mn-list">
+        <li>가능한 파일: <b>사진(JPG·PNG), PDF, PPT, 엑셀, 워드</b></li>
+        <li>크기 제한: <b>파일당 10MB</b> 이하. 사진은 올릴 때 자동으로 압축됩니다.</li>
+        <li><b>PC</b>에서는 파일을 첨부 칸 위로 <b>끌어다 놓기(드래그 앤 드롭)</b>가 됩니다.</li>
+        <li><b>휴대폰</b>에서는 첨부 칸을 누르면 카메라 또는 앨범을 선택할 수 있습니다. 현장에서 바로 찍어 올리셔도 됩니다.</li>
+      </ul>
+      <div class="mn-warn">10MB를 넘는 파일은 올라가지 않습니다. 용량이 큰 PPT는 필요한 장만 남겨 저장하거나, PDF로 변환해 올려주세요.</div>
+    </div>
+    <div class="mn-card">
+      <h5>등록할 때 자주 막히는 부분</h5>
+      <ul class="mn-list">
+        <li><b>점검일자가 변경일자보다 빠르면 저장되지 않습니다.</b> 아직 일어나지 않은 변동점을 점검할 수는 없기 때문입니다. 날짜를 다시 확인해주세요.</li>
+        <li>필수 항목이 비어 있으면 저장되지 않고 안내 문구가 뜹니다.</li>
+        <li>저장에 실패해도 <b>작성한 내용은 사라지지 않습니다.</b> 원인을 고친 뒤 다시 [등록]을 누르시면 됩니다.</li>
+      </ul>
+      <div class="mn-ok">등록이 완료되면 지정한 <b>후행담당자에게 안내 메일이 자동 발송</b>됩니다. 메일에는 이 시스템 접속 링크가 함께 들어갑니다.</div>
+    </div>
+    <div class="mn-card">
+      <h5>잘못 등록했을 때 — 수정 · 삭제</h5>
+      <ul class="mn-list">
+        <li><b>수정</b>은 <b>등록한 본인</b> 또는 <b>마스터관리자</b>만 할 수 있습니다. [현황] 또는 [점검/확인]에서 해당 건을 열고 <span class="mn-key">수정</span> 버튼을 누르세요.</li>
+        <li><b>삭제</b>는 <b>마스터관리자</b>만 가능합니다.</li>
+        <li>수정 내역은 <b>변경이력</b>으로 별도 기록됩니다. 임의 수정은 삼가주세요.</li>
+      </ul>
+    </div>`});
+
+  secs.push({ id:"inspect", ix:"4", title:"점검 · 확인 입력 방법",
+    lead:"[점검 / 확인] 탭에서 점검 대기 건을 열어 결과를 입력합니다. 지정된 후행담당자와 관리자만 입력할 수 있습니다.",
+    html:`
+    <div class="mn-card">
+      <h5>내가 처리해야 할 건 찾기</h5>
+      <ul class="mn-list">
+        <li>로그인하면 <b>[등록] 탭 맨 위에 "내 미처리 변동점" 알림</b>이 나타납니다. 이 알림을 누르면 바로 점검 화면으로 이동합니다.</li>
+        <li><b>[점검 / 확인]</b> 탭의 <b>1. 점검 대기</b> 목록에서도 확인할 수 있습니다. 담당자가 아닌 건은 "담당자만 처리 가능"으로 표시됩니다.</li>
+        <li>탭 이름 옆 숫자 배지는 <b>내가 처리해야 할 건수</b>입니다.</li>
+      </ul>
+    </div>
+    <div class="mn-card">
+      <h5>점검 입력 항목</h5>
+      <div class="mn-tblwrap"><table class="mn-table">
+        <thead><tr><th>항목</th><th>필수</th><th>작성 방법</th></tr></thead>
+        <tbody>
+          <tr><td><b>점검일자</b></td><td>필수</td><td>달력에서 선택. <b>변경일자보다 이전 날짜는 저장되지 않습니다.</b></td></tr>
+          <tr><td><b>조치결과</b></td><td>필수</td><td>양호 / NG / 기타 중 선택. <b>기타</b>를 선택하면 직접 입력 칸이 추가로 나타납니다.</td></tr>
+          <tr><td><b>초품검사결과</b></td><td>필수</td><td>양호 / NG / 해당없음 중 선택. 초품 검사 대상이 아닌 변동점이면 <b>해당없음</b>을 선택하세요.</td></tr>
+          <tr><td><b>LOT NO</b></td><td>선택</td><td>해당 LOT이 있으면 입력합니다. <b>없으면 비워두셔도 됩니다.</b></td></tr>
+          <tr><td><b>NG 재발방지 대책</b></td><td>조건부</td><td>조치결과를 <b>NG</b>로 선택하면 입력 칸이 나타나며, 이때는 필수입니다.</td></tr>
+          <tr><td><b>점검부서 · 점검담당자</b></td><td>자동</td><td>로그인 계정으로 자동 입력됩니다.</td></tr>
+          <tr><td><b>점검확인 첨부</b></td><td>선택</td><td>점검한 근거 사진이나 성적서를 올릴 수 있습니다. (파일당 10MB)</td></tr>
+        </tbody>
+      </table></div>
+      <div class="mn-tip">점검 화면 위쪽에는 등록된 <b>변경 전 / 변경 후 내용과 첨부 사진</b>이 함께 표시됩니다. 사진을 누르면 크게 볼 수 있고, 닫아도 점검 화면은 그대로 유지됩니다.</div>
+    </div>
+    <div class="mn-card">
+      <h5>NG 재발방지대책</h5>
+      <ul class="mn-list">
+        <li>입력 권한은 <b>해당 건의 후행담당자</b> 또는 <b>마스터관리자</b>에게만 있습니다.</li>
+        <li>대책이 비어 있는 동안은 <b>NG 대책미입력</b> 상태로 남고, 대시보드에서 계속 집계됩니다.</li>
+        <li>내용은 <b>원인 → 조치 → 재발방지</b> 순서로 쓰는 것이 좋습니다. 원인만 적고 끝내지 마세요.</li>
+      </ul>
+      <div class="mn-warn">NG 건은 고객사 클레임이나 심사 시 가장 먼저 열어보는 기록입니다. 나중에 읽는 사람이 이해할 수 있게 구체적으로 작성해주세요.</div>
+    </div>`});
+
+  secs.push({ id:"status", ix:"5", title:"현황 조회와 다운로드",
+    lead:"[현황] 탭에서 등록된 모든 변동점을 조회 · 검색하고, 권한이 있으면 엑셀 · ZIP으로 내려받을 수 있습니다.",
+    html:`
+    <div class="mn-card">
+      <h5>조회와 검색</h5>
+      <ul class="mn-list">
+        <li>현황 조회는 <b>전 직원에게 열려 있습니다.</b> 목록에서 한 건을 누르면 상세 내용이 열립니다.</li>
+        <li>검색 조건을 여러 개 동시에 걸 수 있고, <span class="mn-key">초기화</span>를 누르면 조건이 모두 풀립니다.</li>
+        <li>상세 화면에서 <b>사진을 누르면 크게 볼 수 있습니다.</b> 확대한 사진을 닫아도 상세 화면은 닫히지 않습니다.</li>
+        <li><b>휴대폰</b>에서는 표 대신 <b>카드 형태</b>로 보여 옆으로 밀지 않고도 내용을 확인할 수 있습니다.</li>
+      </ul>
+    </div>
+    <div class="mn-card">
+      <h5>다운로드 권한</h5>
+      <div class="mn-tblwrap"><table class="mn-table">
+        <thead><tr><th>구분</th><th>화면 조회</th><th>첨부 보기</th><th>엑셀 · ZIP 다운로드</th></tr></thead>
+        <tbody>
+          <tr><td>일반 직원</td><td>가능</td><td>가능</td><td><b>권한을 받은 경우에만</b></td></tr>
+          <tr><td>마스터관리자</td><td>가능</td><td>가능</td><td>항상 가능</td></tr>
+        </tbody>
+      </table></div>
+      <p style="margin-top:9px;"><b>엑셀 다운로드</b>는 조회 조건이 적용된 목록을 표로 내려받습니다. <b>ZIP 다운로드</b>는 첨부파일까지 함께 압축해 내려받습니다.</p>
+      <div class="mn-tip">다운로드 버튼이 보이지 않거나 눌리지 않으면 권한이 없는 경우입니다. 필요하시면 관리자에게 <b>다운로드 권한 부여</b>를 요청해주세요.</div>
+    </div>`});
+
+  secs.push({ id:"dashboard", ix:"6", title:"대시보드 보는 법",
+    lead:"[대시보드] 탭은 지금 무엇이 밀려 있는지 한 화면에서 보여줍니다.",
+    html:`
+    <div class="mn-card">
+      <h5>숫자 카드</h5>
+      <ul class="mn-list">
+        <li><b>전체 / 점검대기 / 점검완료 / NG 발생 / NG 미조치 / 내 미처리</b> 건수가 표시됩니다.</li>
+        <li><b>숫자 카드를 누르면 해당하는 건들의 목록이 바로 요약되어 열립니다.</b> 다른 탭으로 옮겨다니지 않아도 됩니다.</li>
+        <li>요약 목록에서 한 줄을 누르면 그 건의 상세 화면으로 이어집니다.</li>
+      </ul>
+    </div>
+    <div class="mn-card">
+      <h5>차트</h5>
+      <ul class="mn-list">
+        <li><b>월별 추이</b> — 월별 등록 건수와 그중 NG 건수를 함께 보여줍니다. 특정 월에 몰렸는지 확인할 때 봅니다.</li>
+        <li><b>부서별 · 4M별 · 고객사별 분포</b> — 어디에서 변동점이 많이 나오는지 비교합니다.</li>
+      </ul>
+      <div class="mn-tip">관리 목적으로 가장 중요한 숫자는 <b>NG 미조치</b>와 <b>점검대기</b>입니다. 이 두 숫자를 0에 가깝게 유지하는 것이 운영 목표입니다.</div>
+    </div>`});
+
+  secs.push({ id:"feedback", ix:"7", title:"건의사항 · 공지사항",
+    lead:"시스템을 쓰면서 불편한 점이나 개선 아이디어는 [건의사항]으로 남겨주세요.",
+    html:`
+    <div class="mn-card">
+      <h5>건의사항</h5>
+      <ul class="mn-list">
+        <li><b>[건의사항]</b> 탭에서 누구나 등록할 수 있습니다.</li>
+        <li>관리자가 확인하면 <b>답변</b>이 함께 표시됩니다.</li>
+        <li>오류 제보 시에는 <b>어떤 화면에서 / 무엇을 눌렀을 때 / 어떤 문구가 나왔는지</b>를 적어주시면 훨씬 빨리 해결됩니다. 가능하면 화면 사진도 함께 주세요.</li>
+      </ul>
+    </div>
+    <div class="mn-card">
+      <h5>공지사항</h5>
+      <p>관리자가 등록한 공지는 로그인 후 화면에 표시됩니다. 시스템 점검, 기준 변경, 신규 기능 안내 등이 공지됩니다.</p>
+    </div>`});
+
+  if(typeof isAdmin === "function" && isAdmin()){
+    secs.push({ id:"admin", ix:"8", title:"관리자 기능 (마스터관리자 전용)",
+      lead:"[관리] 탭에서 직원 계정과 공지사항을 관리합니다. 이 섹션은 마스터관리자에게만 표시됩니다.",
+      html:`
+      <div class="mn-card">
+        <h5>직원 관리</h5>
+        <ul class="mn-list">
+          <li><b>계정 추가</b> — 이름 · 부서 · 이메일 · 역할 · 사용여부 · 초기 비밀번호(사번)를 입력합니다. 이름이 아이디가 되므로 <b>동명이인은 구분되는 표기</b>가 필요합니다.</li>
+          <li><b>비밀번호 재설정</b> — 편집 화면에서 비밀번호 칸에 사번을 넣고 저장하면 초기화됩니다. 비워두면 기존 비밀번호가 유지됩니다.</li>
+          <li><b>OTP 재설정</b> — 휴대폰 교체 · 분실 시 사용합니다. 재설정하면 다음 로그인에서 새 QR로 다시 등록합니다.</li>
+          <li><b>다운로드 권한</b> — 엑셀 · ZIP 다운로드 허용 여부를 계정별로 지정합니다. 마스터관리자는 항상 가능합니다.</li>
+          <li><b>사용여부 중지</b> — 퇴사자나 휴직자는 삭제 대신 <b>중지</b>로 두는 것을 권합니다. 과거 등록 이력이 그대로 보존됩니다.</li>
+        </ul>
+        <div class="mn-warn">역할을 <b>일반</b>으로 바꾸거나 계정을 <b>중지</b>하면, 그 사람의 기존 로그인 세션은 즉시 무효화됩니다.</div>
+      </div>
+      <div class="mn-card">
+        <h5>선택 항목 편집 — 차종 / 라인 · 4M · 후행담당자 제외 부서</h5>
+        <ul class="mn-list">
+          <li>[등록] 탭 <b>3번 카드의 <span class="mn-key">항목 편집</span></b> 버튼에서 관리합니다.</li>
+          <li><b>차종 / 설비 / 라인</b> — 신규 라인이 생기면 여기서 추가합니다.</li>
+          <li><b>4M 구분</b> — 사람 · 설비 · 재료 · 방법. 특별한 사유가 없으면 바꾸지 않는 것이 좋습니다.</li>
+          <li><b>후행담당자 제외 부서</b> — 여기에 넣은 부서는 후행담당자 선택 목록에 나타나지 않습니다. (임원 · 인사노무팀 · 기획재무팀 · 현장직 등)</li>
+        </ul>
+      </div>
+      <div class="mn-card">
+        <h5>공지관리</h5>
+        <p>[관리] 탭의 <b>공지관리</b>에서 공지를 등록 · 수정하고, 사용여부로 게시 · 종료를 조절합니다.</p>
+      </div>`});
+  }
+
+  secs.push({ id:"faq", ix:"9", title:"자주 묻는 질문 (FAQ)",
+    lead:"문의가 많은 순서로 정리했습니다. 해결되지 않으면 품질보증팀으로 연락주세요.",
+    html:`
+    <div class="mn-card">
+      <h5>비밀번호를 잊었습니다.</h5>
+      <p>스스로 찾을 수는 없습니다. <b>관리자에게 초기화를 요청</b>하시면 사번으로 재설정됩니다. 이후 로그인하시면 비밀번호 변경 화면이 다시 나타납니다.</p>
+    </div>
+    <div class="mn-card">
+      <h5>휴대폰을 바꿨는데 OTP 번호가 안 맞습니다.</h5>
+      <p>구글 OTP는 기기에 저장되므로 기기를 바꾸면 사용할 수 없습니다. <b>관리자에게 OTP 재설정을 요청</b>하신 뒤, 새 휴대폰에서 QR을 다시 등록해주세요.</p>
+    </div>
+    <div class="mn-card">
+      <h5>OTP 6자리를 넣었는데 틀렸다고 나옵니다.</h5>
+      <p>번호는 <b>30초마다 바뀝니다.</b> 앱에 새로 표시된 번호로 다시 시도해주세요. 계속 실패하면 <b>휴대폰의 시간 설정이 자동(네트워크 시간)인지</b> 확인해주세요. 시간이 수동으로 어긋나 있으면 번호가 맞지 않습니다.</p>
+    </div>
+    <div class="mn-card">
+      <h5>등록했는데 다른 PC에서 안 보입니다.</h5>
+      <p>브라우저가 예전 화면을 기억하고 있는 경우입니다. <b>새로고침</b>하면 바로 반영됩니다. (PC는 F5 또는 Ctrl+F5, 휴대폰은 화면을 아래로 당기기)</p>
+    </div>
+    <div class="mn-card">
+      <h5>새로고침하면 로그인 화면이 잠깐 지나갑니다.</h5>
+      <p>정상 동작입니다. 새로고침할 때마다 서버에서 <b>계정이 아직 유효한지 다시 확인</b>하기 때문에, 확인되는 짧은 순간 로그인 화면이 스쳐 보입니다. 확인이 끝나면 자동으로 원래 화면으로 돌아옵니다. 다시 로그인하실 필요는 없습니다.</p>
+    </div>
+    <div class="mn-card">
+      <h5>첨부한 사진이 깨진 아이콘으로 보입니다.</h5>
+      <p>먼저 <b>새로고침</b>해보세요. 그래도 보이지 않으면 해당 사진을 <b>다시 업로드</b>해주세요. 시스템 초기에 올린 일부 사진은 저장 방식이 달라 보이지 않을 수 있습니다.</p>
+    </div>
+    <div class="mn-card">
+      <h5>파일이 업로드되지 않습니다.</h5>
+      <p><b>파일당 10MB</b> 제한을 넘었는지 확인해주세요. PPT는 필요한 장만 남겨 저장하거나 PDF로 변환하면 용량이 크게 줄어듭니다.</p>
+    </div>
+    <div class="mn-card">
+      <h5>점검 입력 버튼이 없고 "담당자만 처리 가능"이라고 나옵니다.</h5>
+      <p>그 건의 <b>후행담당자로 지정되지 않은 것</b>입니다. 본인이 처리해야 하는 건이라면, 등록자에게 후행담당자 수정을 요청하거나 관리자에게 문의해주세요.</p>
+    </div>
+    <div class="mn-card">
+      <h5>후행담당자 목록에 찾는 사람이 없습니다.</h5>
+      <p>해당 부서가 <b>후행담당자 제외 부서</b>로 설정되어 있거나, 계정이 아직 없거나 중지된 경우입니다. 관리자에게 문의해주세요.</p>
+    </div>
+    <div class="mn-card">
+      <h5>엑셀 · ZIP 다운로드 버튼이 눌리지 않습니다.</h5>
+      <p>다운로드는 <b>별도 권한</b>이 필요합니다. 업무상 필요하시면 관리자에게 권한 부여를 요청해주세요.</p>
+    </div>
+    <div class="mn-card">
+      <h5>변경일자를 잘못 넣었습니다.</h5>
+      <p><b>등록한 본인 또는 마스터관리자</b>가 수정할 수 있습니다. [현황] 또는 [점검/확인]에서 해당 건을 열고 <span class="mn-key">수정</span>을 누르세요. 수정 내역은 변경이력으로 남습니다.</p>
+    </div>
+    <div class="mn-card">
+      <h5>날짜 칸에 키보드로 입력이 안 됩니다.</h5>
+      <p>의도된 동작입니다. 연·월·일 순서가 뒤섞여 잘못 입력되는 것을 막기 위해 <b>달력에서 고르는 방식</b>으로만 되어 있습니다. 칸을 누르면 달력이 열립니다.</p>
+    </div>`});
+
+  secs.push({ id:"mobile", ix:"10", title:"휴대폰 사용 팁",
+    lead:"현장에서 휴대폰으로 바로 등록하실 수 있습니다.",
+    html:`
+    <div class="mn-card">
+      <h5>알아두시면 편한 점</h5>
+      <ul class="mn-list">
+        <li><b>홈 화면에 추가</b>해두면 앱처럼 바로 열 수 있습니다. (브라우저 공유 · 메뉴 → 홈 화면에 추가)</li>
+        <li>접속 주소는 <b>[QR 코드]</b> 버튼으로 QR을 만들어 공유할 수 있습니다.</li>
+        <li>목록은 <b>카드 형태</b>로 표시되어 옆으로 밀지 않아도 됩니다.</li>
+        <li>사진은 첨부 칸을 눌러 <b>현장에서 바로 촬영</b>해 올릴 수 있습니다.</li>
+        <li><b>휴대폰 뒤로가기</b>를 누르면 열려 있는 창만 닫히고 앱은 유지됩니다. 첫 화면에서 뒤로가기를 누르면 안내가 뜨고, <b>한 번 더 누를 때</b> 종료됩니다. 작성 중 내용이 있으면 한 번 더 확인합니다.</li>
+        <li>화면을 아래로 당기면 <b>새로고침</b>됩니다.</li>
+      </ul>
+    </div>`});
+
+  return secs;
+}
+
+function openManualModal(jumpTo){
+  const root = document.getElementById("modal-root");
+  const secs = manualSections();
+  root.innerHTML = `
+    <div class="modal-overlay" id="manual-overlay">
+      <div class="modal manual-modal">
+        <div class="manual-head">
+          <div class="manual-head-row">
+            <div>
+              <h3>변동점 관리 시스템 사용설명서</h3>
+              <p>4M 변동점 등록 · 점검 · 이력 관리 · 서연오토비전 품질보증팀</p>
+            </div>
+            <button type="button" class="manual-close" id="manual-close">닫기</button>
+          </div>
+          <div class="manual-search">
+            <input type="text" id="manual-q" placeholder="찾고 싶은 단어로 검색 (예: OTP, 첨부, NG, 비밀번호)" autocomplete="off">
+          </div>
+        </div>
+        <div class="manual-nav" id="manual-nav">
+          ${secs.map((s, i) => `<button type="button" data-goto="${esc(s.id)}" class="${i===0?"active":""}">${esc(s.title.replace(/\s*\(.*\)$/, ""))}</button>`).join("")}
+        </div>
+        <div class="manual-body" id="manual-body">
+          ${secs.map(s => `
+            <div class="manual-sec" id="mnsec-${esc(s.id)}" data-sec="${esc(s.id)}">
+              <h4><span class="mn-ix">${esc(s.ix)}</span>${esc(s.title)}</h4>
+              <p class="mn-lead">${esc(s.lead)}</p>
+              ${s.html}
+            </div>`).join("")}
+          <div class="mn-empty" id="manual-noresult" style="display:none;">검색 결과가 없습니다.<br>다른 단어로 검색해보시거나, 위 목차에서 직접 찾아보세요.</div>
+          <div class="mn-foot">
+            해결되지 않는 문제나 개선 의견은 <b>[건의사항]</b> 탭에 남겨주시거나 <b>품질보증팀</b>으로 연락주세요.<br>
+            이 설명서는 시스템과 함께 갱신되므로 항상 최신 내용입니다.
+          </div>
+        </div>
+      </div>
+    </div>`;
+
+  const close = () => {
+    root.innerHTML = "";
+    document.removeEventListener("keydown", onKey);
+  };
+  const onKey = (e) => { if(e.key === "Escape") close(); };
+  document.addEventListener("keydown", onKey);
+  document.getElementById("manual-close").onclick = close;
+  document.getElementById("manual-overlay").onclick = (e) => {
+    if(e.target.id === "manual-overlay" && overlayPressStartedOn(e.target)) close();
+  };
+
+  const body = document.getElementById("manual-body");
+  const nav = document.getElementById("manual-nav");
+  const navBtns = Array.from(nav.querySelectorAll("button"));
+  const setActive = (id) => navBtns.forEach(b => b.classList.toggle("active", b.dataset.goto === id));
+
+  navBtns.forEach(btn => {
+    btn.onclick = () => {
+      const sec = document.getElementById("mnsec-" + btn.dataset.goto);
+      if(!sec) return;
+      body.scrollTop = sec.offsetTop - 6;
+      setActive(btn.dataset.goto);
+    };
+  });
+
+  // 스크롤 위치에 따라 목차 버튼 강조를 따라가게 함
+  const sections = secs.map(s => document.getElementById("mnsec-" + s.id)).filter(Boolean);
+  body.onscroll = () => {
+    let cur = sections.length ? sections[0].dataset.sec : null;
+    for(const sec of sections){
+      if(sec.style.display === "none") continue;
+      if(sec.offsetTop - 60 <= body.scrollTop) cur = sec.dataset.sec;
+    }
+    if(cur) setActive(cur);
+  };
+
+  // 검색: 조건에 맞지 않는 카드/섹션을 숨김
+  const qInput = document.getElementById("manual-q");
+  const noResult = document.getElementById("manual-noresult");
+  qInput.oninput = () => {
+    const kw = qInput.value.trim().toLowerCase();
+    let anyVisible = false;
+    sections.forEach(sec => {
+      const cards = Array.from(sec.querySelectorAll(".mn-card"));
+      if(!kw){
+        sec.style.display = "";
+        cards.forEach(c => c.style.display = "");
+        anyVisible = true;
+        return;
+      }
+      const secTitleHit = sec.querySelector("h4").textContent.toLowerCase().indexOf(kw) !== -1;
+      let hit = 0;
+      cards.forEach(c => {
+        const match = secTitleHit || c.textContent.toLowerCase().indexOf(kw) !== -1;
+        c.style.display = match ? "" : "none";
+        if(match) hit++;
+      });
+      sec.style.display = hit > 0 ? "" : "none";
+      if(hit > 0) anyVisible = true;
+    });
+    noResult.style.display = anyVisible ? "none" : "";
+    nav.style.display = kw ? "none" : "";
+    body.scrollTop = 0;
+  };
+
+  if(jumpTo){
+    const sec = document.getElementById("mnsec-" + jumpTo);
+    if(sec){ body.scrollTop = sec.offsetTop - 6; setActive(jumpTo); }
+  }
 }
 
 /* ---------- 접속 QR 코드 ---------- */
@@ -2247,6 +2755,11 @@ function bindTabs(){
   });
 }
 document.getElementById("btn-show-qr").onclick = openQrModal;
+document.getElementById("btn-show-manual").onclick = () => openManualModal();
+{
+  const loginManualBtn = document.getElementById("btn-show-manual-login");
+  if(loginManualBtn) loginManualBtn.onclick = () => openManualModal("start");
+}
 
 /* ---------- 모달/탭 이동/뒤로가기(폰 하단 뒤로가기 포함) 통합 처리 ----------
  * ① 모달/라이트박스가 열려있을 때 뒤로가기 → 모달만 닫히고 앱은 유지
