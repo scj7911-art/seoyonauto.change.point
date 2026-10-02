@@ -481,17 +481,58 @@ async function apiGet(query){
   // _ts: 매 요청마다 다른 값을 붙여, 중간 통신사 프록시 등이 fetch의 no-store 옵션을 무시하더라도
   // URL 자체가 매번 달라 캐시된 예전 응답을 재사용할 수 없게 함
   const url = API_URL + (query || "") + sep + "token=" + encodeURIComponent(authToken) + "&_ts=" + Date.now();
-  const res = await fetch(url, { cache: "no-store" });
-  const json = await res.json();
-  if(!json.ok) throw new Error(json.error || "조회 실패");
+  let res;
+  try{
+    res = await fetch(url, { cache: "no-store" });
+  }catch(e){
+    setApiFailure("network", String((e && e.message) || e).slice(0, 60));
+    throw new Error(lastApiError);
+  }
+  const text = await res.text();
+  let json = null;
+  try{ json = JSON.parse(text); }catch(e){ json = null; }
+  if(json === null){
+    console.error("서버가 JSON이 아닌 응답을 반환했습니다.", res.status, text.slice(0, 300));
+    setApiFailure("server", "응답 형식 오류 · HTTP " + res.status);
+    throw new Error(lastApiError);
+  }
+  if(!json.ok){
+    lastApiError = json.error || "조회에 실패했습니다.";
+    lastApiErrorKind = "rejected";
+    throw new Error(lastApiError);
+  }
   return json;
 }
 /* apiPost: 성공 시 응답 JSON(ok:true 포함) 반환, 실패 시 null 반환.
-   서버가 명확히 거부한 사유가 있으면 lastApiError에 담아둠. */
+   실패 사유는 반드시 lastApiError / lastApiErrorKind 에 담아둔다.
+
+   ※ 2026-10 개선 이유
+   예전에는 통신 자체가 실패해도(서버 중단, 구글 계정 중지, 인터넷 끊김) 아무 메시지도
+   남기지 않고 null만 돌려줬다. 그래서 화면에는 전부 "아이디 또는 비밀번호가 올바르지
+   않습니다"로만 떴고, 실제로는 서버가 죽은 상황인데도 전 직원이 비밀번호를 의심하며
+   원인을 찾지 못했다. 이제는 실패 종류를 구분해 담아두므로, 이 값을 쓰는 모든 화면이
+   한 번에 정확한 안내를 하게 된다.
+
+   lastApiErrorKind
+     "rejected" : 서버가 정상 동작하며 요청을 거부함 (비밀번호 틀림, 권한 없음 등)
+     "server"   : 서버에 닿았으나 정상 응답이 아님 (중단/점검/권한설정/계정중지 등)
+     "network"  : 서버에 닿지도 못함 (인터넷 끊김, 사내망 차단 등)
+*/
 let lastApiError = "";
+let lastApiErrorKind = "";
+const NET_FAIL_MSG = "네트워크에 연결할 수 없습니다. 인터넷 연결을 확인한 뒤 다시 시도해주세요.";
+const SRV_FAIL_MSG = "서버에 연결할 수 없습니다. 비밀번호 문제가 아니므로 관리자에게 문의해주세요.";
+
+function setApiFailure(kind, detail){
+  lastApiErrorKind = kind;
+  const base = (kind === "network") ? NET_FAIL_MSG : SRV_FAIL_MSG;
+  lastApiError = base + (detail ? " (" + detail + ")" : "");
+}
+
 async function apiPost(payload){
-  lastApiError = "";
+  lastApiError = ""; lastApiErrorKind = "";
   const withToken = (payload.action === "login" || payload.action === "verifyOtp") ? payload : Object.assign({ token: authToken }, payload);
+  let failKind = "network", failDetail = "";
   for(let attempt = 0; attempt < 2; attempt++){
     try{
       const res = await fetch(API_URL, {
@@ -499,13 +540,56 @@ async function apiPost(payload){
         headers: { "Content-Type": "text/plain;charset=utf-8" },
         body: JSON.stringify(withToken)
       });
-      const json = await res.json();
-      if(json.ok) return json;
-      if(json.error){ lastApiError = json.error; return null; }
-    }catch(e){ console.error(e); }
+      // 서버가 JSON이 아닌 것(구글 로그인 페이지, 오류 페이지 등)을 보내는 경우가 있어
+      // 먼저 텍스트로 받은 뒤 파싱한다. 바로 res.json() 하면 예외만 나고 원인을 알 수 없다.
+      const text = await res.text();
+      let json = null;
+      try{ json = JSON.parse(text); }catch(e){ json = null; }
+
+      if(json === null){
+        failKind = "server";
+        failDetail = "응답 형식 오류 · HTTP " + res.status;
+        console.error("서버가 JSON이 아닌 응답을 반환했습니다.", res.status, text.slice(0, 300));
+      }else{
+        if(json.ok) return json;
+        if(json.error){ lastApiError = json.error; lastApiErrorKind = "rejected"; return null; }
+        failKind = "server";
+        failDetail = "알 수 없는 응답";
+      }
+    }catch(e){
+      failKind = "network";
+      failDetail = String((e && e.message) || e).slice(0, 60);
+      console.error(e);
+    }
     if(attempt === 0) await new Promise(r=>setTimeout(r,600));
   }
+  setApiFailure(failKind, failDetail);
   return null;
+}
+
+/* 인증 화면(로그인·OTP·비밀번호 변경)의 오류 표시.
+   통신 실패(서버/네트워크)는 "비밀번호가 틀렸다"와 명확히 구분해 보여준다. */
+function showAuthError(el, fallbackMsg){
+  if(!el) return;
+  el.textContent = lastApiError || fallbackMsg;
+  if(lastApiErrorKind === "network" || lastApiErrorKind === "server"){
+    el.style.color = "#7A4A10";
+    el.style.background = "var(--warn-light)";
+    el.style.border = "1px solid #E3C489";
+    el.style.borderRadius = "8px";
+    el.style.padding = "10px 12px";
+    el.style.lineHeight = "1.65";
+    el.style.textAlign = "left";
+  }else{
+    el.style.color = "var(--danger)";
+    el.style.background = "none";
+    el.style.border = "none";
+    el.style.borderRadius = "0";
+    el.style.padding = "0";
+    el.style.lineHeight = "1.5";
+    el.style.textAlign = "";
+  }
+  el.style.display = "block";
 }
 
 /* ---------- 로그인 / 세션 ---------- */
@@ -532,7 +616,7 @@ async function loadMaster(){
   }catch(e){
     console.error(e);
     master = DEFAULT_MASTER;
-    showToast("마스터 데이터를 불러오지 못했습니다. 네트워크를 확인해주세요.");
+    showToast(lastApiError || "마스터 데이터를 불러오지 못했습니다. 네트워크를 확인해주세요.", 7000);
   }
 }
 async function loadDirectory(){
@@ -557,7 +641,7 @@ async function loadItems(){
     items = loaded;
   }catch(e){
     console.error(e);
-    showToast("목록을 불러오지 못했습니다. 네트워크를 확인해주세요.");
+    showToast(lastApiError || "목록을 불러오지 못했습니다. 네트워크를 확인해주세요.", 7000);
   }
 }
 /* 신규 등록: 서버가 문서번호를 원자적으로 채번하여 반환, 후행담당자 이메일로 자동 발송 */
@@ -1093,6 +1177,15 @@ function manualSections(){
   secs.push({ id:"faq", ix:"9", title:"자주 묻는 질문 (FAQ)",
     lead:"문의가 많은 순서로 정리했습니다. 해결되지 않으면 품질보증팀으로 연락주세요.",
     html:`
+    <div class="mn-card">
+      <h5>"서버에 연결할 수 없습니다" 라고 나옵니다.</h5>
+      <p><b>비밀번호 문제가 아닙니다.</b> 시스템 서버(구글)에 일시적으로 닿지 못하는 상태입니다. 몇 분 뒤 다시 시도해보시고, 계속 같은 문구가 나오면 <b>관리자에게 알려주세요.</b> 비밀번호를 바꾸거나 여러 번 재시도하실 필요 없습니다.</p>
+      <div class="mn-tip">노란색 배경의 안내는 <b>서버·네트워크 문제</b>, 빨간색 글씨는 <b>입력하신 정보가 틀린 경우</b>입니다. 색으로 구분하시면 됩니다.</div>
+    </div>
+    <div class="mn-card">
+      <h5>"네트워크에 연결할 수 없습니다" 라고 나옵니다.</h5>
+      <p>휴대폰·PC의 인터넷 연결이 끊긴 상태입니다. 와이파이나 데이터 연결을 확인해주세요. 현장에서는 신호가 약한 구역일 수 있습니다.</p>
+    </div>
     <div class="mn-card">
       <h5>비밀번호를 잊었습니다.</h5>
       <p>스스로 찾을 수는 없습니다. <b>관리자에게 초기화를 요청</b>하시면 사번으로 재설정됩니다. 이후 로그인하시면 비밀번호 변경 화면이 다시 나타납니다.</p>
@@ -2915,8 +3008,7 @@ function openMyPasswordModal(){
       showToast("비밀번호가 변경되었습니다. 다시 로그인해주세요.", 3000);
       setTimeout(doLogout, 1500);
     }else{
-      errEl.textContent = lastApiError || "비밀번호 변경에 실패했습니다.";
-      errEl.style.display = "block";
+      showAuthError(errEl, "비밀번호 변경에 실패했습니다.");
     }
   };
 }
@@ -3260,8 +3352,7 @@ function showLoginScreen(){
         errEl.style.display = "block";
       }
     }else{
-      errEl.textContent = lastApiError || "아이디 또는 비밀번호가 올바르지 않습니다.";
-      errEl.style.display = "block";
+      showAuthError(errEl, "아이디 또는 비밀번호가 올바르지 않습니다.");
     }
   };
   btn.onclick = submit;
@@ -3296,8 +3387,7 @@ function showOtpSetupScreen(tempToken, otpAuthUrl, secret){
     if(json && json.ok){
       await completeLogin(json);
     }else{
-      errEl.textContent = lastApiError || "인증 코드가 올바르지 않습니다.";
-      errEl.style.display = "block";
+      showAuthError(errEl, "인증 코드가 올바르지 않습니다.");
     }
   };
   btn.onclick = submit;
@@ -3323,8 +3413,7 @@ function showOtpVerifyScreen(tempToken){
     if(json && json.ok){
       await completeLogin(json);
     }else{
-      errEl.textContent = lastApiError || "인증 코드가 올바르지 않습니다.";
-      errEl.style.display = "block";
+      showAuthError(errEl, "인증 코드가 올바르지 않습니다.");
       codeInput.value = ""; codeInput.focus();
     }
   };
@@ -3374,8 +3463,7 @@ function showPasswordChangeScreen(){
       showLoginScreen();
       showToast("비밀번호가 변경되었습니다. 새 비밀번호로 다시 로그인해주세요.", 4000);
     }else{
-      errEl.textContent = lastApiError || "비밀번호 변경에 실패했습니다.";
-      errEl.style.display = "block";
+      showAuthError(errEl, "비밀번호 변경에 실패했습니다.");
     }
   };
   btn.onclick = submit;
