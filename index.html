@@ -48,7 +48,25 @@
 
   .row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
   .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:14px;}
+  .row4{display:grid;grid-template-columns:200px 1fr 1fr 1fr;gap:14px;margin-bottom:4px;}
+  .reg-who{font-size:13px;color:var(--text-secondary);background:var(--bg);border-radius:6px;padding:8px 12px;margin:-4px 0 14px;display:flex;align-items:baseline;gap:6px;flex-wrap:wrap;}
+  .reg-who b{color:var(--text);}
+  .reg-who-hint{font-size:11.5px;color:var(--text-muted);margin-left:6px;}
+  .recent-box{margin-top:12px;background:var(--primary-light);border:1px solid #D3DEEC;border-radius:8px;padding:10px 12px;font-size:12.5px;color:var(--text-secondary);line-height:1.5;}
+  .recent-box.is-none{background:var(--bg);border-color:var(--border);}
+  .recent-box b{color:var(--text);}
+  .recent-hint{font-size:11px;color:var(--text-muted);margin-left:8px;}
+  .recent-list{list-style:none;margin:8px 0 0;padding:0;display:flex;flex-direction:column;gap:4px;}
+  .recent-item{width:100%;display:flex;align-items:center;gap:10px;background:#fff;border:1px solid var(--border);border-radius:6px;padding:7px 10px;font-size:12.5px;color:var(--text);cursor:pointer;text-align:left;font-family:var(--font);min-height:40px;}
+  .recent-item:hover{border-color:var(--border-strong);}
+  .ri-id{font-family:var(--mono);font-size:12px;color:var(--text-secondary);flex-shrink:0;}
+  .ri-date{color:var(--text-muted);flex-shrink:0;font-variant-numeric:tabular-nums;}
+  .ri-txt{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .recent-more{margin-top:6px;font-size:11.5px;color:var(--text-muted);}
+  .pulse-hint{outline:3px solid var(--accent);outline-offset:2px;transition:outline-color .3s;}
+  .reg-submit-meta{font-size:12.5px;color:var(--text-secondary);margin:4px 2px 10px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
   .field label{display:block;font-size:12.5px;font-weight:600;color:var(--text-secondary);margin-bottom:6px;}
+  .hint{font-size:12.5px;color:var(--text-muted);margin:8px 0 0;line-height:1.55;}
   .field .hint{font-size:11.5px;color:var(--text-muted);margin-top:4px;line-height:1.4;}
   input[type=text], input[type=date], input[type=password], select, textarea{
     width:100%;padding:9px 10px;border:1px solid var(--border-strong);border-radius:7px;font-size:13.5px;font-family:var(--font);background:#fff;color:var(--text);
@@ -87,6 +105,12 @@
   .status-pill{display:inline-block;padding:3px 9px;border-radius:20px;font-size:11.5px;font-weight:700;white-space:nowrap;}
   .st-ng{background:var(--danger-light);color:var(--danger);}
   .st-ng-open{background:var(--danger);color:#fff;}
+  .st-delay{background:#8A3B1E;color:#fff;}
+  tr.row-delay > td{background:var(--warn-light);}
+  tr.row-ngopen > td{background:var(--danger-light);}
+  tr.row-delay:hover > td, tr.row-ngopen:hover > td{filter:brightness(0.97);}
+  .mcard.mc-delay{border-left:4px solid #8A3B1E;}
+  .mcard.mc-ngopen{border-left:4px solid var(--danger);}
 
   /* 관리 탭 하위 메뉴 */
   .subnav{display:flex;gap:6px;margin-bottom:12px;}
@@ -133,6 +157,27 @@
   .dash-strip-label{font-size:11.5px;color:var(--text-secondary);}
   .dash-alert{background:var(--danger-light);border-left:3px solid var(--danger);border-radius:6px;padding:11px 14px;font-size:12.5px;color:var(--danger);margin-bottom:12px;cursor:pointer;}
   .dash-grid{display:grid;grid-template-columns:1.2fr 1fr;gap:12px;}
+  .dash-action{border-radius:var(--radius);margin-bottom:12px;}
+  .dash-action.is-ok{background:var(--success-light);border:1px solid #B9DCC8;color:var(--success);font-weight:700;font-size:14.5px;padding:14px 18px;display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;}
+  .dash-ok-sub{font-size:12px;font-weight:400;color:#4F7F68;}
+  .dash-action.is-alert{background:var(--card);border:1px solid #E7B8B8;border-left:5px solid var(--danger);padding:14px 16px 16px;}
+  .dash-action-title{font-size:15px;font-weight:800;color:var(--danger);margin-bottom:10px;}
+  .dash-action-items{display:flex;flex-wrap:wrap;gap:8px;}
+  .dash-chip{display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:8px 14px;border-radius:8px;border:1px solid var(--border-strong);background:#fff;cursor:pointer;font-size:13.5px;color:var(--text);font-family:var(--font);}
+  .dash-chip:hover{background:var(--bg);}
+  .dash-chip b{font-size:20px;font-variant-numeric:tabular-nums;}
+  .dash-chip.c-ng{border-color:#E7B8B8;} .dash-chip.c-ng b{color:var(--danger);}
+  .dash-chip.c-delay{border-color:#DDBFAF;} .dash-chip.c-delay b{color:#8A3B1E;}
+  .dash-chip.c-mine b{color:var(--primary);}
+  .dash-chip-sub{font-size:11.5px;color:var(--text-muted);}
+  .dash-strip-sub{font-size:11px;color:var(--text-muted);min-height:14px;}
+  .dash-strip-value small{font-size:13px;font-weight:700;margin-left:1px;}
+  .dash-strip-value.v-warn{color:var(--warn);}
+  .dash-strip-value.v-delay{color:#8A3B1E;}
+  .dash-strip-value.v-ng{color:var(--danger);}
+  .dash-chart-title{margin:0 0 4px;font-size:15px;}
+  .dash-chart-sub{font-size:11.5px;color:var(--text-muted);margin-bottom:12px;}
+  .dash-dist-label{font-size:11.5px;font-weight:700;color:var(--text-secondary);margin-bottom:8px;}
   @media (max-width: 720px){
     .dash-hero{grid-template-columns:1fr;}
     .dash-hero-value{font-size:44px;}
@@ -270,6 +315,9 @@
   .user-chip .uc-role{font-size:10.5px;background:var(--accent);color:#fff;padding:1px 7px;border-radius:10px;font-weight:700;}
   .user-chip button{padding:5px 9px;font-size:11.5px;background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.3);color:#fff;}
   .user-chip button:hover{background:rgba(255,255,255,.18);}
+  .user-chip{position:relative;}
+  .user-chip .uc-more{display:contents;}
+  .user-chip .uc-more-name, .user-chip .uc-qr, #btn-umenu{display:none;}
 
   /* ---------- 모바일 반응형 ---------- */
   @media (max-width: 720px){
@@ -280,6 +328,19 @@
     .header p{font-size:11.5px;}
     .header-actions{width:100%;justify-content:space-between;flex-wrap:wrap;}
     .user-chip .uc-name{display:none;}
+    .header{padding:12px 14px !important;}
+    .header p:not(.header-titles){display:none;}
+    .header-logo{display:none !important;}
+    #btn-show-qr{display:none !important;}
+    .header-row{gap:8px !important;}
+    .header-title-line{font-size:16px !important;display:inline !important;}
+    .header-title-line.brand-name::after{content:" ";}
+    #btn-umenu{display:inline-flex !important;}
+    .user-chip .uc-more{display:none;}
+    .user-chip.open .uc-more{display:flex;flex-direction:column;align-items:stretch;gap:4px;position:absolute;right:0;top:calc(100% + 6px);min-width:170px;background:#fff;border:1px solid var(--border);border-radius:8px;padding:8px;z-index:60;box-shadow:0 6px 18px rgba(20,25,35,.18);}
+    .user-chip.open .uc-more-name{display:block;font-size:12px;color:var(--text-secondary);padding:4px 6px 8px;border-bottom:1px solid var(--border);margin-bottom:2px;}
+    .user-chip.open .uc-more button, .user-chip.open .uc-qr{display:block;width:100%;text-align:left;background:#fff;color:var(--text);border:none;padding:11px 10px;font-size:14px;border-radius:6px;min-height:44px;}
+    .user-chip.open .uc-more button:hover{background:var(--bg);}
     .header-logo{height:36px;}
     .qr-header-btn{padding:6px 8px;font-size:11.5px;}
 
@@ -291,7 +352,9 @@
     .card{padding:14px 14px;margin-bottom:12px;}
     .card h2{font-size:14px;}
 
-    .row, .row3{grid-template-columns:1fr;gap:10px;margin-bottom:10px;}
+    .row, .row3, .row4{grid-template-columns:1fr;gap:10px;margin-bottom:10px;}
+    .reg-who-hint{display:block;margin-left:0;width:100%;}
+    .ri-date, .recent-hint{display:none;}
 
     input[type=text], input[type=date], input[type=password], select, textarea{font-size:16px;}
 
@@ -458,8 +521,12 @@
 const DEFAULT_MASTER = {
   lines: ["CV1 칵핏 조립", "CE1 글라스 조립"],
   m4: ["사람", "설비", "재료", "방법"],
-  excludedFollowDepts: ["임원", "인사노무팀", "기획재무팀"]
+  excludedFollowDepts: ["임원", "인사노무팀", "기획재무팀"],
+  // 지연 판정 기준(일). 서버의 리마인더 메일 기준(REMINDER_DAYS)과 반드시 같은 값이어야 한다.
+  // 설정 시트에 값이 있으면 그 값을 쓰고, 없으면 이 기본값을 쓴다.
+  reminderDays: 2
 };
+let masterLoaded = false; // 마스터를 서버에서 실제로 받아왔는지 (실패 시 항목 편집 저장을 막기 위함)
 const CUSTOMERS = ["서연이화", "모비스", "기타"];
 
 let master = null;
@@ -612,10 +679,14 @@ function canDownload(){ return !!(currentUser && (currentUser.role === "마스�
 async function loadMaster(){
   try{
     const json = await apiGet("?type=master");
-    master = json.master;
+    master = json.master || {};
+    // 서버 설정에 없는 키는 기본값으로 채운다 (지연 기준이 비어 있어 NaN이 되는 것을 막음)
+    Object.keys(DEFAULT_MASTER).forEach(k => { if(master[k] === undefined) master[k] = DEFAULT_MASTER[k]; });
+    masterLoaded = true;
   }catch(e){
     console.error(e);
-    master = DEFAULT_MASTER;
+    master = JSON.parse(JSON.stringify(DEFAULT_MASTER));
+    masterLoaded = false;
     showToast(lastApiError || "마스터 데이터를 불러오지 못했습니다. 네트워크를 확인해주세요.", 7000);
   }
 }
@@ -629,18 +700,27 @@ async function loadDirectory(){
   }
 }
 async function saveMaster(){
+  // 마스터를 서버에서 못 받아온 상태에서 저장하면, 화면이 들고 있는 기본값이 서버 설정을
+  // 통째로 덮어써 기존 설정이 사라진다. 그래서 로드 실패 상태에서는 저장을 막는다.
+  if(!masterLoaded){
+    showToast("설정을 불러오지 못한 상태에서는 저장할 수 없습니다. 새로고침 후 다시 시도해주세요.", 7000);
+    return false;
+  }
   const json = await apiPost({ type: "master", master: master });
   if(!json) showToast(lastApiError || "항목 저장에 실패했습니다. 다시 시도해주세요.");
   return !!json;
 }
+let itemsLoaded = false; // 목록을 실제로 받아왔는지 (못 받았으면 "0건"이라고 잘못 안내하지 않기 위함)
 async function loadItems(){
   try{
     const json = await apiGet("");
     const loaded = json.items || [];
     loaded.sort((a,b) => (b.createdAt||0) - (a.createdAt||0));
     items = loaded;
+    itemsLoaded = true;
   }catch(e){
     console.error(e);
+    itemsLoaded = false;
     showToast(lastApiError || "목록을 불러오지 못했습니다. 네트워크를 확인해주세요.", 7000);
   }
 }
@@ -980,16 +1060,18 @@ function manualSections(){
         <thead><tr><th>배지</th><th>의미</th><th>다음에 할 일</th></tr></thead>
         <tbody>
           <tr><td><b>점검대기</b></td><td>등록은 되었으나 아직 점검 결과가 입력되지 않은 상태</td><td>후행담당자가 점검 입력</td></tr>
+          <tr><td><b>지연 N일</b></td><td>등록 후 2일이 지나도록 점검 결과가 없는 상태. 목록에서 주황색 줄로 표시</td><td>후행담당자가 바로 점검 입력</td></tr>
           <tr><td><b>점검완료</b></td><td>점검 결과가 양호(또는 기타)로 입력되어 마무리된 상태</td><td>없음 (종결)</td></tr>
           <tr><td><b>NG 대책미입력</b></td><td>점검 결과가 NG인데 재발방지대책이 아직 없는 상태</td><td>후행담당자 또는 관리자가 대책 입력</td></tr>
           <tr><td><b>NG 대책완료</b></td><td>NG였으나 재발방지대책까지 입력이 끝난 상태</td><td>없음 (종결)</td></tr>
         </tbody>
       </table></div>
-      <div class="mn-warn"><b>NG 대책미입력</b>은 가장 먼저 처리해야 하는 상태입니다. 고객사 심사나 내부 감사에서 미조치 건으로 지적될 수 있습니다.</div>
+      <div class="mn-warn"><b>NG 대책미입력</b>(빨간 줄)과 <b>지연</b>(주황 줄)은 가장 먼저 처리해야 하는 상태입니다. 고객사 심사나 내부 감사에서 미조치 건으로 지적될 수 있습니다.</div>
+      <div class="mn-tip"><b>지연 기준은 리마인더 메일과 같습니다.</b> 등록 후 2일이 지나면 후행담당자에게 메일이 가고, 화면에도 같은 시점부터 「지연」으로 표시됩니다. 변경일이 아니라 <b>등록한 날</b> 기준이므로, 지난 변동점을 뒤늦게 등록해도 바로 지연으로 뜨지 않습니다.</div>
     </div>`});
 
   secs.push({ id:"register", ix:"3", title:"변동점 등록 방법",
-    lead:"[등록] 탭에서 1번부터 6번까지 순서대로 작성하고 맨 아래 [등록] 버튼을 누르면 됩니다.",
+    lead:"[등록] 탭에서 1번부터 3번까지 순서대로 작성하고 맨 아래 [등록] 버튼을 누르면 됩니다.",
     html:`
     <div class="mn-card">
       <h5>입력 항목 한눈에 보기</h5>
@@ -997,20 +1079,20 @@ function manualSections(){
         <thead><tr><th>번호 · 항목</th><th>필수</th><th>작성 방법</th></tr></thead>
         <tbody>
           <tr><td><b>1. 변경일자</b></td><td>필수</td><td>칸을 누르면 달력이 열립니다. 직접 타이핑하지 않으셔도 됩니다. <b>실제로 변동점이 발생한 날</b>을 선택하세요.</td></tr>
-          <tr><td><b>2. 등록자 정보</b></td><td>자동</td><td>로그인 계정의 부서 · 이름이 자동으로 채워집니다. 수정할 수 없습니다.</td></tr>
-          <tr><td><b>3. 고객사</b></td><td>필수</td><td>서연이화 / 모비스 / 기타 중 선택</td></tr>
-          <tr><td><b>3. 차종 / 설비 / 라인</b></td><td>필수</td><td>해당 라인을 선택. 목록에 없으면 관리자에게 추가를 요청하세요.</td></tr>
-          <tr><td><b>3. 4M 구분</b></td><td>필수</td><td>사람 / 설비 / 재료 / 방법 중 이번 변동점의 성격에 맞는 것을 선택</td></tr>
-          <tr><td><b>4. 변동점 내용</b></td><td>필수</td><td>무엇이 어떻게 바뀌었는지 한 문장으로. (예: CV1 칵핏 조립 3공정 작업자 교체)</td></tr>
-          <tr><td><b>4. 변경 전 / 변경 후</b></td><td>필수</td><td>바뀌기 전 상태와 바뀐 후 상태를 각각 적습니다. 비교가 되도록 같은 기준으로 쓰는 것이 좋습니다.</td></tr>
-          <tr><td><b>4. 첨부</b></td><td>선택</td><td>변경 전 / 변경 후 각각 첨부할 수 있습니다. 사진이 있으면 점검이 훨씬 빠릅니다.</td></tr>
-          <tr><td><b>5. 점검 후행 담당자</b></td><td>필수</td><td>이 변동점을 확인해줄 사람을 지정합니다. <b>복수 지정 가능</b>합니다.</td></tr>
-          <tr><td><b>6. 문서번호</b></td><td>자동</td><td>SYAT - Change Point - 등록일(YYMMDD) - 당일 순번. 등록할 때 서버에서 자동으로 부여됩니다.</td></tr>
+          <tr><td><b>1. 등록자</b></td><td>자동</td><td>1번 카드 맨 위에 로그인한 사람의 이름 · 부서가 한 줄로 표시됩니다. 수정할 수 없습니다.</td></tr>
+          <tr><td><b>1. 고객사</b></td><td>필수</td><td>서연이화 / 모비스 / 기타 중 선택</td></tr>
+          <tr><td><b>1. 차종 / 설비 / 라인</b></td><td>필수</td><td>해당 라인을 선택. 목록에 없으면 관리자에게 추가를 요청하세요.</td></tr>
+          <tr><td><b>1. 4M 구분</b></td><td>필수</td><td>사람 / 설비 / 재료 / 방법 중 이번 변동점의 성격에 맞는 것을 선택. 라인과 4M을 고르면 <b>최근 90일간 같은 조합 변동점</b>이 몇 건 있었는지 바로 아래에 나옵니다.</td></tr>
+          <tr><td><b>2. 변동점 내용</b></td><td>필수</td><td>무엇이 어떻게 바뀌었는지 한 문장으로. (예: CV1 칵핏 조립 3공정 작업자 교체)</td></tr>
+          <tr><td><b>2. 변경 전 / 변경 후</b></td><td>필수</td><td>바뀌기 전 상태와 바뀐 후 상태를 각각 적습니다. 비교가 되도록 같은 기준으로 쓰는 것이 좋습니다.</td></tr>
+          <tr><td><b>2. 첨부</b></td><td>선택</td><td>변경 전 / 변경 후 각각 첨부할 수 있습니다. 사진이 있으면 점검이 훨씬 빠릅니다.</td></tr>
+          <tr><td><b>3. 점검 후행 담당자</b></td><td>필수</td><td>이 변동점을 확인해줄 사람을 지정합니다. <b>복수 지정 가능</b>합니다.</td></tr>
+          <tr><td><b>문서번호</b></td><td>자동</td><td>SYAT - Change Point - 등록일(YYMMDD) - 당일 순번. 등록할 때 서버에서 자동으로 부여됩니다.</td></tr>
         </tbody>
       </table></div>
     </div>
     <div class="mn-card">
-      <h5>후행담당자 찾는 방법 (5번)</h5>
+      <h5>후행담당자 찾는 방법 (3번)</h5>
       <ul class="mn-list">
         <li><b>부서 필터</b>로 팀을 먼저 고르면, 그 팀 사람만 목록에 남습니다.</li>
         <li><b>이름 검색</b>에 이름 일부를 입력하면 바로 걸러집니다. (부서 필터와 함께 적용됩니다)</li>
@@ -1027,6 +1109,11 @@ function manualSections(){
         <li><b>휴대폰</b>에서는 첨부 칸을 누르면 카메라 또는 앨범을 선택할 수 있습니다. 현장에서 바로 찍어 올리셔도 됩니다.</li>
       </ul>
       <div class="mn-warn">10MB를 넘는 파일은 올라가지 않습니다. 용량이 큰 PPT는 필요한 장만 남겨 저장하거나, PDF로 변환해 올려주세요.</div>
+    </div>
+    <div class="mn-card">
+      <h5>같은 라인 · 같은 4M 최근 이력</h5>
+      <p>라인과 4M 구분을 고르면, 최근 90일 동안 <b>같은 라인에서 같은 종류의 변동점이 몇 건 있었는지</b>가 표시됩니다. 최근 3건은 눌러서 내용을 바로 볼 수 있습니다.</p>
+      <div class="mn-tip">경고가 아니라 참고 정보입니다. 같은 변동점이 자주 반복된다면 근본 원인이 해결되지 않은 것일 수 있으니, 변동점 내용에 "몇 번째 반복인지"나 이전 건과의 차이를 적어주시면 점검하는 사람이 판단하기 쉽습니다.</div>
     </div>
     <div class="mn-card">
       <h5>등록할 때 자주 막히는 부분</h5>
@@ -1079,6 +1166,7 @@ function manualSections(){
         <li>입력 권한은 <b>해당 건의 후행담당자</b> 또는 <b>마스터관리자</b>에게만 있습니다.</li>
         <li>대책이 비어 있는 동안은 <b>NG 대책미입력</b> 상태로 남고, 대시보드에서 계속 집계됩니다.</li>
         <li>내용은 <b>원인 → 조치 → 재발방지</b> 순서로 쓰는 것이 좋습니다. 원인만 적고 끝내지 마세요.</li>
+        <li><b>NG인데 점검확인 첨부가 없으면</b> 저장할 때 한 번 더 묻습니다. <span class="mn-key">첨부 추가하기</span>를 누르면 첨부 칸으로 이동하고, <span class="mn-key">첨부 없이 저장</span>을 누르면 그대로 저장됩니다.</li>
       </ul>
       <div class="mn-warn">NG 건은 고객사 클레임이나 심사 시 가장 먼저 열어보는 기록입니다. 나중에 읽는 사람이 이해할 수 있게 구체적으로 작성해주세요.</div>
     </div>`});
@@ -1112,20 +1200,27 @@ function manualSections(){
     lead:"[대시보드] 탭은 지금 무엇이 밀려 있는지 한 화면에서 보여줍니다.",
     html:`
     <div class="mn-card">
-      <h5>숫자 카드</h5>
+      <h5>맨 위 한 줄 — 지금 조치할 게 있는가</h5>
       <ul class="mn-list">
-        <li><b>전체 / 점검대기 / 점검완료 / NG 발생 / NG 미조치 / 내 미처리</b> 건수가 표시됩니다.</li>
-        <li><b>숫자 카드를 누르면 해당하는 건들의 목록이 바로 요약되어 열립니다.</b> 다른 탭으로 옮겨다니지 않아도 됩니다.</li>
+        <li>처리할 건이 없으면 <b>초록색 한 줄</b>, 있으면 <b>빨간 테두리 박스</b>에 <b>NG 대책 미입력 · 지연 · 내가 점검할 건</b>이 건수와 함께 나옵니다.</li>
+        <li>각 항목을 누르면 해당 건 목록이 바로 열립니다.</li>
+      </ul>
+    </div>
+    <div class="mn-card">
+      <h5>숫자 한 줄</h5>
+      <ul class="mn-list">
+        <li><b>전체 등록 / 점검 대기 / 지연 / NG 발생 / 점검 완료율 / 평균 처리일</b>이 표시됩니다. 숫자 아래 작은 글씨는 비교 기준입니다.</li>
+        <li><b>숫자를 누르면 해당하는 건들의 목록이 바로 요약되어 열립니다.</b> 다른 탭으로 옮겨다니지 않아도 됩니다.</li>
         <li>요약 목록에서 한 줄을 누르면 그 건의 상세 화면으로 이어집니다.</li>
       </ul>
     </div>
     <div class="mn-card">
       <h5>차트</h5>
       <ul class="mn-list">
-        <li><b>월별 추이</b> — 월별 등록 건수와 그중 NG 건수를 함께 보여줍니다. 특정 월에 몰렸는지 확인할 때 봅니다.</li>
+        <li><b>월별 추이</b> — 차트 제목에 이번 달 등록·NG 건수가 바로 나오고, 아래에 지난달 숫자가 함께 표시됩니다.</li>
         <li><b>부서별 · 4M별 · 고객사별 분포</b> — 어디에서 변동점이 많이 나오는지 비교합니다.</li>
       </ul>
-      <div class="mn-tip">관리 목적으로 가장 중요한 숫자는 <b>NG 미조치</b>와 <b>점검대기</b>입니다. 이 두 숫자를 0에 가깝게 유지하는 것이 운영 목표입니다.</div>
+      <div class="mn-tip">관리 목적으로 가장 중요한 숫자는 <b>NG 대책 미입력</b>과 <b>지연</b>입니다. 맨 위 줄이 초록색으로 유지되는 것이 운영 목표입니다.</div>
     </div>`});
 
   secs.push({ id:"feedback", ix:"7", title:"건의사항 · 공지사항",
@@ -1162,7 +1257,7 @@ function manualSections(){
       <div class="mn-card">
         <h5>선택 항목 편집 — 차종 / 라인 · 4M · 후행담당자 제외 부서</h5>
         <ul class="mn-list">
-          <li>[등록] 탭 <b>3번 카드의 <span class="mn-key">항목 편집</span></b> 버튼에서 관리합니다.</li>
+          <li>[등록] 탭 <b>1번 카드(기본 정보)의 <span class="mn-key">항목 편집</span></b> 버튼에서 관리합니다.</li>
           <li><b>차종 / 설비 / 라인</b> — 신규 라인이 생기면 여기서 추가합니다.</li>
           <li><b>4M 구분</b> — 사람 · 설비 · 재료 · 방법. 특별한 사유가 없으면 바꾸지 않는 것이 좋습니다.</li>
           <li><b>후행담당자 제외 부서</b> — 여기에 넣은 부서는 후행담당자 선택 목록에 나타나지 않습니다. (임원 · 인사노무팀 · 기획재무팀 · 현장직 등)</li>
@@ -1242,7 +1337,7 @@ function manualSections(){
       <h5>알아두시면 편한 점</h5>
       <ul class="mn-list">
         <li><b>홈 화면에 추가</b>해두면 앱처럼 바로 열 수 있습니다. (브라우저 공유 · 메뉴 → 홈 화면에 추가)</li>
-        <li>접속 주소는 <b>[QR 코드]</b> 버튼으로 QR을 만들어 공유할 수 있습니다.</li>
+        <li>휴대폰에서는 화면 위쪽이 넓게 쓰이도록 <b>QR 코드 · 비밀번호 · 로그아웃</b>이 오른쪽 위 <span class="mn-key">메뉴 ▾</span> 안에 들어 있습니다.</li>
         <li>목록은 <b>카드 형태</b>로 표시되어 옆으로 밀지 않아도 됩니다.</li>
         <li>사진은 첨부 칸을 눌러 <b>현장에서 바로 촬영</b>해 올릴 수 있습니다.</li>
         <li><b>휴대폰 뒤로가기</b>를 누르면 열려 있는 창만 닫히고 앱은 유지됩니다. 첫 화면에서 뒤로가기를 누르면 안내가 뜨고, <b>한 번 더 누를 때</b> 종료됩니다. 작성 중 내용이 있으면 한 번 더 확인합니다.</li>
@@ -1538,21 +1633,23 @@ document.addEventListener("pointerdown", e => { __pressTarget = e.target; }, tru
 document.addEventListener("mousedown", e => { __pressTarget = e.target; }, true);
 function overlayPressStartedOn(el){ return __pressTarget === el; }
 
-function confirmPopup(title, message, onConfirm){
+/* opts(선택): { okLabel, cancelLabel, onCancel } — 지정하지 않으면 예전과 똑같이 "취소/확인" */
+function confirmPopup(title, message, onConfirm, opts){
+  opts = opts || {};
   const root = document.getElementById("confirm-root");
   root.innerHTML = `
     <div class="modal-overlay" id="cf-overlay">
-      <div class="modal" style="max-width:360px;">
+      <div class="modal" style="max-width:${opts.wide ? 420 : 360}px;">
         <h3>${esc(title)}</h3>
-        <p style="font-size:13.5px;color:var(--text-secondary);">${esc(message)}</p>
+        <p style="font-size:13.5px;color:var(--text-secondary);white-space:pre-line;line-height:1.6;">${esc(message)}</p>
         <div class="modal-actions">
-          <button class="btn" id="cf-cancel">취소</button>
-          <button class="btn btn-primary" id="cf-ok">확인</button>
+          <button class="btn" id="cf-cancel">${esc(opts.cancelLabel || "취소")}</button>
+          <button class="btn btn-primary" id="cf-ok">${esc(opts.okLabel || "확인")}</button>
         </div>
       </div>
     </div>`;
   const close = () => { root.innerHTML = ""; };
-  document.getElementById("cf-cancel").onclick = close;
+  document.getElementById("cf-cancel").onclick = () => { close(); if(typeof opts.onCancel === "function") opts.onCancel(); };
   document.getElementById("cf-overlay").onclick = (e) => { if(e.target.id==="cf-overlay" && overlayPressStartedOn(e.target)) close(); };
   document.getElementById("cf-ok").onclick = () => { close(); onConfirm(); };
 }
@@ -1643,7 +1740,7 @@ function renderRegisterTab(){
   <div class="card" style="background:var(--accent-light, #fdf4e8);border-left:4px solid var(--accent);margin-bottom:12px;cursor:pointer;" id="my-pending-banner">
     <div style="display:flex;align-items:center;justify-content:space-between;">
       <div>
-        <strong style="color:var(--accent);">📋 내 미처리 변동점: ${myPending.length}건</strong>
+        <strong style="color:var(--accent);">내가 점검할 변동점 ${myPending.length}건</strong>
         <div style="font-size:12px;color:var(--text-secondary);margin-top:4px;">${myPending.slice(0,3).map(it => esc(it.id) + " (" + esc(it.content).slice(0,15) + ")").join(" · ")}${myPending.length > 3 ? " ..." : ""}</div>
       </div>
       <span style="color:var(--accent);font-size:13px;white-space:nowrap;">점검하러 가기 →</span>
@@ -1652,31 +1749,13 @@ function renderRegisterTab(){
   return `
   ${pendingBanner}
   <div class="card">
-    <h2><span class="num">1</span>변경일시</h2>
-    <div class="field" style="max-width:220px;">
-      <label class="required">변경일자</label>
-      <input type="text" id="f-date" class="date-input-trigger" readonly placeholder="YYYY-MM-DD" value="">
-    </div>
-  </div>
-
-  <div class="card">
-    <h2><span class="num">2</span>등록자 정보</h2>
-    <div class="row">
+    <h2><span class="num">1</span>기본 정보${isAdmin() ? `<button class="btn btn-sm" id="btn-edit-master" type="button" style="margin-left:auto;">항목 편집</button>` : ""}</h2>
+    <div class="reg-who">등록자 <b>${esc(currentUser.name)}</b> · ${esc(currentUser.dept)}<span class="reg-who-hint">로그인 계정으로 자동 기록됩니다</span></div>
+    <div class="row4">
       <div class="field">
-        <label>부서</label>
-        <input type="text" id="f-regdept" value="${esc(currentUser.dept)}" disabled>
+        <label class="required">변경일자</label>
+        <input type="text" id="f-date" class="date-input-trigger" readonly placeholder="YYYY-MM-DD" value="">
       </div>
-      <div class="field">
-        <label>담당자 성명</label>
-        <input type="text" id="f-regname" value="${esc(currentUser.name)}" disabled>
-      </div>
-    </div>
-    <p class="hint">로그인 계정 정보로 자동 입력됩니다.</p>
-  </div>
-
-  <div class="card">
-    <h2><span class="num">3</span>고객사 · 차종 / 설비 / 라인 · 4M 구분${isAdmin() ? `<button class="btn btn-sm" id="btn-edit-master" type="button" style="margin-left:auto;">항목 편집</button>` : ""}</h2>
-    <div class="row3">
       <div class="field">
         <label class="required">고객사</label>
         <select id="f-customer"><option value="">선택하세요</option>${CUSTOMERS.map(v=>`<option>${esc(v)}</option>`).join("")}</select>
@@ -1690,10 +1769,11 @@ function renderRegisterTab(){
         <select id="f-m4"><option value="">선택하세요</option>${master.m4.map(v=>`<option>${esc(v)}</option>`).join("")}</select>
       </div>
     </div>
+    <div id="f-recent" class="recent-box" style="display:none;" aria-live="polite"></div>
   </div>
 
   <div class="card">
-    <h2><span class="num">4</span>변동점 내용</h2>
+    <h2><span class="num">2</span>변동점 내용</h2>
     <div class="field">
       <label class="required">변동점 내용</label>
       <textarea id="f-content" placeholder="현장에서 발생한 변동점 조치 내용을 입력하세요"></textarea>
@@ -1726,7 +1806,7 @@ function renderRegisterTab(){
   </div>
 
   <div class="card">
-    <h2><span class="num">5</span>점검 후행 담당자</h2>
+    <h2><span class="num">3</span>점검 후행 담당자</h2>
     <div class="row" style="align-items:flex-end;">
       <div class="field">
         <label>부서 필터</label>
@@ -1750,11 +1830,7 @@ function renderRegisterTab(){
     <p class="hint">부서 필터와 이름 검색은 동시에 적용됩니다. Ctrl(또는 Cmd) 키를 누른 채 클릭하면 여러 명을 선택할 수 있습니다.</p>
   </div>
 
-  <div class="card">
-    <h2><span class="num">6</span>문서번호</h2>
-    <span class="docnum-badge" id="docnum-preview">${docnum} (예시)</span>
-    <p class="hint">SYAT(서연오토) - Change Point - 등록일(YYMMDD) - 당일 순번. 실제 번호는 등록 시 서버에서 자동으로 최종 채번됩니다.</p>
-  </div>
+  <div class="reg-submit-meta">문서번호 <span class="docnum-badge" id="docnum-preview">${docnum}</span> <span class="reg-who-hint">예시 번호 · 실제 번호는 등록 시 자동 부여</span></div>
 
   <button class="btn btn-primary btn-block" id="btn-submit-register" style="padding:12px;font-size:14.5px;">등록</button>
   `;
@@ -1762,6 +1838,7 @@ function renderRegisterTab(){
 
 function bindRegisterTab(){
   attachDatePicker("f-date");
+  ["f-line","f-m4"].forEach(id => { const el = document.getElementById(id); if(el) el.addEventListener("change", renderRecentHint); });
   if(isAdmin()) document.getElementById("btn-edit-master").onclick = () => openMasterEditor("lines");
   const banner = document.getElementById("my-pending-banner");
   if(banner) banner.onclick = () => switchTab("inspect");
@@ -1876,8 +1953,94 @@ function canProcessInspection(it){
 }
 /* 상태 배지: 모든 화면에서 같은 규칙으로 표시
  *  점검대기(주황) / 점검완료(초록) / NG 대책완료(연빨강) / NG 대책미입력(진빨강) */
+/* ---------- 지연(미점검 경과) 판정 ----------
+ * 서버의 리마인더 메일(sendReminderEmails)과 '완전히 같은 기준'을 쓴다.
+ *   - 기준 날짜: 변경일이 아니라 등록 시각(createdAt)
+ *   - 기준 일수: 설정의 reminderDays (서버 REMINDER_DAYS와 같은 값)
+ *   - 판정식  : 경과일 >= 기준일수  (서버: diffDays < threshold 이면 미발송)
+ * 변경일을 기준으로 삼으면, 과거에 발생한 변동점을 뒤늦게 등록한 건이
+ * 등록하자마자 지연으로 표시되어 버린다. 그래서 반드시 등록 시각을 쓴다.
+ */
+function delayThresholdDays(){
+  const v = parseInt(master && master.reminderDays, 10);
+  return (isNaN(v) || v < 1) ? DEFAULT_MASTER.reminderDays : v;
+}
+function daysSinceRegistered(it){
+  const t = Number(it.createdAt);
+  if(!t || isNaN(t)) return null;
+  return Math.floor((Date.now() - t) / 86400000);
+}
+function isDelayed(it){
+  if(it.status !== "등록") return false;
+  const d = daysSinceRegistered(it);
+  return d !== null && d >= delayThresholdDays();
+}
+function isNgOpen(it){ return it.inspResult === "NG" && !it.ngAction; }
+/* 목록에서는 문서번호 앞의 공통 접두어(SYAT-Change Point-)를 떼고 뒤쪽만 보여준다.
+   실제로 건을 구분하는 건 '등록일-순번'뿐이라, 접두어가 표에서 가장 넓은 열을 차지하던 문제를 해소. 전체 번호는 마우스를 올리면 보인다. */
+function shortId(id){ return String(id || "").replace(/^SYAT-Change Point-/, ""); }
+
+/* ---------- 같은 라인·같은 4M 최근 이력 (사실 표시만, 경고·차단 없음) ----------
+ * 누적 데이터가 적어 '몇 건 이상이면 위험' 같은 기준을 정할 근거가 아직 없다.
+ * 그래서 판단은 사람에게 맡기고, 등록하는 사람이 최근 같은 변동점이 있었는지만 보이게 한다.
+ * 기간 판단은 변동점이 실제로 일어난 날(변경일)을 쓴다.
+ */
+const RECENT_DAYS = 90;
+function recentSameCombo(line, m4){
+  const cutoff = new Date(); cutoff.setHours(0,0,0,0); cutoff.setDate(cutoff.getDate() - RECENT_DAYS);
+  return items.filter(it => {
+    if(it.line !== line || it.m4 !== m4) return false;
+    const d = new Date(String(it.regDate || "").replace(/\./g, "-") + "T00:00:00");
+    return !isNaN(d) && d >= cutoff;
+  }).sort((a,b) => String(b.regDate).localeCompare(String(a.regDate)));
+}
+function renderRecentHint(){
+  const box = document.getElementById("f-recent");
+  if(!box) return;
+  const line = (document.getElementById("f-line") || {}).value;
+  const m4 = (document.getElementById("f-m4") || {}).value;
+  if(!line || !m4 || !itemsLoaded){ box.style.display = "none"; box.innerHTML = ""; return; }
+  const list = recentSameCombo(line, m4);
+  if(list.length === 0){
+    box.className = "recent-box is-none";
+    box.innerHTML = `최근 ${RECENT_DAYS}일간 <b>${esc(line)} · ${esc(m4)}</b> 변동점은 없었습니다.`;
+  }else{
+    const ng = list.filter(it => it.inspResult === "NG").length;
+    box.className = "recent-box";
+    box.innerHTML = `
+      <div class="recent-head">최근 ${RECENT_DAYS}일간 <b>${esc(line)} · ${esc(m4)}</b> 변동점 <b>${list.length}건</b>${ng ? ` · 그중 NG <b>${ng}건</b>` : ""}<span class="recent-hint">눌러서 내용 확인</span></div>
+      <ul class="recent-list">${list.slice(0,3).map(it => `
+        <li><button type="button" class="recent-item" data-id="${esc(it.id)}">
+          <span class="ri-id">${esc(shortId(it.id))}</span>
+          <span class="ri-date">${esc(fmtDate(it.regDate))}</span>
+          <span class="ri-txt">${esc(it.content)}</span>
+          ${statusBadge(it)}
+        </button></li>`).join("")}</ul>
+      ${list.length > 3 ? `<div class="recent-more">외 ${list.length - 3}건 — [현황] 탭에서 라인으로 검색하면 모두 볼 수 있습니다</div>` : ""}`;
+    box.querySelectorAll(".recent-item").forEach(b => b.onclick = () => openDetailModal(b.dataset.id));
+  }
+  box.style.display = "block";
+}
+/* 후행담당자가 복수일 때 "오양제,이의섭"처럼 쉼표로 저장된다.
+   문자열 전체를 비교하면 복수 지정 건이 아무에게도 '내 건'으로 잡히지 않으므로 나눠서 비교한다. */
+function isMyFollow(it){
+  if(!currentUser) return false;
+  return String(it.followName || "").split(",").map(s => s.trim()).indexOf(currentUser.name) !== -1;
+}
+function rowStateClass(it){
+  if(isNgOpen(it)) return "row-ngopen";
+  if(isDelayed(it)) return "row-delay";
+  return "";
+}
+
 function statusBadge(it){
-  if(it.status === "등록") return `<span class="status-pill st-등록">점검대기</span>`;
+  if(it.status === "등록"){
+    if(isDelayed(it)){
+      const d = daysSinceRegistered(it);
+      return `<span class="status-pill st-delay" title="등록 후 ${d}일 경과 (기준 ${delayThresholdDays()}일)">지연 ${d}일</span>`;
+    }
+    return `<span class="status-pill st-등록">점검대기</span>`;
+  }
   if(it.inspResult === "NG"){
     return it.ngAction
       ? `<span class="status-pill st-ng">NG 대책완료</span>`
@@ -1895,9 +2058,9 @@ function inspResultDisplay(it){
 /* 모바일용 카드 목록 (PC는 기존 표 그대로 사용) */
 function mobileCardList(list, mode){
   return `<div class="mob-only">${list.map(it => `
-    <div class="mcard" data-id="${esc(it.id)}">
+    <div class="mcard ${isNgOpen(it) ? "mc-ngopen" : (isDelayed(it) ? "mc-delay" : "")}" data-id="${esc(it.id)}">
       <div class="mcard-top">
-        <span class="mcard-id">${esc(it.id)}</span>
+        <span class="mcard-id" title="${esc(it.id)}">${esc(shortId(it.id))}</span>
         ${statusBadge(it)}
       </div>
       <div class="mcard-title">${esc(it.content || "")}</div>
@@ -1923,11 +2086,11 @@ function renderInspectTab(){
     ${mobileCardList(pending, "pending")}
     <div class="desk-only" style="overflow-x:auto;">
     <table style="min-width:700px;">
-      <thead><tr><th style="width:200px;">문서번호</th><th>변경일</th><th>차종/라인</th><th>4M</th><th>변경내용</th><th>등록자</th><th>점검담당자</th><th></th></tr></thead>
+      <thead><tr><th style="width:96px;">문서번호</th><th>변경일</th><th>차종/라인</th><th>4M</th><th>변경내용</th><th>등록자</th><th>점검담당자</th><th></th></tr></thead>
       <tbody>
         ${pending.map(it => `
-          <tr class="row-click" data-id="${esc(it.id)}">
-            <td style="font-family:var(--mono);font-size:11.5px;white-space:nowrap;">${esc(it.id)}</td>
+          <tr class="row-click ${rowStateClass(it)}" data-id="${esc(it.id)}">
+            <td style="font-family:var(--mono);font-size:12px;white-space:nowrap;" title="${esc(it.id)}">${esc(shortId(it.id))}</td>
             <td style="white-space:nowrap;">${esc(fmtDate(it.regDate))}</td>
             <td style="white-space:nowrap;">${esc(it.line)}</td>
             <td>${esc(it.m4)}</td>
@@ -1946,11 +2109,11 @@ function renderInspectTab(){
     ${mobileCardList(done, "done")}
     <div class="desk-only" style="overflow-x:auto;">
     <table style="min-width:800px;">
-      <thead><tr><th style="width:200px;">문서번호</th><th>변경일</th><th>차종/라인</th><th>고객사</th><th>변경내용</th><th>조치결과</th><th>점검일</th><th>점검자</th><th>NG대책</th></tr></thead>
+      <thead><tr><th style="width:96px;">문서번호</th><th>변경일</th><th>차종/라인</th><th>고객사</th><th>변경내용</th><th>조치결과</th><th>점검일</th><th>점검자</th><th>NG대책</th></tr></thead>
       <tbody>
         ${done.map(it => `
-          <tr class="row-click" data-id="${esc(it.id)}">
-            <td style="font-family:var(--mono);font-size:11.5px;white-space:nowrap;">${esc(it.id)}</td>
+          <tr class="row-click ${rowStateClass(it)}" data-id="${esc(it.id)}">
+            <td style="font-family:var(--mono);font-size:12px;white-space:nowrap;" title="${esc(it.id)}">${esc(shortId(it.id))}</td>
             <td style="white-space:nowrap;">${esc(fmtDate(it.regDate))}</td>
             <td style="white-space:nowrap;">${esc(it.line)}</td>
             <td style="white-space:nowrap;">${esc(it.customer)}</td>
@@ -2104,7 +2267,23 @@ function openInspectModal(id){
     if(!date || !result || !firstInspResult || (result==="기타" && !etc)){ showToast("필수 항목(*)을 입력해주세요. (초품검사결과 포함)"); return; }
     if(result==="NG" && !ngAction){ showToast("NG 선택 시 재발방지 대책/코멘트를 입력해주세요."); return; }
     if(it.regDate && new Date(date) < new Date(it.regDate)){ showToast("점검일자는 변경일자(" + it.regDate + ")보다 빠를 수 없습니다."); return; }
-    confirmPopup("점검 저장 확인", "점검 결과를 저장하시겠습니까?", async () => {
+    // NG인데 점검 근거(사진·성적서)가 없으면 저장 전에 한 번 알린다. 막지는 않는다.
+    // 별도 창을 하나 더 띄우면 확인을 두 번 하게 되므로, 기존 저장 확인창의 문구만 바꾼다.
+    const noEvidence = (result === "NG" && inspImages.length === 0);
+    const cfTitle = noEvidence ? "근거 첨부 없이 NG 저장" : "점검 저장 확인";
+    const cfMsg = noEvidence
+      ? "점검확인 첨부(사진·성적서)가 없습니다.\nNG 건은 고객사 심사나 클레임 때 가장 먼저 확인하는 기록이라, 근거 자료를 함께 남겨두시길 권합니다.\n\n그래도 첨부 없이 저장할까요?"
+      : "점검 결과를 저장하시겠습니까?";
+    const cfOpts = noEvidence ? {
+      wide: true,
+      okLabel: "첨부 없이 저장",
+      cancelLabel: "첨부 추가하기",
+      onCancel: () => {
+        const box = document.getElementById("i-box");
+        if(box){ box.scrollIntoView({ behavior: "smooth", block: "center" }); box.classList.add("pulse-hint"); setTimeout(() => box.classList.remove("pulse-hint"), 1800); }
+      }
+    } : undefined;
+    confirmPopup(cfTitle, cfMsg, async () => {
       showLoading("점검 결과를 저장하고 있습니다...");
       const payload = {
         id: it.id, inspDate: date, inspResult: result, inspResultEtc: etc,
@@ -2125,7 +2304,7 @@ function openInspectModal(id){
       close();
       showToast("점검 결과가 저장되었습니다.");
       render();
-    });
+    }, cfOpts);
   };
 }
 
@@ -2177,23 +2356,23 @@ function statusTableHtml(list){
     `<th style="width:${width};white-space:nowrap;cursor:pointer;user-select:none;" data-sort="${key}" title="클릭하여 정렬">${label}${sortArrow(key)}</th>`;
   return `
     ${mobileCardList(list, "status")}
-    <table class="desk-only" style="table-layout:fixed;width:100%;min-width:1020px;">
+    <table class="desk-only" style="table-layout:fixed;width:100%;min-width:900px;">
       <thead><tr>
-        ${th("id", "문서번호", "200px")}
+        ${th("id", "문서번호", "96px")}
         ${th("regDate", "변경일", "92px")}
         ${th("line", "차종/라인", "110px")}
-        ${th("customer", "고객사", "80px")}
-        ${th("m4", "4M", "56px")}
-        <th style="width:180px;">변경내용</th>
-        ${th("regName", "등록자", "76px")}
-        ${th("followName", "점검담당자", "96px")}
-        ${th("status", "상태", "118px")}
-        <th style="width:86px;"></th>
+        ${th("customer", "고객사", "76px")}
+        ${th("m4", "4M", "52px")}
+        <th>변경내용</th>
+        ${th("regName", "등록자", "72px")}
+        ${th("followName", "점검담당자", "92px")}
+        ${th("status", "상태", "112px")}
+        <th style="width:84px;"></th>
       </tr></thead>
       <tbody>
         ${list.map(it => `
-          <tr class="row-click" data-id="${esc(it.id)}">
-            <td style="font-family:var(--mono);font-size:11.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${esc(it.id)}">${esc(it.id)}</td>
+          <tr class="row-click ${rowStateClass(it)}" data-id="${esc(it.id)}">
+            <td style="font-family:var(--mono);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${esc(it.id)}">${esc(shortId(it.id))}</td>
             <td style="white-space:nowrap;">${esc(fmtDate(it.regDate))}</td>
             <td style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${esc(it.line)}">${esc(it.line)}</td>
             <td style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(it.customer)}</td>
@@ -2565,7 +2744,8 @@ function dashboardFilterItems(key){
     case "done": return items.filter(it => it.status === "점검완료");
     case "ng": return items.filter(it => it.inspResult === "NG");
     case "ngNoAction": return items.filter(it => it.inspResult === "NG" && !it.ngAction);
-    case "myPending": return items.filter(it => it.status === "등록" && it.followName === currentUser.name);
+    case "myPending": return items.filter(it => it.status === "등록" && isMyFollow(it));
+    case "delayed": return items.filter(it => isDelayed(it));
     default: return [];
   }
 }
@@ -2607,8 +2787,10 @@ function renderMonthlyChart(months, byMonth){
   const plotW = W - padL - padR, plotH = H - padT - padB;
   const maxV = Math.max(...months.map(m => byMonth[m].total), 1);
   // 눈금은 1/2/5 배수로 올림해 읽기 좋은 값으로
-  const niceMax = (v => { const p = Math.pow(10, Math.floor(Math.log10(v))); const n = v/p; return (n<=1?1:n<=2?2:n<=5?5:10)*p; })(maxV);
-  const ticks = [0, niceMax/2, niceMax];
+  // 눈금 간격은 1/2/5 배수, 칸 수는 4칸 이하 → 최대값 22면 0·10·20·30 (예전엔 0·25·50으로 절반이 빈 공간)
+  const step = Math.max(1, (v => { const raw = v/4; const p = Math.pow(10, Math.floor(Math.log10(raw))); const n = raw/p; return (n<=1?1:n<=2?2:n<=5?5:10)*p; })(maxV));
+  const niceMax = Math.max(step, Math.ceil(maxV/step)*step);
+  const ticks = []; for(let t = 0; t <= niceMax + 1e-9; t += step) ticks.push(Math.round(t));
   const barW = plotW / months.length;
   const bw = Math.min(barW * 0.5, 30);
 
@@ -2665,10 +2847,12 @@ function renderDashboardTab(){
   const pending = items.filter(it => it.status === "등록").length;
   const done = items.filter(it => it.status === "점검완료").length;
   const ng = items.filter(it => it.inspResult === "NG").length;
-  const ngNoAction = items.filter(it => it.inspResult === "NG" && !it.ngAction).length;
-  const myPending = items.filter(it => it.status === "등록" && it.followName === currentUser.name).length;
+  const ngNoAction = items.filter(it => isNgOpen(it)).length;
+  const delayed = items.filter(it => isDelayed(it)).length;
+  const myPending = items.filter(it => it.status === "등록" && isMyFollow(it)).length;
+  const th = delayThresholdDays();
 
-  // 월별 집계
+  // 월별 집계 (변경일 기준)
   const byMonth = {};
   items.forEach(it => {
     const m = String(it.regDate||"").slice(0,7);
@@ -2680,78 +2864,77 @@ function renderDashboardTab(){
   });
   const months = Object.keys(byMonth).sort().slice(-6);
 
-  // 4M 집계
+  // 이번 달 / 지난달 비교 (차트 제목을 '결론'으로 쓰기 위함)
+  const now = new Date();
+  const ym = d => d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0");
+  const thisM = ym(now);
+  const lastM = ym(new Date(now.getFullYear(), now.getMonth()-1, 1));
+  const tm = byMonth[thisM] || { total:0, ng:0 };
+  const lm = byMonth[lastM] || { total:0, ng:0 };
+
+  // 4M · 고객사 분포
   const byM4 = {};
   items.forEach(it => { const k = it.m4||"미분류"; byM4[k] = (byM4[k]||0)+1; });
-
-  // 고객사 집계
   const byCust = {};
   items.forEach(it => { const k = it.customer||"미분류"; byCust[k] = (byCust[k]||0)+1; });
 
-  // 처리 소요일 평균 계산
-  const dones = items.filter(it => it.status==="점검완료" && it.regDate && it.inspDate);
-  const avgDays = dones.length > 0 ? Math.round(dones.reduce((s, it) => {
-    const diff = (new Date(it.inspDate) - new Date(it.regDate)) / 86400000;
-    return s + (isNaN(diff) ? 0 : Math.abs(diff));
+  // 평균 처리일: 지연 판정과 같은 기준(등록 → 점검)으로 계산
+  const localDate = t => { const d = new Date(Number(t)); return new Date(d.getFullYear(), d.getMonth(), d.getDate()); };
+  const dones = items.filter(it => it.status==="점검완료" && it.createdAt && it.inspDate);
+  const avgDays = dones.length > 0 ? (dones.reduce((s, it) => {
+    const insp = new Date(String(it.inspDate).replace(/\./g,"-") + "T00:00:00");
+    const diff = Math.round((insp - localDate(it.createdAt)) / 86400000);
+    return s + (isNaN(diff) ? 0 : Math.max(0, diff));
   }, 0) / dones.length) : 0;
+  const avgTxt = dones.length > 0 ? (Math.round(avgDays*10)/10) : "-";
 
-  const maxMonthTotal = Math.max(...months.map(m => byMonth[m].total), 1); // (차트 내부에서 자체 계산하므로 참고용)
+  // ── 최상단: 지금 조치가 필요한가 ──
+  const actions = [];
+  if(ngNoAction > 0) actions.push(`<button type="button" class="dash-chip c-ng" onclick="openDashboardSummary('ngNoAction','NG 대책 미입력')"><b>${ngNoAction}</b>건 NG 대책 미입력</button>`);
+  if(delayed > 0)    actions.push(`<button type="button" class="dash-chip c-delay" onclick="openDashboardSummary('delayed','지연')"><b>${delayed}</b>건 지연 <span class="dash-chip-sub">등록 후 ${th}일 초과</span></button>`);
+  if(myPending > 0)  actions.push(`<button type="button" class="dash-chip c-mine" onclick="openDashboardSummary('myPending','내 점검 대기')"><b>${myPending}</b>건 내가 점검할 건</button>`);
+
+  const actionBar = actions.length > 0
+    ? `<div class="dash-action is-alert">
+         <div class="dash-action-title">조치가 필요한 변동점이 있습니다</div>
+         <div class="dash-action-items">${actions.join("")}</div>
+       </div>`
+    : `<div class="dash-action is-ok">현재 조치가 필요한 변동점이 없습니다 <span class="dash-ok-sub">NG 대책 미입력 0 · 지연 0 · 내 점검 대기 0</span></div>`;
+
+  const strip = [
+    ["전체 등록", total, "all", "", `이번 달 ${tm.total}건`],
+    ["점검 대기", pending, "pending", pending > 0 ? "v-warn" : "", ""],
+    ["지연", delayed, "delayed", delayed > 0 ? "v-delay" : "", `등록 후 ${th}일 초과`],
+    ["NG 발생", ng, "ng", ng > 0 ? "v-ng" : "", ngNoAction > 0 ? `대책 미입력 ${ngNoAction}` : (ng > 0 ? "대책 모두 입력" : "")],
+    ["점검 완료율", (total > 0 ? Math.round(done/total*100) : 0) + "<small>%</small>", "", "", `${done} / ${total}건`],
+    ["평균 처리일", avgTxt + (avgTxt === "-" ? "" : "<small>일</small>"), "", "", "등록 → 점검"],
+  ];
 
   content.innerHTML = `
-  <div class="dash-hero">
-    <div class="dash-hero-main" onclick="openDashboardSummary('myPending','내 미처리')">
-      <div class="dash-hero-label">내가 점검해야 할 건</div>
-      <div class="dash-hero-value" style="color:${myPending>0?'var(--accent)':'var(--text-muted)'}">${myPending}</div>
-      <div class="dash-hero-sub">${myPending>0 ? "눌러서 목록 확인" : "모두 처리했습니다"}</div>
-    </div>
-    <div class="dash-hero-side">
-      <div class="dash-mini ${ngNoAction>0?'is-alert':''}" onclick="openDashboardSummary('ngNoAction','NG 미조치')">
-        <div class="dash-mini-value" style="color:${ngNoAction>0?'var(--danger)':'var(--text-muted)'}">${ngNoAction}</div>
-        <div class="dash-mini-label">NG 미조치</div>
-      </div>
-      <div class="dash-mini" onclick="openDashboardSummary('pending','점검 대기')">
-        <div class="dash-mini-value" style="color:${pending>0?'var(--warn)':'var(--text-muted)'}">${pending}</div>
-        <div class="dash-mini-label">점검 대기</div>
-      </div>
-    </div>
-  </div>
+  ${actionBar}
 
   <div class="dash-strip">
-    ${[
-      ["전체 등록", total, "all"],
-      ["점검 완료", done, "done"],
-      ["NG 발생", ng, "ng"],
-    ].map(([label, val, key]) => `
-      <div class="dash-strip-item" onclick="openDashboardSummary('${key}','${esc(label)}')">
-        <span class="dash-strip-value">${val}</span>
+    ${strip.map(([label, val, key, cls, sub]) => `
+      <div class="dash-strip-item" ${key ? `onclick="openDashboardSummary('${key}','${esc(label)}')"` : 'style="cursor:default;"'}>
         <span class="dash-strip-label">${label}</span>
+        <span class="dash-strip-value ${cls}">${val}</span>
+        <span class="dash-strip-sub">${sub || "&nbsp;"}</span>
       </div>`).join("")}
-    <div class="dash-strip-item" style="cursor:default;">
-      <span class="dash-strip-value">${total > 0 ? Math.round(done/total*100) : 0}<span style="font-size:14px;">%</span></span>
-      <span class="dash-strip-label">점검 완료율</span>
-    </div>
-    <div class="dash-strip-item" style="cursor:default;">
-      <span class="dash-strip-value">${avgDays}<span style="font-size:14px;">일</span></span>
-      <span class="dash-strip-label">평균 소요일</span>
-    </div>
   </div>
-
-  ${ngNoAction > 0 ? `
-  <div class="dash-alert" onclick="openDashboardSummary('ngNoAction','NG 미조치')">
-    NG 판정 후 재발방지 대책이 아직 입력되지 않은 건이 ${ngNoAction}건 있습니다. 눌러서 확인하세요.
-  </div>` : ""}
 
   <div class="dash-grid">
     <div class="card" style="margin-bottom:0;">
-      <h2 style="margin-bottom:10px;">월별 추이<span style="font-size:11.5px;font-weight:400;color:var(--text-muted);margin-left:8px;">최근 6개월</span></h2>
+      <h2 class="dash-chart-title">이번 달 등록 ${tm.total}건 · NG ${tm.ng}건</h2>
+      <div class="dash-chart-sub">지난달 등록 ${lm.total}건 · NG ${lm.ng}건 · 최근 6개월, 변경일 기준</div>
       ${renderMonthlyChart(months, byMonth)}
     </div>
     <div class="card" style="margin-bottom:0;">
-      <h2 style="margin-bottom:12px;">구분별 분포</h2>
-      <div style="font-size:11.5px;font-weight:700;color:var(--text-secondary);margin-bottom:8px;">4M 구분</div>
-      ${renderBreakdownBars(byM4, "var(--primary)")}
-      <div style="font-size:11.5px;font-weight:700;color:var(--text-secondary);margin:14px 0 8px;">고객사</div>
-      ${renderBreakdownBars(byCust, "var(--accent)")}
+      <h2 class="dash-chart-title">어디서 변동점이 많이 나오나</h2>
+      <div class="dash-chart-sub">전체 ${total}건 기준 · 많은 순</div>
+      <div class="dash-dist-label">4M 구분</div>
+      ${renderBreakdownBars(byM4, "#6F7F96")}
+      <div class="dash-dist-label" style="margin-top:14px;">고객사</div>
+      ${renderBreakdownBars(byCust, "#6F7F96")}
     </div>
   </div>`;
 }
@@ -2963,16 +3146,40 @@ function initBackButtonHandling(){
 /* ---------- 사용자 정보 칩 / 헤더 ---------- */
 function renderUserChip(){
   const el = document.getElementById("user-chip");
+  // 모바일에서는 QR코드·비밀번호·로그아웃을 '메뉴' 하나로 접어 헤더 높이를 줄인다 (PC는 그대로 펼쳐 보임)
   el.innerHTML = `
     <span class="uc-name">${esc(currentUser.name)} (${esc(currentUser.dept)})</span>
     <span class="uc-role">${esc(currentUser.role)}</span>
-    <button id="btn-mypw" type="button" title="비밀번호 변경">비밀번호</button>
-    <button id="btn-logout" type="button">로그아웃</button>
+    <button id="btn-umenu" type="button" aria-expanded="false" aria-haspopup="true">메뉴 ▾</button>
+    <span class="uc-more" id="uc-more">
+      <span class="uc-more-name">${esc(currentUser.name)} · ${esc(currentUser.dept)}</span>
+      <button id="btn-qr-m" class="uc-qr" type="button">QR 코드</button>
+      <button id="btn-mypw" type="button" title="비밀번호 변경">비밀번호</button>
+      <button id="btn-logout" type="button">로그아웃</button>
+    </span>
   `;
+  const umenu = document.getElementById("btn-umenu");
+  umenu.onclick = (e) => {
+    e.stopPropagation();
+    const open = el.classList.toggle("open");
+    umenu.setAttribute("aria-expanded", open ? "true" : "false");
+  };
+  document.getElementById("btn-qr-m").onclick = () => { el.classList.remove("open"); openQrModal(); };
+  if(!window.__ucOutsideBound){
+    window.__ucOutsideBound = true;
+    document.addEventListener("click", (e) => {
+      const chip = document.getElementById("user-chip");
+      if(chip && chip.classList.contains("open") && !chip.contains(e.target)){
+        chip.classList.remove("open");
+        const b = document.getElementById("btn-umenu"); if(b) b.setAttribute("aria-expanded","false");
+      }
+    });
+  }
   document.getElementById("btn-logout").onclick = () => {
+    el.classList.remove("open");
     confirmPopup("로그아웃", "로그아웃 하시겠습니까?", doLogout);
   };
-  document.getElementById("btn-mypw").onclick = openMyPasswordModal;
+  document.getElementById("btn-mypw").onclick = () => { el.classList.remove("open"); openMyPasswordModal(); };
 }
 function openMyPasswordModal(){
   const root = document.getElementById("modal-root");
@@ -3014,7 +3221,7 @@ function openMyPasswordModal(){
 }
 function renderMainTabs(){
   const wrap = document.getElementById("main-tabs");
-  const myPending = items.filter(it => it.status === "등록" && it.followName === currentUser.name).length;
+  const myPending = items.filter(it => it.status === "등록" && isMyFollow(it)).length;
   const badge = myPending > 0 ? `<span style="display:inline-block;background:var(--danger);color:#fff;border-radius:10px;font-size:10px;font-weight:700;padding:1px 6px;margin-left:5px;">${myPending}</span>` : "";
   let html = `
     <button class="tab-btn active" data-tab="register">등록</button>
