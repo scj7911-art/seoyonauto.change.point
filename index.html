@@ -177,6 +177,27 @@
   .dash-strip-value.v-ng{color:var(--danger);}
   .dash-chart-title{margin:0 0 4px;font-size:15px;}
   .dash-chart-sub{font-size:11.5px;color:var(--text-muted);margin-bottom:12px;}
+  .dash-action-note{font-size:11.5px;font-weight:400;color:var(--text-muted);margin-left:8px;}
+  .dash-period{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px;}
+  .seg{display:inline-flex;background:var(--card);border:1px solid var(--border-strong);border-radius:8px;padding:3px;gap:2px;flex-wrap:wrap;}
+  .seg-btn{border:none;background:none;padding:7px 14px;min-height:36px;border-radius:6px;font-size:13px;font-weight:600;color:var(--text-secondary);cursor:pointer;font-family:var(--font);}
+  .seg-btn:hover{background:var(--bg);color:var(--text);}
+  .seg-btn.on{background:var(--primary);color:#fff;}
+  .dash-period-text{font-size:12.5px;color:var(--text-secondary);font-variant-numeric:tabular-nums;}
+  .dash-period-text b{color:var(--text);}
+  .asg-wrap{overflow-x:auto;}
+  .asg-table{width:100%;border-collapse:collapse;font-size:13px;}
+  .asg-table th{font-size:11.5px;font-weight:700;color:var(--text-secondary);text-align:left;padding:8px 10px;border-bottom:1px solid var(--border-strong);background:var(--bg);white-space:nowrap;}
+  .asg-table td{padding:9px 10px;border-bottom:1px solid var(--border);}
+  .asg-table .num{text-align:right;font-variant-numeric:tabular-nums;width:92px;}
+  .asg-table td.num{font-size:15px;font-weight:700;}
+  .asg-table td.num small{font-size:11px;font-weight:600;margin-left:1px;}
+  .asg-dept{font-size:11.5px;color:var(--text-muted);margin-left:8px;}
+  .asg-zero{color:#C4CAD2;font-weight:600;}
+  .asg-table .v-warn{color:var(--warn);} .asg-table .v-delay{color:#8A3B1E;} .asg-table .v-ng{color:var(--danger);}
+  .asg-row{cursor:pointer;}
+  .asg-row:hover td{background:var(--bg);}
+  .mo-br{display:none;}
   .dash-dist-label{font-size:11.5px;font-weight:700;color:var(--text-secondary);margin-bottom:8px;}
   @media (max-width: 720px){
     .dash-hero{grid-template-columns:1fr;}
@@ -355,6 +376,15 @@
     .row, .row3, .row4{grid-template-columns:1fr;gap:10px;margin-bottom:10px;}
     .reg-who-hint{display:block;margin-left:0;width:100%;}
     .ri-date, .recent-hint{display:none;}
+    .asg-table .hide-mo{display:none;}
+    .asg-table .num{width:auto;padding-left:6px;padding-right:6px;}
+    .asg-table td{padding:9px 6px;}
+    .asg-table th{padding:8px 6px;white-space:normal;line-height:1.3;}
+    .asg-dept{display:block;margin-left:0;}
+    .mo-br{display:inline;}
+    .dash-action-note{display:block;margin-left:0;margin-top:2px;}
+    .seg{width:100%;}
+    .seg-btn{flex:1 1 auto;padding:7px 8px;font-size:12.5px;}
 
     input[type=text], input[type=date], input[type=password], select, textarea{font-size:16px;}
 
@@ -1207,6 +1237,23 @@ function manualSections(){
       </ul>
     </div>
     <div class="mn-card">
+      <h5>기간 선택</h5>
+      <ul class="mn-list">
+        <li><b>이번 주 / 이번 달 / 지난 달 / 최근 3개월 / 전체</b> 중에서 고르면 숫자 한 줄, 담당자별 처리 현황, 분포가 그 기간 기준으로 바뀝니다.</li>
+        <li>기간은 <b>변경일</b>(변동점이 실제로 발생한 날) 기준입니다. 주간·월간 보고의 "발생 건수"와 같은 기준입니다. 이번 주는 월요일부터입니다.</li>
+        <li>마지막으로 고른 기간은 기억되어 다음에 열어도 그대로 나옵니다.</li>
+      </ul>
+      <div class="mn-tip">맨 위 <b>조치 필요 줄은 기간과 관계없이 항상 지금 미처리 전체</b>를 보여줍니다. "이번 주"를 골라도 몇 주 전부터 밀린 지연 건이 사라지지 않게 하기 위해서입니다.</div>
+    </div>
+    <div class="mn-card">
+      <h5>담당자별 처리 현황</h5>
+      <ul class="mn-list">
+        <li>후행담당자마다 <b>미처리 · 그중 지연 · NG 대책 미입력 · 완료 · 평균 처리일</b>을 보여줍니다. 지연이 많은 사람이 위에 옵니다.</li>
+        <li>줄을 누르면 그 담당자에게 배정된 건 목록이 열립니다. 문제가 있는 건이 위에 나옵니다.</li>
+        <li>담당자가 여러 명인 건은 <b>각 담당자에게 모두</b> 집계됩니다. 그래서 담당자별 숫자를 더하면 전체 건수보다 클 수 있습니다.</li>
+      </ul>
+    </div>
+    <div class="mn-card">
       <h5>숫자 한 줄</h5>
       <ul class="mn-list">
         <li><b>전체 등록 / 점검 대기 / 지연 / NG 발생 / 점검 완료율 / 평균 처리일</b>이 표시됩니다. 숫자 아래 작은 글씨는 비교 기준입니다.</li>
@@ -2025,7 +2072,7 @@ function renderRecentHint(){
    문자열 전체를 비교하면 복수 지정 건이 아무에게도 '내 건'으로 잡히지 않으므로 나눠서 비교한다. */
 function isMyFollow(it){
   if(!currentUser) return false;
-  return String(it.followName || "").split(",").map(s => s.trim()).indexOf(currentUser.name) !== -1;
+  return followNames(it).indexOf(currentUser.name) !== -1;
 }
 function rowStateClass(it){
   if(isNgOpen(it)) return "row-ngopen";
@@ -2737,20 +2784,29 @@ function downloadExcel(){
 
 /* ---------- B2: 대시보드 ---------- */
 /* 대시보드 카드 클릭 시: 탭 이동 없이 그 자리에서 요약 팝업으로 목록 확인 */
-function dashboardFilterItems(key){
+function dashboardFilterItems(key, scope){
+  const src = scope || items;
+  if(key.indexOf("person:") === 0){
+    const name = key.slice(7);
+    // 그 담당자 건: 문제 있는 건(NG 대책 미입력 → 지연 → 대기)이 위로
+    const rank = it => isNgOpen(it) ? 0 : (isDelayed(it) ? 1 : (it.status === "등록" ? 2 : 3));
+    return src.filter(it => followNames(it).indexOf(name) !== -1).sort((a,b) => rank(a) - rank(b) || (b.createdAt||0) - (a.createdAt||0));
+  }
   switch(key){
-    case "all": return items;
-    case "pending": return items.filter(it => it.status === "등록");
-    case "done": return items.filter(it => it.status === "점검완료");
-    case "ng": return items.filter(it => it.inspResult === "NG");
-    case "ngNoAction": return items.filter(it => it.inspResult === "NG" && !it.ngAction);
-    case "myPending": return items.filter(it => it.status === "등록" && isMyFollow(it));
-    case "delayed": return items.filter(it => isDelayed(it));
+    case "all": return src;
+    case "pending": return src.filter(it => it.status === "등록");
+    case "done": return src.filter(it => it.status === "점검완료");
+    case "ng": return src.filter(it => it.inspResult === "NG");
+    case "ngNoAction": return src.filter(it => isNgOpen(it));
+    case "myPending": return src.filter(it => it.status === "등록" && isMyFollow(it));
+    case "delayed": return src.filter(it => isDelayed(it));
     default: return [];
   }
 }
-function openDashboardSummary(key, label){
-  const list = dashboardFilterItems(key);
+/* usePeriod=true 이면 대시보드에서 고른 기간 안의 건만, 아니면 전체 */
+function openDashboardSummary(key, label, usePeriod){
+  const list = dashboardFilterItems(key, usePeriod ? dashScopedItems : items);
+  if(usePeriod && dashPeriod !== "all") label = label + " · " + periodName(dashPeriod);
   const root = document.getElementById("modal-root");
   root.innerHTML = `
     <div class="modal-overlay" id="dashsum-overlay">
@@ -2760,7 +2816,7 @@ function openDashboardSummary(key, label){
           ${list.length === 0 ? `<div class="empty">해당하는 변동점이 없습니다.</div>` : list.map(it => `
             <div class="dashsum-row" data-id="${esc(it.id)}" style="padding:10px 8px;border-bottom:1px solid var(--border);cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:8px;">
               <div style="flex:1;min-width:0;">
-                <div style="font-size:11.5px;color:var(--text-muted);font-family:var(--mono);">${esc(it.id)}</div>
+                <div style="font-size:11.5px;color:var(--text-muted);font-family:var(--mono);" title="${esc(it.id)}">${esc(shortId(it.id))}</div>
                 <div style="font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(it.content || "")}</div>
                 <div style="font-size:11px;color:var(--text-secondary);margin-top:2px;">${esc(it.regDate||"")} · ${esc(it.line||"")} · ${esc(it.regName||"")}</div>
               </div>
@@ -2786,7 +2842,6 @@ function renderMonthlyChart(months, byMonth){
   const W = 320, H = 180, padL = 30, padR = 10, padT = 18, padB = 26;
   const plotW = W - padL - padR, plotH = H - padT - padB;
   const maxV = Math.max(...months.map(m => byMonth[m].total), 1);
-  // 눈금은 1/2/5 배수로 올림해 읽기 좋은 값으로
   // 눈금 간격은 1/2/5 배수, 칸 수는 4칸 이하 → 최대값 22면 0·10·20·30 (예전엔 0·25·50으로 절반이 빈 공간)
   const step = Math.max(1, (v => { const raw = v/4; const p = Math.pow(10, Math.floor(Math.log10(raw))); const n = raw/p; return (n<=1?1:n<=2?2:n<=5?5:10)*p; })(maxV));
   const niceMax = Math.max(step, Math.ceil(maxV/step)*step);
@@ -2841,102 +2896,209 @@ function renderBreakdownBars(obj, barColor){
     </div>`).join("");
 }
 
+/* ---------- 대시보드 기간 선택 ----------
+ * 기간은 '변경일(변동점이 실제로 발생한 날)' 기준으로 거른다. 주간·월간 보고의 "발생 건수"와 같은 기준.
+ * 단, 맨 위 "조치 필요" 줄은 기간과 무관하게 항상 '지금 미처리 전체'를 보여준다.
+ * (기간을 '이번 주'로 바꿨다고 3주째 밀린 지연 건이 화면에서 사라지면 안 되기 때문)
+ */
+const DASH_PERIODS = [["week","이번 주"],["month","이번 달"],["lastmonth","지난 달"],["3m","최근 3개월"],["all","전체"]];
+let dashPeriod = (function(){
+  try{ const v = localStorage.getItem("sy_dash_period"); return DASH_PERIODS.some(p => p[0] === v) ? v : "all"; }
+  catch(e){ return "all"; }
+})();
+let dashScopedItems = [];
+function ymdLocal(d){ return d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0"); }
+function periodName(key){ const p = DASH_PERIODS.find(x => x[0] === key); return p ? p[1] : "전체"; }
+function periodRange(key){
+  const today = new Date(); today.setHours(0,0,0,0);
+  const tomorrow = new Date(today); tomorrow.setDate(tomorrow.getDate() + 1);
+  const span = (from, to) => ({ from, to, text: ymdLocal(from) + " ~ " + ymdLocal(new Date(to.getTime() - 86400000)) });
+  if(key === "week"){ const s = new Date(today); s.setDate(s.getDate() - ((s.getDay() + 6) % 7)); return span(s, tomorrow); } // 월요일 시작
+  if(key === "month"){ return span(new Date(today.getFullYear(), today.getMonth(), 1), tomorrow); }
+  if(key === "lastmonth"){ return span(new Date(today.getFullYear(), today.getMonth() - 1, 1), new Date(today.getFullYear(), today.getMonth(), 1)); }
+  if(key === "3m"){ return span(new Date(today.getFullYear(), today.getMonth() - 2, 1), tomorrow); } // 이번 달 포함 3개월
+  return { from: null, to: null, text: "전체 기간" };
+}
+function inPeriod(it, range){
+  if(!range.from) return true;
+  const d = new Date(String(it.regDate || "").replace(/\./g, "-") + "T00:00:00");
+  return !isNaN(d) && d >= range.from && d < range.to;
+}
+function setDashPeriod(key){
+  dashPeriod = key;
+  try{ localStorage.setItem("sy_dash_period", key); }catch(e){}
+  renderDashboardTab();
+}
+function followNames(it){ return String(it.followName || "").split(",").map(s => s.trim()).filter(Boolean); }
+/* 처리일 = 등록일 → 점검일 (지연 판정과 같은 출발점). 계산 불가하면 null */
+function procDays(it){
+  if(it.status !== "점검완료" || !it.createdAt || !it.inspDate) return null;
+  const c = new Date(Number(it.createdAt)); const cd = new Date(c.getFullYear(), c.getMonth(), c.getDate());
+  const insp = new Date(String(it.inspDate).replace(/\./g, "-") + "T00:00:00");
+  const diff = Math.round((insp - cd) / 86400000);
+  return isNaN(diff) ? null : Math.max(0, diff);
+}
+function avgOf(arr){ return arr.length ? Math.round(arr.reduce((a,b) => a+b, 0) / arr.length * 10) / 10 : null; }
+
+/* 담당자별 집계: '이 사람에게 배정된 건의 상태'. 복수 담당 건은 각자에게 모두 들어간다. */
+function buildAssigneeStats(list){
+  const map = {};
+  list.forEach(it => {
+    followNames(it).forEach(name => {
+      if(!map[name]){
+        const d = (directory || []).find(x => x.name === name);
+        map[name] = { name, dept: d ? d.dept : "", open:0, delay:0, ngOpen:0, done:0, days:[] };
+      }
+      const r = map[name];
+      if(it.status === "등록"){ r.open++; if(isDelayed(it)) r.delay++; }
+      else{ r.done++; const pd = procDays(it); if(pd !== null) r.days.push(pd); }
+      if(isNgOpen(it)) r.ngOpen++;
+    });
+  });
+  return Object.values(map)
+    .map(r => Object.assign(r, { avg: avgOf(r.days) }))
+    .sort((a,b) => b.delay - a.delay || b.ngOpen - a.ngOpen || b.open - a.open || b.done - a.done || a.name.localeCompare(b.name, "ko"));
+}
+
+function renderAssigneeTable(list, rangeText){
+  const rows = buildAssigneeStats(list);
+  if(rows.length === 0) return `<div class="empty" style="padding:20px 0;">선택한 기간에 배정된 변동점이 없습니다.</div>`;
+  const n = (v, cls) => v > 0 ? `<span class="${cls||""}">${v}</span>` : `<span class="asg-zero">0</span>`;
+  return `
+    <div class="asg-wrap">
+    <table class="asg-table">
+      <thead><tr>
+        <th>담당자</th>
+        <th class="num">미처리</th>
+        <th class="num">그중 지연</th>
+        <th class="num">NG 대책<br class="mo-br"> 미입력</th>
+        <th class="num">완료</th>
+        <th class="num hide-mo">평균 처리일</th>
+      </tr></thead>
+      <tbody>
+        ${rows.map(r => `
+        <tr class="row-click asg-row ${r.ngOpen > 0 ? "row-ngopen" : (r.delay > 0 ? "row-delay" : "")}" data-person="${esc(r.name)}">
+          <td><b>${esc(r.name)}</b><span class="asg-dept">${esc(r.dept)}</span></td>
+          <td class="num">${n(r.open, "v-warn")}</td>
+          <td class="num">${n(r.delay, "v-delay")}</td>
+          <td class="num">${n(r.ngOpen, "v-ng")}</td>
+          <td class="num">${n(r.done)}</td>
+          <td class="num hide-mo">${r.avg === null ? '<span class="asg-zero">-</span>' : r.avg + '<small>일</small>'}</td>
+        </tr>`).join("")}
+      </tbody>
+    </table>
+    </div>`;
+}
+
 function renderDashboardTab(){
   const content = document.getElementById("content");
-  const total = items.length;
-  const pending = items.filter(it => it.status === "등록").length;
-  const done = items.filter(it => it.status === "점검완료").length;
-  const ng = items.filter(it => it.inspResult === "NG").length;
-  const ngNoAction = items.filter(it => isNgOpen(it)).length;
-  const delayed = items.filter(it => isDelayed(it)).length;
-  const myPending = items.filter(it => it.status === "등록" && isMyFollow(it)).length;
   const th = delayThresholdDays();
+  const range = periodRange(dashPeriod);
+  const pName = periodName(dashPeriod);
+  const scoped = items.filter(it => inPeriod(it, range));
+  dashScopedItems = scoped;
 
-  // 월별 집계 (변경일 기준)
-  const byMonth = {};
-  items.forEach(it => {
-    const m = String(it.regDate||"").slice(0,7);
-    if(!m) return;
-    if(!byMonth[m]) byMonth[m] = { total:0, done:0, ng:0 };
-    byMonth[m].total++;
-    if(it.status==="점검완료") byMonth[m].done++;
-    if(it.inspResult==="NG") byMonth[m].ng++;
-  });
-  const months = Object.keys(byMonth).sort().slice(-6);
-
-  // 이번 달 / 지난달 비교 (차트 제목을 '결론'으로 쓰기 위함)
-  const now = new Date();
-  const ym = d => d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0");
-  const thisM = ym(now);
-  const lastM = ym(new Date(now.getFullYear(), now.getMonth()-1, 1));
-  const tm = byMonth[thisM] || { total:0, ng:0 };
-  const lm = byMonth[lastM] || { total:0, ng:0 };
-
-  // 4M · 고객사 분포
-  const byM4 = {};
-  items.forEach(it => { const k = it.m4||"미분류"; byM4[k] = (byM4[k]||0)+1; });
-  const byCust = {};
-  items.forEach(it => { const k = it.customer||"미분류"; byCust[k] = (byCust[k]||0)+1; });
-
-  // 평균 처리일: 지연 판정과 같은 기준(등록 → 점검)으로 계산
-  const localDate = t => { const d = new Date(Number(t)); return new Date(d.getFullYear(), d.getMonth(), d.getDate()); };
-  const dones = items.filter(it => it.status==="점검완료" && it.createdAt && it.inspDate);
-  const avgDays = dones.length > 0 ? (dones.reduce((s, it) => {
-    const insp = new Date(String(it.inspDate).replace(/\./g,"-") + "T00:00:00");
-    const diff = Math.round((insp - localDate(it.createdAt)) / 86400000);
-    return s + (isNaN(diff) ? 0 : Math.max(0, diff));
-  }, 0) / dones.length) : 0;
-  const avgTxt = dones.length > 0 ? (Math.round(avgDays*10)/10) : "-";
-
-  // ── 최상단: 지금 조치가 필요한가 ──
+  // ── 맨 위 조치줄: 기간과 무관하게 '지금' 미처리 전체 ──
+  const ngNoActionAll = items.filter(it => isNgOpen(it)).length;
+  const delayedAll = items.filter(it => isDelayed(it)).length;
+  const myPendingAll = items.filter(it => it.status === "등록" && isMyFollow(it)).length;
   const actions = [];
-  if(ngNoAction > 0) actions.push(`<button type="button" class="dash-chip c-ng" onclick="openDashboardSummary('ngNoAction','NG 대책 미입력')"><b>${ngNoAction}</b>건 NG 대책 미입력</button>`);
-  if(delayed > 0)    actions.push(`<button type="button" class="dash-chip c-delay" onclick="openDashboardSummary('delayed','지연')"><b>${delayed}</b>건 지연 <span class="dash-chip-sub">등록 후 ${th}일 초과</span></button>`);
-  if(myPending > 0)  actions.push(`<button type="button" class="dash-chip c-mine" onclick="openDashboardSummary('myPending','내 점검 대기')"><b>${myPending}</b>건 내가 점검할 건</button>`);
-
+  if(ngNoActionAll > 0) actions.push(`<button type="button" class="dash-chip c-ng" onclick="openDashboardSummary('ngNoAction','NG 대책 미입력')"><b>${ngNoActionAll}</b>건 NG 대책 미입력</button>`);
+  if(delayedAll > 0)    actions.push(`<button type="button" class="dash-chip c-delay" onclick="openDashboardSummary('delayed','지연')"><b>${delayedAll}</b>건 지연 <span class="dash-chip-sub">등록 후 ${th}일 초과</span></button>`);
+  if(myPendingAll > 0)  actions.push(`<button type="button" class="dash-chip c-mine" onclick="openDashboardSummary('myPending','내가 점검할 건')"><b>${myPendingAll}</b>건 내가 점검할 건</button>`);
   const actionBar = actions.length > 0
     ? `<div class="dash-action is-alert">
-         <div class="dash-action-title">조치가 필요한 변동점이 있습니다</div>
+         <div class="dash-action-title">조치가 필요한 변동점이 있습니다 <span class="dash-action-note">기간 선택과 관계없이 지금 미처리 전체</span></div>
          <div class="dash-action-items">${actions.join("")}</div>
        </div>`
-    : `<div class="dash-action is-ok">현재 조치가 필요한 변동점이 없습니다 <span class="dash-ok-sub">NG 대책 미입력 0 · 지연 0 · 내 점검 대기 0</span></div>`;
+    : `<div class="dash-action is-ok">현재 조치가 필요한 변동점이 없습니다 <span class="dash-ok-sub">NG 대책 미입력 0 · 지연 0 · 내가 점검할 건 0</span></div>`;
+
+  // ── 기간 선택 ──
+  const periodBar = `
+    <div class="dash-period">
+      <div class="seg" role="tablist" aria-label="대시보드 기간">
+        ${DASH_PERIODS.map(([k, label]) => `<button type="button" role="tab" aria-selected="${k===dashPeriod}" class="seg-btn ${k===dashPeriod ? "on" : ""}" data-period="${k}">${label}</button>`).join("")}
+      </div>
+      <div class="dash-period-text">${esc(range.text)} · 변경일 기준 · <b>${scoped.length}건</b></div>
+    </div>`;
+
+  // ── 기간 내 숫자 ──
+  const total = scoped.length;
+  const pending = scoped.filter(it => it.status === "등록").length;
+  const done = scoped.filter(it => it.status === "점검완료").length;
+  const ng = scoped.filter(it => it.inspResult === "NG").length;
+  const ngNoAction = scoped.filter(it => isNgOpen(it)).length;
+  const delayed = scoped.filter(it => isDelayed(it)).length;
+  const avg = avgOf(scoped.map(procDays).filter(v => v !== null));
 
   const strip = [
-    ["전체 등록", total, "all", "", `이번 달 ${tm.total}건`],
+    ["등록", total, "all", "", pName],
     ["점검 대기", pending, "pending", pending > 0 ? "v-warn" : "", ""],
     ["지연", delayed, "delayed", delayed > 0 ? "v-delay" : "", `등록 후 ${th}일 초과`],
     ["NG 발생", ng, "ng", ng > 0 ? "v-ng" : "", ngNoAction > 0 ? `대책 미입력 ${ngNoAction}` : (ng > 0 ? "대책 모두 입력" : "")],
     ["점검 완료율", (total > 0 ? Math.round(done/total*100) : 0) + "<small>%</small>", "", "", `${done} / ${total}건`],
-    ["평균 처리일", avgTxt + (avgTxt === "-" ? "" : "<small>일</small>"), "", "", "등록 → 점검"],
+    ["평균 처리일", avg === null ? "-" : avg + "<small>일</small>", "", "", "등록 → 점검"],
   ];
+
+  // ── 월별 추이 (기간과 무관하게 최근 6개월 흐름) ──
+  const byMonth = {};
+  items.forEach(it => {
+    const m = String(it.regDate || "").replace(/\./g, "-").slice(0, 7);
+    if(!m) return;
+    if(!byMonth[m]) byMonth[m] = { total:0, done:0, ng:0 };
+    byMonth[m].total++;
+    if(it.status === "점검완료") byMonth[m].done++;
+    if(it.inspResult === "NG") byMonth[m].ng++;
+  });
+  const months = Object.keys(byMonth).sort().slice(-6);
+  const now = new Date();
+  const thisM = ymdLocal(now).slice(0, 7);
+  const lastM = ymdLocal(new Date(now.getFullYear(), now.getMonth() - 1, 1)).slice(0, 7);
+  const tm = byMonth[thisM] || { total:0, ng:0 };
+  const lm = byMonth[lastM] || { total:0, ng:0 };
+
+  // ── 분포 (기간 내) ──
+  const byM4 = {}, byCust = {};
+  scoped.forEach(it => { const a = it.m4 || "미분류"; byM4[a] = (byM4[a] || 0) + 1; const b = it.customer || "미분류"; byCust[b] = (byCust[b] || 0) + 1; });
 
   content.innerHTML = `
   ${actionBar}
+  ${periodBar}
 
   <div class="dash-strip">
     ${strip.map(([label, val, key, cls, sub]) => `
-      <div class="dash-strip-item" ${key ? `onclick="openDashboardSummary('${key}','${esc(label)}')"` : 'style="cursor:default;"'}>
+      <div class="dash-strip-item" ${key ? `onclick="openDashboardSummary('${key}','${esc(label)}', true)"` : 'style="cursor:default;"'}>
         <span class="dash-strip-label">${label}</span>
         <span class="dash-strip-value ${cls}">${val}</span>
         <span class="dash-strip-sub">${sub || "&nbsp;"}</span>
       </div>`).join("")}
   </div>
 
+  <div class="card" style="margin-bottom:12px;">
+    <h2 class="dash-chart-title">담당자별 처리 현황</h2>
+    <div class="dash-chart-sub">${esc(pName)} · 지연 많은 순 · 줄을 누르면 그 담당자 건 목록 · 복수 담당 건은 각 담당자에게 모두 집계</div>
+    ${renderAssigneeTable(scoped, range.text)}
+  </div>
+
   <div class="dash-grid">
     <div class="card" style="margin-bottom:0;">
       <h2 class="dash-chart-title">이번 달 등록 ${tm.total}건 · NG ${tm.ng}건</h2>
-      <div class="dash-chart-sub">지난달 등록 ${lm.total}건 · NG ${lm.ng}건 · 최근 6개월, 변경일 기준</div>
+      <div class="dash-chart-sub">지난달 등록 ${lm.total}건 · NG ${lm.ng}건 · 최근 6개월 흐름 (기간 선택과 무관)</div>
       ${renderMonthlyChart(months, byMonth)}
     </div>
     <div class="card" style="margin-bottom:0;">
       <h2 class="dash-chart-title">어디서 변동점이 많이 나오나</h2>
-      <div class="dash-chart-sub">전체 ${total}건 기준 · 많은 순</div>
+      <div class="dash-chart-sub">${esc(pName)} ${total}건 기준 · 많은 순</div>
+      ${total === 0 ? `<div class="empty" style="padding:20px 0;">선택한 기간에 등록된 변동점이 없습니다.</div>` : `
       <div class="dash-dist-label">4M 구분</div>
       ${renderBreakdownBars(byM4, "#6F7F96")}
       <div class="dash-dist-label" style="margin-top:14px;">고객사</div>
-      ${renderBreakdownBars(byCust, "#6F7F96")}
+      ${renderBreakdownBars(byCust, "#6F7F96")}`}
     </div>
   </div>`;
+
+  content.querySelectorAll(".seg-btn").forEach(b => b.onclick = () => setDashPeriod(b.dataset.period));
+  content.querySelectorAll(".asg-row").forEach(tr => tr.onclick = () => openDashboardSummary("person:" + tr.dataset.person, tr.dataset.person + " 담당 건", true));
 }
 
 /* ---------- B3: NG 후속관리 모달 ---------- */
