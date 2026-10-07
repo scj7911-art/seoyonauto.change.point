@@ -52,6 +52,12 @@
   .reg-who{font-size:13px;color:var(--text-secondary);background:var(--bg);border-radius:6px;padding:8px 12px;margin:-4px 0 14px;display:flex;align-items:baseline;gap:6px;flex-wrap:wrap;}
   .reg-who b{color:var(--text);}
   .reg-who-hint{font-size:11.5px;color:var(--text-muted);margin-left:6px;}
+  .info-tip{position:relative;display:inline-flex;align-items:center;vertical-align:middle;margin-left:4px;cursor:help;outline:none;}
+  .info-tip-icon{display:inline-flex;align-items:center;justify-content:center;width:17px;height:17px;border-radius:50%;background:var(--primary-light);color:var(--primary);border:1px solid #C9D6E8;font-size:11px;font-weight:800;font-family:Georgia,serif;font-style:italic;line-height:1;}
+  .info-tip:hover .info-tip-icon, .info-tip:focus .info-tip-icon, .info-tip.open .info-tip-icon{background:var(--primary);color:#fff;border-color:var(--primary);}
+  .info-tip-bubble{display:none;position:absolute;left:-6px;top:calc(100% + 8px);z-index:80;width:280px;max-width:calc(100vw - 32px);background:#1F2A3A;color:#fff;font-size:12.5px;font-weight:400;line-height:1.6;padding:11px 13px;border-radius:8px;box-shadow:0 6px 18px rgba(20,25,35,.25);white-space:pre-line;text-align:left;cursor:default;}
+  .info-tip-bubble::before{content:"";position:absolute;left:10px;top:-6px;border:6px solid transparent;border-top:0;border-bottom-color:#1F2A3A;}
+  .info-tip:hover .info-tip-bubble, .info-tip:focus .info-tip-bubble, .info-tip.open .info-tip-bubble{display:block;}
   .recent-box{margin-top:12px;background:var(--primary-light);border:1px solid #D3DEEC;border-radius:8px;padding:10px 12px;font-size:12.5px;color:var(--text-secondary);line-height:1.5;}
   .recent-box.is-none{background:var(--bg);border-color:var(--border);}
   .recent-box b{color:var(--text);}
@@ -233,14 +239,31 @@
     padding:12px 22px;background:#fff;
     box-shadow:0 -6px 10px -6px rgba(0,0,0,.15);
   }
-  .master-list{list-style:none;margin:0 0 12px;padding:0;max-height:220px;overflow:auto;border:1px solid var(--border);border-radius:8px;}
-  .master-list li{display:flex;align-items:center;gap:8px;padding:7px 10px;border-bottom:1px solid var(--border);font-size:13px;}
+  .master-list{list-style:none;margin:0 0 12px;padding:0;max-height:min(46vh,380px);overflow:auto;border:1px solid var(--border);border-radius:8px;position:relative;}
+  .master-list li{display:flex;align-items:center;gap:6px;padding:6px 8px;border-bottom:1px solid var(--border);font-size:13px;background:#fff;}
   .master-list li:last-child{border-bottom:none;}
-  .master-list .ml-num{color:var(--text-muted);font-size:11.5px;font-family:var(--mono);width:18px;flex-shrink:0;}
+  .master-list .ml-handle{cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none;color:var(--text-muted);font-size:17px;line-height:1;padding:4px 4px;flex-shrink:0;}
+  .master-list .ml-handle:hover{color:var(--primary);}
+  .master-list .ml-num{color:var(--text-muted);font-size:11.5px;font-family:var(--mono);min-width:30px;flex-shrink:0;background:none;border:1px dashed transparent;border-radius:5px;padding:2px 3px;cursor:pointer;text-align:center;}
+  .master-list .ml-num:hover,.master-list .ml-num:focus{border-color:var(--primary);color:var(--primary);outline:none;}
+  .master-list .ml-num-input{width:52px;padding:2px 4px;font-size:12px;flex-shrink:0;}
   .master-list .ml-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
   .master-list .ml-actions{display:flex;gap:4px;flex-shrink:0;}
   .master-list .ml-actions button{padding:3px 7px;font-size:11px;}
+  .master-list li.dragging{opacity:.4;}
+  .master-list li.drop-before{box-shadow:inset 0 3px 0 var(--primary);}
+  .master-list li.drop-after{box-shadow:inset 0 -3px 0 var(--primary);}
+  .master-list li.ml-flash{animation:mlflash 1.4s ease-out;}
+  @keyframes mlflash{0%{background:#FFE9A8;}100%{background:#fff;}}
+  body.ml-dragging, body.ml-dragging *{user-select:none !important;-webkit-user-select:none !important;cursor:grabbing !important;}
+  .me-toolbar{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px;font-size:12.5px;color:var(--text-secondary);flex-wrap:wrap;}
+  .me-guide{font-size:12px;color:var(--text-muted);margin:0 0 8px;line-height:1.5;}
   .master-add{display:flex;gap:8px;}
+  .master-add .ml-pos{width:96px;flex:none;}
+  .me-add-hint{font-size:12px;color:var(--text-muted);margin-top:6px;min-height:17px;}
+  .me-status{font-size:12.5px;padding:8px 10px;border-radius:8px;margin-top:10px;line-height:1.5;}
+  .me-status.dirty{background:var(--warn-light);color:#7A5210;}
+  .me-status.saved{background:#E6F4EA;color:#1E6B34;}
 
   .detail-grid{display:grid;grid-template-columns:110px 1fr;gap:8px 12px;font-size:13px;margin-bottom:6px;}
   .detail-grid dt{color:var(--text-secondary);font-weight:600;}
@@ -1108,7 +1131,7 @@ function manualSections(){
       <div class="mn-tblwrap"><table class="mn-table">
         <thead><tr><th>번호 · 항목</th><th>필수</th><th>작성 방법</th></tr></thead>
         <tbody>
-          <tr><td><b>1. 변경일자</b></td><td>필수</td><td>칸을 누르면 달력이 열립니다. 직접 타이핑하지 않으셔도 됩니다. <b>실제로 변동점이 발생한 날</b>을 선택하세요.</td></tr>
+          <tr><td><b>1. 변경일자</b></td><td>필수</td><td>칸을 누르면 달력이 열립니다. 직접 타이핑하지 않으셔도 됩니다. <b>등록하는 날이 아니라, 실제로 변동점이 발생한 날</b>을 선택하세요. (예: 어제 바뀐 것을 오늘 등록하면 → 어제 날짜) 등록일은 저장할 때 자동으로 기록됩니다. 헷갈리면 제목 옆 <span class="mn-key">i</span> 에 마우스를 올리거나(휴대폰은 누르기) 설명을 볼 수 있습니다.</td></tr>
           <tr><td><b>1. 등록자</b></td><td>자동</td><td>1번 카드 맨 위에 로그인한 사람의 이름 · 부서가 한 줄로 표시됩니다. 수정할 수 없습니다.</td></tr>
           <tr><td><b>1. 고객사</b></td><td>필수</td><td>서연이화 / 모비스 / 기타 중 선택</td></tr>
           <tr><td><b>1. 차종 / 설비 / 라인</b></td><td>필수</td><td>해당 라인을 선택. 목록에 없으면 관리자에게 추가를 요청하세요.</td></tr>
@@ -1308,6 +1331,16 @@ function manualSections(){
           <li><b>차종 / 설비 / 라인</b> — 신규 라인이 생기면 여기서 추가합니다.</li>
           <li><b>4M 구분</b> — 사람 · 설비 · 재료 · 방법. 특별한 사유가 없으면 바꾸지 않는 것이 좋습니다.</li>
           <li><b>후행담당자 제외 부서</b> — 여기에 넣은 부서는 후행담당자 선택 목록에 나타나지 않습니다. (임원 · 인사노무팀 · 기획재무팀 · 현장직 등)</li>
+        </ul>
+        <p style="margin-top:10px;"><b>순서 바꾸기 · 추가 — 화면에서 다 고친 뒤 [저장] 한 번</b></p>
+        <ul class="mn-list">
+          <li><b>끌어서 옮기기</b> — 줄 맨 앞 <span class="mn-key">⠿</span> 를 잡고 원하는 자리로 끌어다 놓습니다. 목록 위·아래 끝에 대고 있으면 자동으로 스크롤됩니다. (휴대폰은 손가락으로 끌기)</li>
+          <li><b>번호로 바로 이동</b> — 앞의 <b>순번</b>을 누르고 숫자를 입력한 뒤 Enter. 예) 18번 항목의 순번을 눌러 <b>3</b> 입력 → 3번 자리로 이동.</li>
+          <li><b>한 칸씩</b> — <span class="mn-key">▲</span> <span class="mn-key">▼</span> (예전처럼 누를 때마다 기다리지 않습니다.)</li>
+          <li><b>추가할 위치</b> — 이름 옆 <b>위치</b> 칸에 번호를 넣으면 그 자리에 들어갑니다. 비워두면 <b>같은 계열 번호 순서에 맞춰 자동</b>으로 넣고(예: 사출9호기 → 사출8호기 다음), 같은 계열이 없으면 맨 아래에 넣습니다. 들어갈 위치는 입력칸 아래에 미리 보여줍니다.</li>
+          <li><b>이름순 정렬</b> — 가나다 순으로 한 번에 정렬하며, 숫자는 크기 순서(1, 2 … 9, 10)로 맞춥니다.</li>
+          <li>고친 내용은 <b>[저장]을 눌러야 반영</b>됩니다. 잘못 고쳤으면 <span class="mn-key">되돌리기</span>로 마지막 저장 상태로 돌아갑니다. 저장하지 않고 닫으려 하면 확인창이 뜹니다.</li>
+          <li>항목을 삭제하거나 이름 순서를 바꿔도 <b>이미 등록된 변동점의 라인 · 4M 값은 바뀌지 않습니다.</b> (선택 목록만 바뀝니다)</li>
         </ul>
       </div>
       <div class="mn-card">
@@ -1703,80 +1736,350 @@ function confirmPopup(title, message, onConfirm, opts){
 
 /* ---------- 마스터 데이터 편집 모달 (차종/설비/라인, 4M구분 통합) ---------- */
 const MASTER_CATEGORIES = { lines: "차종/설비/라인", m4: "4M 구분", excludedFollowDepts: "후행담당자 제외 부서" };
+/* 항목 편집 — 화면에서 마음껏 고친 뒤 [저장] 한 번으로 서버에 반영.
+ *  - ▲▼ / ⠿ 끌어놓기 / 순번 눌러 위치 입력 / 이름순 정렬 / 추가 위치 지정 → 모두 화면에서만 바뀜
+ *  - [되돌리기] 누르면 마지막 저장 상태로 복귀, 저장 안 하고 닫으면 확인창
+ *  - 이미 등록된 변동점의 라인·4M 값은 바뀌지 않음(목록·순서만 바뀜) */
+const ML_COLLATOR = new Intl.Collator("ko", { numeric: true, sensitivity: "base" });
+function mlPrefix(name){
+  // "사출12호기" → "사출", 숫자가 없으면 null (같은 계열 판단용)
+  const m = String(name).match(/^(\D*?)\s*\d/);
+  return m && m[1].trim() ? m[1].trim() : null;
+}
+// 새 항목이 들어갈 "자연스러운" 위치(0부터) — 같은 계열(사출N호기 등)이 있으면 그 사이 번호 순서에 맞춰 넣는다. 없으면 -1
+function mlSuggestIndex(list, name){
+  const pre = mlPrefix(name);
+  if(!pre) return -1;
+  const same = [];
+  list.forEach((v,i) => { if(mlPrefix(v) === pre) same.push(i); });
+  if(same.length === 0) return -1;
+  for(const i of same){ if(ML_COLLATOR.compare(name, list[i]) < 0) return i; }
+  return same[same.length - 1] + 1;
+}
+function mlDiffSummary(orig, work){
+  const o = new Set(orig), w = new Set(work);
+  const added = work.filter(v => !o.has(v)).length;
+  const removed = orig.filter(v => !w.has(v)).length;
+  const commonO = orig.filter(v => w.has(v)), commonW = work.filter(v => o.has(v));
+  const reordered = commonO.some((v,i) => v !== commonW[i]);
+  const parts = [];
+  if(added) parts.push("추가 " + added);
+  if(removed) parts.push("삭제 " + removed);
+  if(reordered) parts.push("순서 변경");
+  return parts;
+}
 function openMasterEditor(initialKey){
   let key = initialKey || "lines";
+  let orig = (master[key] || []).slice();
+  let work = orig.slice();
+  let saving = false;
+  let savedFlash = false;
   const root = document.getElementById("modal-root");
-  const renderModal = () => {
+  const isDirty = () => orig.length !== work.length || orig.some((v,i) => v !== work[i]);
+
+  const renderShell = () => {
     root.innerHTML = `
       <div class="modal-overlay" id="me-overlay">
-        <div class="modal">
+        <div class="modal" style="max-width:560px;">
           <h3>항목 편집</h3>
-          <div class="field" style="margin-bottom:14px;">
+          <div class="field" style="margin-bottom:12px;">
             <label>편집할 항목</label>
             <select id="me-category">
               ${Object.entries(MASTER_CATEGORIES).map(([k,v]) => `<option value="${k}" ${k===key?"selected":""}>${esc(v)}</option>`).join("")}
             </select>
           </div>
-          <ul class="master-list" id="ml-list">
-            ${master[key].map((v,i)=>`<li>
-              <span class="ml-num">${i+1}</span>
-              <span class="ml-name">${esc(v)}</span>
-              <span class="ml-actions">
-                <button class="btn btn-sm" data-up="${i}" ${i===0?"disabled":""} title="위로">▲</button>
-                <button class="btn btn-sm" data-down="${i}" ${i===master[key].length-1?"disabled":""} title="아래로">▼</button>
-                <button class="btn btn-sm btn-danger" data-i="${i}">삭제</button>
-              </span>
-            </li>`).join("") || '<li style="color:var(--text-muted);">등록된 항목이 없습니다.</li>'}
-          </ul>
+          <div class="me-toolbar">
+            <span id="me-count"></span>
+            <button class="btn btn-sm" id="me-sort" title="가나다·숫자 크기 순서로 한 번에 정렬">이름순 정렬</button>
+          </div>
+          <p class="me-guide">⠿ 를 끌어서 옮기거나, 앞의 <b>순번</b>을 눌러 원하는 번호를 입력하면 바로 그 자리로 이동합니다. 고친 내용은 아래 <b>[저장]</b>을 눌러야 반영됩니다.</p>
+          <ul class="master-list" id="ml-list"></ul>
           <div class="master-add">
-            <input type="text" id="ml-new" placeholder="새 항목 입력">
+            <input type="text" id="ml-new" placeholder="새 항목 입력" style="flex:1;min-width:0;">
+            <input type="number" id="ml-pos" class="ml-pos" min="1" placeholder="위치(선택)" title="몇 번째에 넣을지. 비우면 자동">
             <button class="btn btn-primary" id="ml-add">추가</button>
           </div>
-          <div class="modal-actions"><button class="btn btn-primary" id="me-close">닫기</button></div>
+          <div class="me-add-hint" id="ml-add-hint"></div>
+          <div id="me-status"></div>
+          <div class="modal-actions">
+            <button class="btn" id="me-revert" style="margin-right:auto;">되돌리기</button>
+            <button class="btn" id="me-close">닫기</button>
+            <button class="btn btn-primary" id="me-save">저장</button>
+          </div>
         </div>
       </div>`;
-    const close = () => { root.innerHTML = ""; render(); };
-    document.getElementById("me-close").onclick = close;
-    document.getElementById("me-overlay").onclick = (e) => { if(e.target.id==="me-overlay" && overlayPressStartedOn(e.target)) close(); };
-    document.getElementById("me-category").onchange = (e) => { key = e.target.value; renderModal(); };
-    document.getElementById("ml-add").onclick = async () => {
-      const v = document.getElementById("ml-new").value.trim();
-      if(!v) return;
-      master[key].push(v);
-      const ok = await saveMaster();
-      if(!ok) master[key].pop();
-      renderModal();
-    };
-    document.getElementById("ml-list").addEventListener("click", async (e) => {
-      const delBtn = e.target.closest("button[data-i]");
-      const upBtn = e.target.closest("button[data-up]");
-      const downBtn = e.target.closest("button[data-down]");
-      if(delBtn){
-        const removedIdx = Number(delBtn.dataset.i);
-        const removed = master[key].splice(removedIdx, 1)[0];
-        const ok = await saveMaster();
-        if(!ok) master[key].splice(removedIdx, 0, removed);
-        renderModal();
-      }else if(upBtn){
-        const i = Number(upBtn.dataset.up);
-        if(i <= 0) return;
-        const arr = master[key];
-        [arr[i-1], arr[i]] = [arr[i], arr[i-1]];
-        const ok = await saveMaster();
-        if(!ok) [arr[i-1], arr[i]] = [arr[i], arr[i-1]];
-        renderModal();
-      }else if(downBtn){
-        const i = Number(downBtn.dataset.down);
-        const arr = master[key];
-        if(i >= arr.length-1) return;
-        [arr[i], arr[i+1]] = [arr[i+1], arr[i]];
-        const ok = await saveMaster();
-        if(!ok) [arr[i], arr[i+1]] = [arr[i+1], arr[i]];
-        renderModal();
-      }
-    });
+    bindShell();
+    renderList();
   };
-  renderModal();
+
+  const updateStatus = () => {
+    const dirty = isDirty();
+    const st = document.getElementById("me-status");
+    if(dirty){
+      const parts = mlDiffSummary(orig, work);
+      st.className = "me-status dirty";
+      st.textContent = "저장하지 않은 변경이 있습니다" + (parts.length ? " (" + parts.join(" · ") + ")" : "") + " — [저장]을 눌러야 반영됩니다.";
+    }else if(savedFlash){
+      st.className = "me-status saved";
+      st.textContent = "저장되었습니다. 등록 화면 목록에 바로 반영됩니다.";
+    }else{
+      st.className = ""; st.textContent = "";
+    }
+    const saveBtn = document.getElementById("me-save");
+    saveBtn.disabled = !dirty || saving;
+    saveBtn.textContent = saving ? "저장 중..." : "저장";
+    document.getElementById("me-revert").style.visibility = dirty ? "visible" : "hidden";
+    document.getElementById("me-count").textContent = "총 " + work.length + "개";
+    document.getElementById("me-sort").disabled = work.length < 2;
+  };
+
+  // 목록만 다시 그림 (스크롤 위치 유지, 방금 옮긴 항목 반짝 표시)
+  const renderList = (flashIdx) => {
+    const ul = document.getElementById("ml-list");
+    const keepTop = ul.scrollTop;
+    ul.innerHTML = work.map((v,i) => `<li data-idx="${i}">
+        <span class="ml-handle" title="끌어서 순서 이동" aria-hidden="true">⠿</span>
+        <button type="button" class="ml-num" data-num="${i}" title="눌러서 이동할 번호 입력">${i+1}</button>
+        <span class="ml-name" title="${esc(v)}">${esc(v)}</span>
+        <span class="ml-actions">
+          <button class="btn btn-sm" data-up="${i}" ${i===0?"disabled":""} title="위로">▲</button>
+          <button class="btn btn-sm" data-down="${i}" ${i===work.length-1?"disabled":""} title="아래로">▼</button>
+          <button class="btn btn-sm btn-danger" data-del="${i}" title="삭제">삭제</button>
+        </span>
+      </li>`).join("") || '<li style="color:var(--text-muted);">등록된 항목이 없습니다.</li>';
+    ul.scrollTop = keepTop;
+    if(typeof flashIdx === "number" && flashIdx >= 0){
+      const li = ul.querySelector(`li[data-idx="${flashIdx}"]`);
+      if(li){
+        li.classList.add("ml-flash");
+        // 목록 안에서만 보이도록 스크롤 (모달 전체는 움직이지 않게)
+        const top = li.offsetTop, bottom = top + li.offsetHeight;
+        if(top < ul.scrollTop) ul.scrollTop = top - 8;
+        else if(bottom > ul.scrollTop + ul.clientHeight) ul.scrollTop = bottom - ul.clientHeight + 8;
+      }
+    }
+    updateStatus();
+    updateAddHint();
+  };
+
+  const moveItem = (from, to) => {
+    to = Math.max(0, Math.min(work.length - 1, to));
+    if(from === to || from < 0 || from >= work.length) { renderList(from); return; }
+    const [it] = work.splice(from, 1);
+    work.splice(to, 0, it);
+    savedFlash = false;
+    renderList(to);
+  };
+
+  const addTargetIndex = (name) => {
+    const posRaw = document.getElementById("ml-pos").value.trim();
+    if(posRaw !== ""){
+      const n = Math.round(Number(posRaw));
+      if(Number.isFinite(n)) return { idx: Math.max(0, Math.min(work.length, n - 1)), how: "pos" };
+    }
+    const s = name ? mlSuggestIndex(work, name) : -1;
+    if(s >= 0) return { idx: s, how: "auto" };
+    return { idx: work.length, how: "end" };
+  };
+  const updateAddHint = () => {
+    const hint = document.getElementById("ml-add-hint");
+    if(!hint) return;
+    const name = document.getElementById("ml-new").value.trim();
+    if(!name){ hint.textContent = "위치를 비우면 같은 계열(예: 사출N호기) 번호 순서에 맞춰 넣고, 없으면 맨 아래에 넣습니다."; return; }
+    if(work.indexOf(name) !== -1){ hint.textContent = "⚠ 이미 있는 항목입니다."; return; }
+    const t = addTargetIndex(name);
+    const prev = t.idx > 0 ? work[t.idx - 1] : null;
+    const where = t.idx >= work.length ? "맨 아래(" + (work.length + 1) + "번)"
+                : (t.idx + 1) + "번" + (prev ? " (" + prev + " 다음)" : " (맨 위)");
+    hint.textContent = "→ " + where + "에 들어갑니다" + (t.how === "auto" ? " · 같은 계열 번호 순서 자동 맞춤" : "") + ".";
+  };
+
+  const doAdd = () => {
+    const input = document.getElementById("ml-new");
+    const v = input.value.trim();
+    if(!v) { input.focus(); return; }
+    if(work.indexOf(v) !== -1){ showToast("이미 있는 항목입니다: " + v); input.select(); return; }
+    const t = addTargetIndex(v);
+    work.splice(t.idx, 0, v);
+    savedFlash = false;
+    input.value = "";
+    document.getElementById("ml-pos").value = "";
+    renderList(t.idx);
+    input.focus();
+  };
+
+  // 저장 안 한 변경이 있을 때 확인 후 진행
+  const guardDirty = (title, proceed, onStay) => {
+    if(!isDirty()){ proceed(); return; }
+    const parts = mlDiffSummary(orig, work);
+    confirmPopup(title, "저장하지 않은 변경이 있습니다" + (parts.length ? " (" + parts.join(" · ") + ")" : "") + ".\n저장하지 않으면 지금까지 고친 내용이 사라집니다.", proceed,
+      { okLabel: "저장 안 함", cancelLabel: "계속 편집", onCancel: onStay, wide: true });
+  };
+
+  const close = () => { cleanupKeys(); root.innerHTML = ""; render(); };
+  const onKey = (e) => {
+    if(e.key !== "Escape" || !document.getElementById("me-overlay")) return;
+    if(document.getElementById("cf-overlay")) return; // 확인창이 떠 있으면 그쪽이 우선
+    if(e.target && e.target.classList && e.target.classList.contains("ml-num-input")) return;
+    guardDirty("닫기", close);
+  };
+  document.addEventListener("keydown", onKey);
+  const cleanupKeys = () => document.removeEventListener("keydown", onKey);
+
+  const bindShell = () => {
+    document.getElementById("me-close").onclick = () => guardDirty("닫기", close);
+    document.getElementById("me-overlay").onclick = (e) => { if(e.target.id==="me-overlay" && overlayPressStartedOn(e.target)) guardDirty("닫기", close); };
+    document.getElementById("me-category").onchange = (e) => {
+      const next = e.target.value;
+      e.target.value = key; // 확인 전까지는 현재 항목 유지 (확인창을 바깥 클릭으로 닫아도 어긋나지 않게)
+      guardDirty("편집 항목 바꾸기", () => {
+        key = next; orig = (master[key] || []).slice(); work = orig.slice(); savedFlash = false;
+        renderShell();
+      });
+    };
+    document.getElementById("me-revert").onclick = () => { work = orig.slice(); savedFlash = false; renderList(); };
+    document.getElementById("me-sort").onclick = () => {
+      confirmPopup("이름순 정렬", "가나다 순으로 정렬합니다. 숫자는 크기 순서(1, 2, … 9, 10, 11)로 맞춥니다.\n마음에 들지 않으면 [되돌리기]로 원래대로 돌릴 수 있습니다.", () => {
+        work.sort((a,b) => ML_COLLATOR.compare(a,b));
+        savedFlash = false;
+        renderList();
+      }, { okLabel: "정렬", wide: true });
+    };
+    document.getElementById("me-save").onclick = async () => {
+      if(saving || !isDirty()) return;
+      saving = true; updateStatus();
+      const prev = master[key];
+      master[key] = work.slice();
+      const ok = await saveMaster();
+      saving = false;
+      if(ok){
+        orig = work.slice(); savedFlash = true;
+        showToast("항목을 저장했습니다.");
+      }else{
+        master[key] = prev; // 서버 저장 실패 → 화면 편집 내용은 그대로 두고 다시 시도할 수 있게
+      }
+      if(document.getElementById("me-status")) updateStatus();
+    };
+    document.getElementById("ml-add").onclick = doAdd;
+    document.getElementById("ml-new").addEventListener("keydown", (e) => { if(e.key === "Enter" && !e.isComposing){ e.preventDefault(); doAdd(); } });
+    document.getElementById("ml-pos").addEventListener("keydown", (e) => { if(e.key === "Enter"){ e.preventDefault(); doAdd(); } });
+    document.getElementById("ml-new").addEventListener("input", updateAddHint);
+    document.getElementById("ml-pos").addEventListener("input", updateAddHint);
+
+    const ul = document.getElementById("ml-list");
+    ul.addEventListener("click", (e) => {
+      const b = e.target.closest("button");
+      if(!b || b.disabled) return;
+      if(b.dataset.up !== undefined){ const i = Number(b.dataset.up); moveItem(i, i - 1); }
+      else if(b.dataset.down !== undefined){ const i = Number(b.dataset.down); moveItem(i, i + 1); }
+      else if(b.dataset.del !== undefined){
+        const i = Number(b.dataset.del);
+        const removed = work.splice(i, 1)[0];
+        savedFlash = false;
+        renderList();
+        showToast("'" + removed + "' 삭제됨 — 저장 전까지는 [되돌리기]로 복구할 수 있습니다.", 4000);
+      }
+      else if(b.dataset.num !== undefined){ startNumEdit(b); }
+    });
+    ul.addEventListener("pointerdown", onDragStart);
+  };
+
+  // 순번을 눌러 숫자 입력 → 그 위치로 이동
+  const startNumEdit = (btn) => {
+    const from = Number(btn.dataset.num);
+    const inp = document.createElement("input");
+    inp.type = "number"; inp.min = "1"; inp.max = String(work.length);
+    inp.className = "ml-num-input"; inp.value = String(from + 1);
+    inp.title = "1 ~ " + work.length + " 사이 번호 입력 후 Enter";
+    btn.replaceWith(inp);
+    inp.focus(); inp.select();
+    let done = false;
+    const finish = (apply) => {
+      if(done) return; done = true;
+      const n = Math.round(Number(inp.value));
+      if(apply && Number.isFinite(n) && n >= 1) moveItem(from, n - 1);
+      else renderList();
+    };
+    inp.addEventListener("keydown", (e) => {
+      if(e.key === "Enter"){ e.preventDefault(); finish(true); }
+      else if(e.key === "Escape"){ e.preventDefault(); e.stopPropagation(); finish(false); }
+    });
+    inp.addEventListener("blur", () => finish(true));
+  };
+
+  // ⠿ 끌어놓기 (마우스·터치 공통, 목록 위/아래 끝에 가면 자동 스크롤)
+  let drag = null;
+  const clearDropMarks = (ul) => ul.querySelectorAll(".drop-before,.drop-after").forEach(el => el.classList.remove("drop-before","drop-after"));
+  const dropIndexAt = (ul, clientY) => {
+    const lis = Array.from(ul.querySelectorAll("li[data-idx]"));
+    for(let i = 0; i < lis.length; i++){
+      const r = lis[i].getBoundingClientRect();
+      if(clientY < r.top + r.height / 2) return i;
+    }
+    return lis.length;
+  };
+  const markDrop = (ul, ins) => {
+    clearDropMarks(ul);
+    const lis = ul.querySelectorAll("li[data-idx]");
+    if(ins < lis.length) lis[ins].classList.add("drop-before");
+    else if(lis.length) lis[lis.length - 1].classList.add("drop-after");
+  };
+  function onDragStart(e){
+    const handle = e.target.closest(".ml-handle");
+    if(!handle || (e.pointerType === "mouse" && e.button !== 0)) return;
+    const li = handle.closest("li[data-idx]");
+    const ul = document.getElementById("ml-list");
+    if(!li || !ul) return;
+    e.preventDefault();
+    drag = { from: Number(li.dataset.idx), li, ul, y: e.clientY, ins: Number(li.dataset.idx), raf: 0, pid: e.pointerId };
+    li.classList.add("dragging");
+    document.body.classList.add("ml-dragging");
+    try{ handle.setPointerCapture(e.pointerId); }catch(_){}
+    markDrop(ul, drag.ins);
+    const tick = () => {
+      if(!drag) return;
+      const r = drag.ul.getBoundingClientRect();
+      const edge = 36;
+      let dy = 0;
+      if(drag.y < r.top + edge) dy = -Math.ceil((r.top + edge - drag.y) / 3);
+      else if(drag.y > r.bottom - edge) dy = Math.ceil((drag.y - (r.bottom - edge)) / 3);
+      if(dy){
+        drag.ul.scrollTop += Math.max(-18, Math.min(18, dy));
+        drag.ins = dropIndexAt(drag.ul, drag.y);
+        markDrop(drag.ul, drag.ins);
+      }
+      drag.raf = requestAnimationFrame(tick);
+    };
+    drag.raf = requestAnimationFrame(tick);
+    handle.addEventListener("pointermove", onDragMove);
+    handle.addEventListener("pointerup", onDragEnd);
+    handle.addEventListener("pointercancel", onDragEnd);
+  }
+  function onDragMove(e){
+    if(!drag || e.pointerId !== drag.pid) return;
+    e.preventDefault();
+    drag.y = e.clientY;
+    drag.ins = dropIndexAt(drag.ul, e.clientY);
+    markDrop(drag.ul, drag.ins);
+  }
+  function onDragEnd(e){
+    if(!drag) return;
+    const h = e.currentTarget;
+    h.removeEventListener("pointermove", onDragMove);
+    h.removeEventListener("pointerup", onDragEnd);
+    h.removeEventListener("pointercancel", onDragEnd);
+    cancelAnimationFrame(drag.raf);
+    document.body.classList.remove("ml-dragging");
+    const { from, ins } = drag;
+    const cancelled = e.type === "pointercancel";
+    drag = null;
+    if(cancelled){ renderList(); return; }
+    const to = ins > from ? ins - 1 : ins;
+    if(to === from){ renderList(); return; }
+    moveItem(from, to);
+  }
+
+  renderShell();
 }
 
 /* ---------- 탭: 등록 ---------- */
@@ -1800,8 +2103,9 @@ function renderRegisterTab(){
     <div class="reg-who">등록자 <b>${esc(currentUser.name)}</b> · ${esc(currentUser.dept)}<span class="reg-who-hint">로그인 계정으로 자동 기록됩니다</span></div>
     <div class="row4">
       <div class="field">
-        <label class="required">변경일자</label>
+        <label class="required">변경일자 ${infoTip("변경일자는 '등록하는 날'이 아니라 '변동점이 실제로 발생한 날'입니다.\n\n예) 어제 작업자가 바뀌었는데 오늘 등록한다면 → 어제 날짜를 고르세요.\n\n등록일(시스템에 올린 날)은 저장할 때 자동으로 기록되니 따로 입력하지 않습니다.")}</label>
         <input type="text" id="f-date" class="date-input-trigger" readonly placeholder="YYYY-MM-DD" value="">
+        <div class="hint">등록하는 날이 아니라, 실제로 바뀐 날</div>
       </div>
       <div class="field">
         <label class="required">고객사</label>
@@ -2026,6 +2330,22 @@ function isNgOpen(it){ return it.inspResult === "NG" && !it.ngAction; }
 /* 목록에서는 문서번호 앞의 공통 접두어(SYAT-Change Point-)를 떼고 뒤쪽만 보여준다.
    실제로 건을 구분하는 건 '등록일-순번'뿐이라, 접두어가 표에서 가장 넓은 열을 차지하던 문제를 해소. 전체 번호는 마우스를 올리면 보인다. */
 function shortId(id){ return String(id || "").replace(/^SYAT-Change Point-/, ""); }
+
+/* ---------- ⓘ 설명 말풍선 ----------
+ * PC: 마우스를 올리면 표시 / 휴대폰: 누르면 표시, 다른 곳을 누르면 닫힘 / 키보드: Tab으로 포커스하면 표시
+ * 마우스를 올리는 동작이 없는 휴대폰에서도 볼 수 있게 하려고 '누르기'를 함께 지원한다.
+ */
+function infoTip(text){
+  return `<span class="info-tip" tabindex="0" role="button" aria-label="설명 보기"><span class="info-tip-icon" aria-hidden="true">i</span><span class="info-tip-bubble" role="tooltip">${esc(text)}</span></span>`;
+}
+(function bindInfoTips(){
+  document.addEventListener("click", (e) => {
+    const tip = e.target.closest(".info-tip");
+    document.querySelectorAll(".info-tip.open").forEach(t => { if(t !== tip) t.classList.remove("open"); });
+    if(tip){ e.preventDefault(); e.stopPropagation(); tip.classList.toggle("open"); }
+  }, true);
+  document.addEventListener("keydown", (e) => { if(e.key === "Escape") document.querySelectorAll(".info-tip.open").forEach(t => t.classList.remove("open")); });
+})();
 
 /* ---------- 같은 라인·같은 4M 최근 이력 (사실 표시만, 경고·차단 없음) ----------
  * 누적 데이터가 적어 '몇 건 이상이면 위험' 같은 기준을 정할 근거가 아직 없다.
